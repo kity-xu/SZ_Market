@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration version="1.0">
+    <appSettings>
+        <encryFactor>#s!1*:-)</encryFactor>
+        <!--
+        *
+        * You can load different configurations depending on your
+        * current environment. Setting the environment also influences
+        * things like logging and error reporting.
+        *
+        * This can be set to anything, but default usage is:
+        *
+        *     development
+        *     testing
+        *     pre-release
+        *     production
+        *
+        -->
+        <environment>development</environment>
+       
+        <projects>
+            <appId>market_finance</appId>
+            <configFile>finance.xml</configFile>
+        </projects>
+    </appSettings>
+    <emailSetting>
+        <addr>notification@mail.facework.im</addr>
+        <password>18fde39228634fb9</password>
+        <server>smtpdm.aliyun.com</server>
+        <port>25</port>
+    </emailSetting>
+    <cors>
+        <allowOrigin>http://127.0.0.1</allowOrigin>        
+    </cors>
+    <logServer>
+        <on>0</on>
+        <addr>127.0.0.1</addr>
+        <port>8088</port>
+    </logServer>
+</configuration>

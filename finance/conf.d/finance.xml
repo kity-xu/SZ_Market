@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration version="1.0">
+    <appSettings>
+        <allowOrigin></allowOrigin>
+        <encryFactor>#s!1*:-)</encryFactor>
+        <!--
+        *
+        * You can load different configurations depending on your
+        * current environment. Setting the environment also influences
+        * things like logging and error reporting.
+        *
+        * This can be set to anything, but default usage is:
+        *
+        *     development
+        *     testing
+        *     production
+        *
+        -->
+        <environment>development</environment>
+        <listen>:85</listen>
+    </appSettings>
+     <listenAndServe>
+        <port>:7210</port>
+        <logport>:7211</logport>
+    </listenAndServe>
+    <emailSetting>
+        <addr>notification@mail.haina.com</addr>
+        <password>18fde39228634fb9</password>
+        <server>smtpdm.aliyun.com</server>
+        <port>25</port>
+    </emailSetting>
+    <session>
+        <on>1</on>
+        <providerName>redis</providerName>
+        <config>
+        {
+            "cookieName": "haina_session",
+            "enableSetCookie":true,
+            "gclifetime": 3600,
+            "ProviderConfig": "192.168.18.200:6379,100,8dc40c2c4598ae5a,2",
+            "domain": ".haina.com",
+            "loginUrl": "/user/signin"
+        }
+        </config>
+    </session>
+    <database>
+        <driverName>mysql</driverName>
+        <dataSource>haina:A9fa51$85dc40c2c@tcp(192.168.18.200:3306)/haina_major?charset=utf8</dataSource>
+    </database>
+    <redisStore>
+        <addr>192.168.18.200:6379</addr>
+        <auth>8dc40c2c4598ae5a</auth>
+        <db>1</db>
+        <timeout>3</timeout> 
+    </redisStore>
+</configuration>
