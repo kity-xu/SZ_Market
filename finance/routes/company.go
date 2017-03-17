@@ -6,7 +6,13 @@ import (
 )
 
 func RegCompany(rg *gin.RouterGroup) {
-	rg.GET("/info", company.NewCompanyInfo().GetInfo)
+
+	// 公司简介
+	rg.GET("/company/info", company.NewCompanyInfo().GetInfo)
+	// 融资分红
+	rg.GET("/company/dividend", company.NewDividendInfo().GetDiv)
+	rg.GET("/company/refinance", company.NewDividendInfo().GetSEO)
+	rg.GET("/company/ration", company.NewDividendInfo().GetRO)
 
 	/////////////////////////股东权益
 

@@ -5,7 +5,6 @@ import (
 )
 
 func Register(engine *gin.Engine) {
-
 	// 不需要用户认证
 	rg := engine.Group("/api/finance")
 
