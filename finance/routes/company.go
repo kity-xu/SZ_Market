@@ -6,7 +6,6 @@ import (
 )
 
 func RegCompany(rg *gin.RouterGroup) {
-	// 获取广告列表
 	rg.GET("/info", company.NewCompanyInfo().GetInfo)
 
 	/////////////////////////股东权益

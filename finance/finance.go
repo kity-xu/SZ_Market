@@ -21,7 +21,8 @@ func main() {
 	a.LogPort = cfg.Log.Port
 	a.LogAddr = cfg.Log.Addr
 	a.LogOn = cfg.Log.On
-	a.SessionOn = cfg.Session.On
+	//	a.SessionOn = cfg.Session.On
+	a.SessionOn = false
 	a.SessionProviderName = cfg.Session.ProviderName
 	a.SessionConfig = cfg.Session.Config
 	a.DisableGzip = true
