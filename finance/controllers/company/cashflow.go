@@ -8,18 +8,18 @@ import (
 	"haina.com/share/logging"
 )
 
-type Cashflow struct {
+type CashflowInfo struct {
 }
 
-func NewCashflow() *Cashflow {
-	return &Cashflow{}
+func NewCashflowInfo() *CashflowInfo {
+	return &CashflowInfo{}
 }
 
-func (this *Cashflow) getJson(c *gin.Context) (*company.ResponseInfo, error) {
+func (this *CashflowInfo) getJson(c *gin.Context) (*company.ResponseInfo, error) {
 	return company.NewCashflow().GetJson(c)
 }
 
-func (this *Cashflow) GET(c *gin.Context) {
+func (this *CashflowInfo) GET(c *gin.Context) {
 	data, err := this.getJson(c)
 	if err != nil {
 		logging.Debug("%v", err)

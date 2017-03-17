@@ -7,7 +7,7 @@ import (
 func Register(engine *gin.Engine) {
 
 	// F10
-	rg := engine.Group("/api/finance/company")
+	rg := engine.Group("/api/finance")
 
 	// 注册公司信息获取路径
 	RegCompany(rg)
