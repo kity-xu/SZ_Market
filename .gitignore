@@ -1,0 +1,5 @@
+finance/finance.exe
+finance/bin/market_finance
+*.swp
+*~
+finance/finance

@@ -30,7 +30,7 @@
         <port>25</port>
     </emailSetting>
     <session>
-        <on>1</on>
+        <on>0</on>
         <providerName>redis</providerName>
         <config>
         {
