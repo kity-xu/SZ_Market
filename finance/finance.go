@@ -21,11 +21,10 @@ func main() {
 	a.LogPort = cfg.Log.Port
 	a.LogAddr = cfg.Log.Addr
 	a.LogOn = cfg.Log.On
-<<<<<<< HEAD
 	//	a.SessionOn = cfg.Session.On
-=======
+
 	//a.SessionOn = cfg.Session.On
->>>>>>> e68ebd424e91f8ff3bddd886c9bc04e0ca947fdc
+
 	a.SessionOn = false
 	a.SessionProviderName = cfg.Session.ProviderName
 	a.SessionConfig = cfg.Session.Config
