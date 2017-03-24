@@ -23,8 +23,6 @@ func main() {
 	a.LogOn = cfg.Log.On
 	//	a.SessionOn = cfg.Session.On
 
-	//a.SessionOn = cfg.Session.On
-
 	a.SessionOn = false
 	a.SessionProviderName = cfg.Session.ProviderName
 	a.SessionConfig = cfg.Session.Config

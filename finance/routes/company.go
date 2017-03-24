@@ -31,4 +31,13 @@ func RegCompany(rg *gin.RouterGroup) {
 	//股本变动
 	rg.GET("/company/equity/changes", company.NewCapitalizationInfo().GetChangesJson)
 
+	// 财务分析
+	// 获取关键指标表
+	rg.GET("/company/indicators", company.NewIndicatorsInfo().GET)
+	// 获取利润表
+	rg.GET("/company/profits", company.NewProfitsInfo().GET)
+	// 获取资产负债表
+	rg.GET("/company/liabilities", company.NewLiabilitiesInfo().GET)
+	// 获取现金流量表
+	rg.GET("/company/cashflow", company.NewCashflowInfo().GET)
 }
