@@ -13,7 +13,7 @@ import (
 type List interface{}
 
 type Data struct {
-	Lengh   int         `json:"lengh"`
+	Length  int         `json:"length"`
 	ComCode string      `json:"comcode"`
 	List    interface{} `json:"list"`
 }
@@ -29,7 +29,7 @@ func (this *DividendInfo) GetDiv(c *gin.Context) {
 	scode := strings.Split(c.Query("scode"), ".")[0]
 	sets, e := strconv.Atoi(c.Query("sets"))
 	if e != nil {
-		lib.WriteString(c, 400, "invalid sets..")
+		lib.WriteString(c, 40004, "invalid sets..")
 		return
 	}
 	divs, err := new(finchina.Dividend).GetDivList(uint64(sets), scode)
@@ -90,7 +90,7 @@ func getDivListjson(divs []finchina.Div) Data {
 		jsn = append(jsn, js)
 		i++
 	}
-	data.Lengh = i
+	data.Length = i
 	data.List = jsn
 	return data
 }
@@ -119,7 +119,7 @@ func getSEOListjson(seos []finchina.SEO) Data {
 		jsn = append(jsn, js)
 		i++
 	}
-	data.Lengh = i
+	data.Length = i
 	data.List = jsn
 	return data
 }
@@ -149,7 +149,7 @@ func getROListjson(ros []finchina.RO) Data {
 		jsn = append(jsn, js)
 		i++
 	}
-	data.Lengh = i
+	data.Length = i
 	data.List = jsn
 
 	return data
