@@ -1,4 +1,4 @@
-// 现金流量表
+// 利润表
 package company
 
 import (
@@ -6,6 +6,8 @@ import (
 	"haina.com/market/finance/models/company"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
+
+	"haina.com/market/finance/models/finchina"
 )
 
 type CashflowInfo struct {
@@ -15,12 +17,25 @@ func NewCashflowInfo() *CashflowInfo {
 	return &CashflowInfo{}
 }
 
-func (this *CashflowInfo) getJson(c *gin.Context) (*company.ResponseInfo, error) {
-	return company.NewCashflow().GetJson(c)
+func (this *CashflowInfo) getJson(req *company.RequestParam) (*company.ResponseFinAnaJson, error) {
+	sess := company.Session{}
+	sess.Responser = finchina.NewCashflowInfo()
+	return sess.GetJson(req)
 }
 
 func (this *CashflowInfo) GET(c *gin.Context) {
-	data, err := this.getJson(c)
+	scode := c.Query("scode")
+	stype := c.Query("type")
+	spage := c.Query("page")
+	perPage := c.Query("perpage")
+
+	req := CheckAndNewRequestParam(scode, stype, perPage, spage)
+	if req == nil {
+		lib.WriteString(c, 40004, nil)
+		return
+	}
+
+	data, err := this.getJson(req)
 	if err != nil {
 		logging.Debug("%v", err)
 		lib.WriteString(c, 40002, nil)

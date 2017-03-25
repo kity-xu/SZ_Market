@@ -45,7 +45,10 @@
     </session>
     <database>
         <driverName>mysql</driverName>
+        <!--
         <dataSource>haina:A9fa51$85dc40c2c@tcp(192.168.18.200:3306)/haina_major?charset=utf8</dataSource>
+        -->
+		<dataSource>publisher:Haina$A7Kha@(123.56.30.141:3306)/finchinafcdd?charset=utf8</dataSource>
     </database>
     <redisStore>
         <addr>192.168.18.200:6379</addr>
