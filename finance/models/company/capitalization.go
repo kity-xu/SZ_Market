@@ -1,4 +1,5 @@
 package company
+
 import (
 	"haina.com/market/finance/models/finchina"
 )
