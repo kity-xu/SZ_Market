@@ -5,7 +5,8 @@ import (
 )
 
 func Register(engine *gin.Engine) {
-	// 不需要用户认证
+
+	// F10
 	rg := engine.Group("/api/finance")
 
 	// 注册公司信息获取路径
