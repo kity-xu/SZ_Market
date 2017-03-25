@@ -19,7 +19,7 @@ func NewSymbol() *Symbol {
 	return &Symbol{
 		Model: Model{
 			CacheKey:  "redis_key1",
-			TableName: TQ_OA_STCODE,
+			TableName: TABLE_TQ_OA_STCODE,
 			Db:        MyCat,
 		},
 	}
@@ -154,7 +154,7 @@ func (this *Dividend) NewDiv() *Div {
 	return &Div{
 		Model: Model{
 			CacheKey:  "redis_key",
-			TableName: TQ_SK_DIVIDENTS,
+			TableName: TABLE_TQ_SK_DIVIDENTS,
 			Db:        MyCat,
 		},
 	}
@@ -164,7 +164,7 @@ func (this *Dividend) NewSEO() *SEO {
 	return &SEO{
 		Model: Model{
 			CacheKey:  "redis_key",
-			TableName: TQ_SK_PROADDISS,
+			TableName: TABLE_TQ_SK_PROADDISS,
 			Db:        MyCat,
 		},
 	}
@@ -173,7 +173,7 @@ func (this *Dividend) NewRO() *RO {
 	return &RO{
 		Model: Model{
 			CacheKey:  "redis_key",
-			TableName: TQ_SK_PROPLACING,
+			TableName: TABLE_TQ_SK_PROPLACING,
 			Db:        MyCat,
 		},
 	}
