@@ -1,4 +1,4 @@
-package company
+package finchina
 
 type Company struct {
 	Account string `json:"Account"` //会计师事务所

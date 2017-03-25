@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"haina.com/market/finance/models/company"
+	"haina.com/market/finance/models/finchina"
 	"haina.com/share/lib"
 )
 
@@ -22,7 +22,7 @@ func (this *CompanyInfo) GetInfo(c *gin.Context) {
 		lib.WriteString(c, 300, "invalid scode..")
 		return
 	}
-	var cominfo *company.Company
-	cominfo = company.NewCompany()
+	var cominfo *finchina.Company
+	cominfo = finchina.NewCompany()
 	lib.WriteString(c, 200, cominfo)
 }
