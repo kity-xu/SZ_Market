@@ -2,6 +2,7 @@ package company
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"haina.com/market/finance/models/company"
@@ -25,15 +26,14 @@ func (this *EquityInfo) GetShareholderJson(c *gin.Context) {
 
 	enddate := c.Query(CONTEXT_END_DATE)
 	count := c.Query(CONTEXT_COUNT)
-	sCode := c.Query(CONTEXT_SECURITYCODE)
-
+	scode := strings.Split(c.Query(CONTEXT_SECURITYCODE), ".")[0]
 	value_int, err := strconv.Atoi(count)
 	if err != nil {
 		logging.Debug("%v", err)
 		lib.WriteString(c, 88888, nil)
 	}
 
-	data, err := company.GetShareholderList(enddate, sCode, value_int)
+	data, err := company.GetShareholderList(enddate, scode, value_int)
 
 	lib.WriteString(c, 200, data)
 }
@@ -45,15 +45,14 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 
 	enddate := c.Query(CONTEXT_END_DATE)
 	count := c.Query(CONTEXT_COUNT)
-	sCode := c.Query(CONTEXT_SECURITYCODE)
-
+	scode := strings.Split(c.Query(CONTEXT_SECURITYCODE), ".")[0]
 	value_int, err := strconv.Atoi(count)
 	if err != nil {
 		logging.Debug("%v", err)
 		lib.WriteString(c, 88888, nil)
 	}
 
-	data, err := company.GetTop10List(enddate, sCode, value_int)
+	data, err := company.GetTop10List(enddate, scode, value_int)
 
 	lib.WriteString(c, 200, data)
 }
