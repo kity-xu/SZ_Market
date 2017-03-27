@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-finance/finance.exe
-finance/bin/market_finance
 *.swp
 *~
 finance/finance
-=======
 finance/finance.exe
->>>>>>> f871ccf8608622d68172a7bcac45720c1f80c808
+finance/bin/market_finance
+finance/finance_linux_amd64
