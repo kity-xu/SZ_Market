@@ -2,33 +2,25 @@
 package company
 
 import (
-	//"fmt"
-	//"regexp"
-	//"strconv"
-	//"strings"
-
 	"github.com/gin-gonic/gin"
 	"haina.com/market/finance/models/company"
+	"haina.com/market/finance/models/finchina"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
-
-	"haina.com/market/finance/models/finchina"
 )
 
-type IndicatorsInfo struct {
+type RequestIndicatorsInfo struct {
 }
 
-func NewIndicatorsInfo() *IndicatorsInfo {
-	return &IndicatorsInfo{}
+func NewRequestIndicatorsInfo() *RequestIndicatorsInfo {
+	return &RequestIndicatorsInfo{}
 }
 
-func (this *IndicatorsInfo) getJson(req *company.RequestParam) (*company.ResponseFinAnaJson, error) {
-	sess := company.Session{}
-	sess.Responser = finchina.NewIndicatorsInfo()
-	return sess.GetJson(req)
+func (this *RequestIndicatorsInfo) getJson(req *finchina.RequestParam) (*finchina.ResponseFinAnaJson, error) {
+	return company.NewIndicators().GetJson(req)
 }
 
-func (this *IndicatorsInfo) GET(c *gin.Context) {
+func (this *RequestIndicatorsInfo) GET(c *gin.Context) {
 	scode := c.Query("scode")
 	stype := c.Query("type")
 	spage := c.Query("page")

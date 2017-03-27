@@ -4,26 +4,23 @@ package company
 import (
 	"github.com/gin-gonic/gin"
 	"haina.com/market/finance/models/company"
+	"haina.com/market/finance/models/finchina"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
-
-	"haina.com/market/finance/models/finchina"
 )
 
-type LiabilitiesInfo struct {
+type RequestLiabilitiesInfo struct {
 }
 
-func NewLiabilitiesInfo() *LiabilitiesInfo {
-	return &LiabilitiesInfo{}
+func NewRequestLiabilitiesInfo() *RequestLiabilitiesInfo {
+	return &RequestLiabilitiesInfo{}
 }
 
-func (this *LiabilitiesInfo) getJson(req *company.RequestParam) (*company.ResponseFinAnaJson, error) {
-	sess := company.Session{}
-	sess.Responser = finchina.NewLiabilitiesInfo()
-	return sess.GetJson(req)
+func (this *RequestLiabilitiesInfo) getJson(req *finchina.RequestParam) (*finchina.ResponseFinAnaJson, error) {
+	return company.NewLiabilities().GetJson(req)
 }
 
-func (this *LiabilitiesInfo) GET(c *gin.Context) {
+func (this *RequestLiabilitiesInfo) GET(c *gin.Context) {
 	scode := c.Query("scode")
 	stype := c.Query("type")
 	spage := c.Query("page")

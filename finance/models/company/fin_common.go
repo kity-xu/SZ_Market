@@ -1,10 +1,11 @@
 // F10 财务分析接口共用
 package company
 
+/*
 type RequestParam struct {
 	SCodeOrigin string // 保留原参数scode
 	SCode       string // 截取股票代码数字部分后的scode
-	Type        int    // 类型(1:所有 3:一季报 6:中报 9:三季报 12:年报)
+	Type        int    // 类型(1:一季报 2:中报 3:三季报 4:年报)
 	PerPage     int    // 每页条数,默认4
 	Page        int    // 第几页的页码,默认1
 }
@@ -32,3 +33,4 @@ func (this *ResponseFinAnaJson) NewSession(res Responser) *Session {
 		Responser:          res,
 	}
 }
+*/

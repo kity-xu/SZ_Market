@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	. "haina.com/market/finance/models/company"
+	. "haina.com/market/finance/models/finchina"
 )
 
 func CheckAndNewRequestParam(scode string, stype string, perPage string, spage string) *RequestParam {

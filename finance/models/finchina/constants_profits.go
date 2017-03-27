@@ -1,7 +1,7 @@
 package finchina
 
 const (
-	TABLE_TQ_OA_STCODE = "TQ_OA_STCODE" //证券内码表
+//TABLE_TQ_OA_STCODE = "TQ_OA_STCODE" //证券内码表
 )
 
 const ( // 利润表
