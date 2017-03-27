@@ -1,26 +1,38 @@
-// 现金流量表
+// 利润表
 package company
 
 import (
 	"github.com/gin-gonic/gin"
 	"haina.com/market/finance/models/company"
+	"haina.com/market/finance/models/finchina"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
 )
 
-type CashflowInfo struct {
+type RequestCashflowInfo struct {
 }
 
-func NewCashflowInfo() *CashflowInfo {
-	return &CashflowInfo{}
+func NewRequestCashflowInfo() *RequestCashflowInfo {
+	return &RequestCashflowInfo{}
 }
 
-func (this *CashflowInfo) getJson(c *gin.Context) (*company.ResponseInfo, error) {
-	return company.NewCashflow().GetJson(c)
+func (this *RequestCashflowInfo) getJson(req *finchina.RequestParam) (*finchina.ResponseFinAnaJson, error) {
+	return company.NewCashflow().GetJson(req)
 }
 
-func (this *CashflowInfo) GET(c *gin.Context) {
-	data, err := this.getJson(c)
+func (this *RequestCashflowInfo) GET(c *gin.Context) {
+	scode := c.Query("scode")
+	stype := c.Query("type")
+	spage := c.Query("page")
+	perPage := c.Query("perpage")
+
+	req := CheckAndNewRequestParam(scode, stype, perPage, spage)
+	if req == nil {
+		lib.WriteString(c, 40004, nil)
+		return
+	}
+
+	data, err := this.getJson(req)
 	if err != nil {
 		logging.Debug("%v", err)
 		lib.WriteString(c, 40002, nil)
