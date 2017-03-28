@@ -1,9 +1,10 @@
 package finchina
 
 import (
-	"errors"
+	"fmt"
 
 	"haina.com/share/gocraft/dbr"
+	"haina.com/share/logging"
 	. "haina.com/share/models"
 )
 
@@ -84,54 +85,27 @@ func NewChangesEquity() *ChangesEquity {
 	}
 }
 
-//总股本
-type SharestruchgJson struct {
-	//SCode  string `json:"SCode"`  // 股票代码
-	OuSh   string `json:"OuSh"`   // 流通股份
-	OuShTO string `json:"OuShTO"` // 流通股份所占比例
-	NOS    string `json:"NOS"`    // 未流通股份
-	NOSTO  string `json:"Prop"`   // 未流通股份所占比例
-	ROS    string `json:"ROS"`    // 限售流通股份
-	ROSTO  string `json:"ROSTO"`  // 限售流通股份所占比例
-}
-
-//流通A股本
-type SharestruchgAJson struct {
-	//流通A股
-
-	CAMT   string `json:"CAMT"`   // 已上市流通A股
-	CAMTTO string `json:"CAMTTO"` // 已上市流通A股所占比例
-	OAMT   string `json:"OAMT"`   // 其他流通股
-	OAMTTO string `json:"OAMTTO"` // 其他流通股所占比例
-	RAMT   string `json:"RAMT"`   // 限售流通A股
-	RAMTTO string `json:"RAMTTO"` // 限售流通A股所占比例
-}
-
-//股本变动
-type ChangesEquityJson struct {
-	CDCV string `json:"CDCV"` // 变动日期对应值
-	CCCV string `json:"CCCV"` // 变动原因对应值
-	NSCV string `json:"NSCV"` // 流通A股数及变化比例对应值
-	SPCV string `json:"SPCV"` // 限售A股数及变动比例对应值
-	TPCV string `json:"TPCV"` // 总股本及变化比例对应值
-}
-
-type TrucList interface{}
-type TrucAList interface{}
-type RetTrucInfoJson struct {
-	SCode     string      `json:SCode`
-	TrucList  interface{} `json:"TSC"`
-	TrucAList interface{} `json:"CAS"`
-}
-
 //获取股本结构信息
-func (this *Sharestruchg) GetSingleByExps(sCode string) (RetTrucInfoJson, error) {
-	var str = ""
-	var js RetTrucInfoJson
-	str += " ENDDATE=(select ENDDATE from TQ_SK_SHARESTRUCHG "
-	str += " where COMPCODE=(select COMPCODE from TQ_SK_LCPERSON where SYMBOL='" + sCode + "')"
-	str += " ORDER BY ENDDATE desc LIMIT 1)and"
-	str += " COMPCODE=(select COMPCODE from TQ_SK_LCPERSON where SYMBOL='" + sCode + "')"
+func (this *Sharestruchg) GetSingleByExps(sCode string) (*Sharestruchg, error) {
+	//根据证卷代码获取公司内码
+	sc := NewSymbolToCompcode()
+	if err := sc.getCompcode(sCode); err != nil {
+		//return nil, err
+
+	}
+
+	if sc.COMPCODE.Valid == false {
+		logging.Error("finchina db: select COMPCODE from %s where SYMBOL='%s'", TABLE_TQ_OA_STCODE, sc.COMPCODE)
+		//return nil, ErrNullComp
+	}
+
+	var cheq *ChangesEquity
+	shBulid := this.Db.Select(" ENDDATE ").
+		From(this.TableName).
+		Where(" COMPCODE=" + sc.COMPCODE.String).OrderBy(" ENDDATE desc ")
+	err1 := this.SelectWhere(shBulid, nil).Limit(1).LoadStruct(&cheq)
+	fmt.Println(err1)
+
 	var strs = ""
 	strs += "ENDDATE, CIRCSKAMT,CIRCSKRTO , LIMSKAMT, LIMSKRTO,	NCIRCAMT ,NONNEGSKRTO,	TOTALSHARE ,"
 	strs += " CIRCAAMT ,(CIRCAAMT/TOTALSHARE)As CIRCAAMTTO,"
@@ -139,71 +113,39 @@ func (this *Sharestruchg) GetSingleByExps(sCode string) (RetTrucInfoJson, error)
 	strs += " RECIRCAAMT,(RECIRCAAMT/TOTALSHARE)As RECIRCAAMTTO"
 	bulid := this.Db.Select(strs).
 		From(this.TableName).
-		Where(str)
+		Where(" ENDDATE = " + cheq.ENDDATE + " and COMPCODE=" + sc.COMPCODE.String)
 	err := this.SelectWhere(bulid, nil).
 		Limit(1).
 		LoadStruct(this)
-
-	jsn, err := this.GetJson(this)
-	jsna, err := this.GetAJson(this)
 	if err != nil {
 		//return jsn, err
 	}
-	js.TrucList = jsn
-	js.TrucAList = jsna
 
-	return js, err
-}
-
-// 获取JSON
-func (this *Sharestruchg) GetJson(sharestruchg *Sharestruchg) (*SharestruchgJson, error) {
-	var jsn SharestruchgJson
-	if len(sharestruchg.CIRCSKAMT) < 1 {
-		return &jsn, errors.New("obj is nil")
-	}
-
-	return &SharestruchgJson{
-		//SCode:  sharestruchg.SYMBOL,      // 股票代码
-		OuSh:   sharestruchg.CIRCSKAMT,   // 流通股份
-		OuShTO: sharestruchg.CIRCSKRTO,   // 流通股份所占比例
-		ROS:    sharestruchg.LIMSKAMT,    // 限售流通股份
-		ROSTO:  sharestruchg.LIMSKRTO,    // 限售流通股份所占比例
-		NOS:    sharestruchg.NCIRCAMT,    // 未流通股份
-		NOSTO:  sharestruchg.NONNEGSKRTO, // 未流通股份所占比例
-	}, nil
-}
-
-// 获取流通A股JSON
-func (this *Sharestruchg) GetAJson(sharestruchg *Sharestruchg) (*SharestruchgAJson, error) {
-	var jsn SharestruchgAJson
-	if len(sharestruchg.CIRCAAMT.String) < 1 {
-		return &jsn, errors.New("obj is nil")
-	}
-
-	return &SharestruchgAJson{
-		//流通A股
-		CAMT:   sharestruchg.CIRCAAMT.String,     // 已上市流通A股
-		CAMTTO: sharestruchg.CIRCAAMTTO,          // 已上市流通A股所占比例
-		OAMT:   sharestruchg.OTHERCIRCAMT.String, // 其他流通股
-		OAMTTO: sharestruchg.OTHERCIRCAMTTO,      // 其他流通股所占比例
-		RAMT:   sharestruchg.RECIRCAAMT.String,   // 限售流通A股
-		RAMTTO: sharestruchg.RECIRCAAMTTO,        // 限售流通A股所占比例
-	}, nil
+	return this, err
 }
 
 /////////////////////////股本变动
-type ShaChaList interface{}
-type RetShaInfoJson struct {
-	ShaChaList interface{} `json:"ChEq"`
-}
 
-func (this *ChangesEquity) GetChangesStrJson(enddate string, sCode string, limit int) (RetShaInfoJson, error) {
+func (this *ChangesEquity) GetChangesStrJson(enddate string, sCode string, limit int) ([]*ChangesEquity, error) {
+
+	//根据证卷代码获取公司内码
+	sc := NewSymbolToCompcode()
+	if err := sc.getCompcode(sCode); err != nil {
+		//return nil, err
+
+	}
+
+	if sc.COMPCODE.Valid == false {
+		logging.Error("finchina db: select COMPCODE from %s where SYMBOL='%s'", TABLE_TQ_OA_STCODE, sc.COMPCODE)
+		//return nil, ErrNullComp
+	}
+
 	var data []*ChangesEquity
-	var rij RetShaInfoJson
+
 	bulid := this.Db.Select(" ENDDATE,SHCHGRSN,TOTALSHARE,CIRCAAMT, RECIRCAAMT ").
 		From(this.TableName).
-		Where(" COMPCODE=(select COMPCODE from TQ_SK_LCPERSON where SYMBOL='" + sCode + "')").
-		OrderBy("ENDDATE  desc ")
+		Where(" COMPCODE=" + sc.COMPCODE.String).
+		OrderBy(" ENDDATE  desc ")
 	if limit > 0 {
 		bulid = bulid.Limit(uint64(limit))
 	}
@@ -213,32 +155,6 @@ func (this *ChangesEquity) GetChangesStrJson(enddate string, sCode string, limit
 	if err != nil {
 		//return nil, err
 	}
-	jsns := []*ChangesEquityJson{}
 
-	for _, item := range data {
-		jsn, err := this.GetChaEquJson(item)
-		if err != nil {
-			//return jsns, err
-		}
-
-		jsns = append(jsns, jsn)
-	}
-	rij.ShaChaList = jsns
-	return rij, nil
-}
-
-// 获取JSON
-func (this *ChangesEquity) GetChaEquJson(ce *ChangesEquity) (*ChangesEquityJson, error) {
-	var jsn ChangesEquityJson
-	if len(ce.ENDDATE) < 1 {
-		return &jsn, errors.New("obj is nil")
-	}
-
-	return &ChangesEquityJson{
-		CDCV: ce.ENDDATE,    // 变动日期对应值
-		CCCV: ce.SHCHGRSN,   // 变动原因对应值
-		NSCV: ce.CIRCAAMT,   // 流通A股数及变化比例对应值
-		SPCV: ce.RECIRCAAMT, // 限售A股数及变动比例对应值
-		TPCV: ce.TOTALSHARE, // 总股本及变化比例对应值
-	}, nil
+	return data, nil
 }

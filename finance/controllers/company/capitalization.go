@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"haina.com/market/finance/models/company"
-	. "haina.com/market/finance/models/finchina"
+	"haina.com/market/finance/models/finchina"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
 )
@@ -23,7 +23,7 @@ func NewCapitalizationInfo() *CapitalizationInfo {
 获取股本结构信息
 */
 func (this *CapitalizationInfo) GetStructureJson(c *gin.Context) {
-	scode := strings.Split(c.Query(CONTEXT_SECURITYCODE), ".")[0]
+	scode := strings.Split(c.Query(finchina.CONTEXT_SECURITYCODE), ".")[0]
 
 	data, err := company.GetStructure(scode)
 	if err != nil {
@@ -37,9 +37,9 @@ func (this *CapitalizationInfo) GetStructureJson(c *gin.Context) {
 */
 func (this *CapitalizationInfo) GetChangesJson(c *gin.Context) {
 
-	enddate := c.Query(CONTEXT_END_DATE)
-	count := c.Query(CONTEXT_COUNT)
-	scode := strings.Split(c.Query(CONTEXT_SECURITYCODE), ".")[0]
+	enddate := c.Query(finchina.CONTEXT_END_DATE)
+	count := c.Query(finchina.CONTEXT_COUNT)
+	scode := strings.Split(c.Query(finchina.CONTEXT_SECURITYCODE), ".")[0]
 	value_int, err := strconv.Atoi(count)
 	if err != nil {
 		logging.Debug("%v", err)
