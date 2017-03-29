@@ -17,7 +17,6 @@ import (
 //总股本
 type Sharestruchg struct {
 	Model       `db:"-" `
-	SYMBOL      string // 股票代码
 	CIRCSKAMT   string // 流通股份
 	CIRCSKRTO   string // 流通股份所占比例
 	LIMSKAMT    string // 限售流通股份

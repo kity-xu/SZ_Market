@@ -8,7 +8,6 @@ import (
 
 //总股本
 type SharestruchgJson struct {
-	//SCode  string `json:"SCode"`  // 股票代码
 	OuSh   string `json:"OuSh"`   // 流通股份
 	OuShTO string `json:"OuShTO"` // 流通股份所占比例
 	NOS    string `json:"NOS"`    // 未流通股份
