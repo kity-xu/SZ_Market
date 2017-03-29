@@ -2,6 +2,7 @@ package company
 
 import (
 	"errors"
+	"strconv"
 
 	"haina.com/market/finance/models/finchina"
 )
@@ -20,7 +21,8 @@ type RetTopInfoJson struct {
 	SCode   string      `json:"scode"`
 	Sum     string      `json:"Sum"`
 	Rate    string      `json:"Rate"`
-	CR      string      `json:"CR"`
+	CR      float64     `json:"CR"`
+	EndDate string      `json:"EndDate"`
 	TopList interface{} `json:"TLSG"`
 }
 
@@ -29,7 +31,20 @@ type RetTopInfoJson struct {
 */
 func GetTop10List(enddate string, sCode string, limit int) (RetTopInfoJson, error) {
 
-	data, err, scpcod := finchina.NewTop10().GetTop10List(enddate, sCode, limit)
+	dataEnd, err := finchina.NewTop10().GetEndDate(sCode)
+	var endStr = ""
+	for _, item := range dataEnd {
+		endStr += item.ENDDATE + ","
+	}
+	var zendtata = ""
+	if enddate != "" {
+		zendtata = enddate
+	} else {
+		zendtata = dataEnd[0].ENDDATE
+	}
+
+	data, err := finchina.NewTop10().GetTop10List(zendtata, sCode, limit)
+
 	var rij RetTopInfoJson
 	jsns10 := []*Top10Json{}
 
@@ -43,12 +58,33 @@ func GetTop10List(enddate string, sCode string, limit int) (RetTopInfoJson, erro
 		jsns10 = append(jsns10, jsn)
 	}
 
-	tp := finchina.NewTop10().GetSingleByExps(enddate, scpcod)
+	tp := finchina.NewCalculate().GetSingleByExps(zendtata, sCode)
+	//计算上次累计持股
+	var sSum float64
+	for index, item := range dataEnd {
+		if zendtata == item.ENDDATE {
+			if index < len(dataEnd)-1 {
+				tp1 := finchina.NewCalculate().GetSingleByExps(dataEnd[index+1].ENDDATE, sCode)
+				sSum, err = strconv.ParseFloat(tp1.Sumh, 64)
+				break
+			}
+		}
+
+	}
 
 	rij.TopList = jsns10
 	rij.SCode = sCode
 	rij.Sum = tp.Sumh
 	rij.Rate = tp.Rate
+	var Sums float64
+	Sums, err = strconv.ParseFloat(tp.Sumh, 64)
+	rij.CR = Sums - sSum
+
+	var enddatestr = ""
+	if len(endStr) > 1 {
+		enddatestr = endStr[0 : len(endStr)-1]
+	}
+	rij.EndDate = enddatestr
 	return rij, err
 }
 
