@@ -1,26 +1,25 @@
-// 利润表
+// 关键指标
 package company
 
 import (
 	"github.com/gin-gonic/gin"
 	"haina.com/market/finance/models/company"
-	"haina.com/market/finance/models/finchina"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
 )
 
-type RequestIndicatorsInfo struct {
+type IndicatorsInfo struct {
 }
 
-func NewRequestIndicatorsInfo() *RequestIndicatorsInfo {
-	return &RequestIndicatorsInfo{}
+func NewIndicatorsInfo() *IndicatorsInfo {
+	return &IndicatorsInfo{}
 }
 
-func (this *RequestIndicatorsInfo) getJson(req *finchina.RequestParam) (*finchina.ResponseFinAnaJson, error) {
-	return company.NewIndicators().GetJson(req)
+func (this *IndicatorsInfo) getJson(req *RequestParam) (*company.RespFinAnaJson, error) {
+	return company.NewIndicators().GetJson(req.SCode, req.Type, req.PerPage, req.Page)
 }
 
-func (this *RequestIndicatorsInfo) GET(c *gin.Context) {
+func (this *IndicatorsInfo) GET(c *gin.Context) {
 	scode := c.Query("scode")
 	stype := c.Query("type")
 	spage := c.Query("page")

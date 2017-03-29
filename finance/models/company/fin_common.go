@@ -1,16 +1,7 @@
 // F10 财务分析接口共用
 package company
 
-/*
-type RequestParam struct {
-	SCodeOrigin string // 保留原参数scode
-	SCode       string // 截取股票代码数字部分后的scode
-	Type        int    // 类型(1:一季报 2:中报 3:三季报 4:年报)
-	PerPage     int    // 每页条数,默认4
-	Page        int    // 第几页的页码,默认1
-}
-
-type ResponseFinAnaJson struct {
+type RespFinAnaJson struct {
 	SCode  string      `json:"scode"`
 	MU     string      `json:"MU"`
 	AS     string      `json:"AS"`
@@ -19,18 +10,17 @@ type ResponseFinAnaJson struct {
 }
 
 type Responser interface {
-	GetJson(*RequestParam) (*ResponseFinAnaJson, error)
+	GetJson(scode string, report_type int, per_page int, page int) (*RespFinAnaJson, error)
 }
 
 type Session struct {
 	Responser
-	*ResponseFinAnaJson
+	*RespFinAnaJson
 }
 
-func (this *ResponseFinAnaJson) NewSession(res Responser) *Session {
+func (this *RespFinAnaJson) NewSession(res Responser) *Session {
 	return &Session{
-		ResponseFinAnaJson: this,
-		Responser:          res,
+		RespFinAnaJson: this,
+		Responser:      res,
 	}
 }
-*/

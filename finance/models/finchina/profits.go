@@ -2,59 +2,15 @@
 package finchina
 
 import (
-	"time"
-
 	. "haina.com/share/models"
 
 	"haina.com/share/gocraft/dbr"
 	"haina.com/share/logging"
 )
 
-type ProfitsJson struct {
-	Date int64 `json:"Date"`
-
-	AAPC float64 `json:"AAPC"` //影响母公司净利润的调整项目
-	AILs float64 `json:"AILs"` //资产减值损失
-	AREp float64 `json:"AREp"` //分保费用
-	BAEp float64 `json:"BAEp"` //业务及管理费
-	BPAC float64 `json:"BPAC"` //归属于母公司所有者的净利润
-	CoEp float64 `json:"CoEp"` //手续费及佣金支出
-	CoRe float64 `json:"CoRe"` //手续费及佣金收入
-	CORe float64 `json:"CORe"` //营业成本
-	DPES float64 `json:"DPES"` //稀释每股收益
-	EPS  float64 `json:"EPS"`  //基本每股收益
-	FnEp float64 `json:"FnEp"` //财务费用
-	ICEp float64 `json:"ICEp"` //保险手续费及佣金支出
-	IDEp float64 `json:"IDEp"` //保单红利支出
-	InRe float64 `json:"InRe"` //利息收入
-	ItEp float64 `json:"ItEp"` //利息支出
-	ITEp float64 `json:"ITEp"` //所得税费用
-	MgEp float64 `json:"MgEp"` //管理费用
-	MIIn float64 `json:"MIIn"` //少数股东损益
-	NCoE float64 `json:"NCoE"` //手续费及佣金净收入
-	NInR float64 `json:"NInR"` //利息净收入
-	NOEp float64 `json:"NOEp"` //营业外支出
-	NORe float64 `json:"NORe"` //营业外收入
-	NtIn float64 `json:"NtIn"` //净利润
-	OATx float64 `json:"OATx"` //营业税金及附加
-	OCOR float64 `json:"OCOR"` //营业总成本
-	OOCs float64 `json:"OOCs"` //其他营业成本
-	OpEp float64 `json:"OpEp"` //营业支出
-	OpPr float64 `json:"OpPr"` //营业利润
-	OpRe float64 `json:"OpRe"` //营业收入
-	SaEp float64 `json:"SaEp"` //销售费用
-	SAPC float64 `json:"SAPC"` //影响母公司净利润的特殊项目
-	TOpR float64 `json:"TOpR"` //营业总收入
-	ToPr float64 `json:"ToPr"` //利润总额
-}
-
-func NewProfitsJson() *ProfitsJson {
-	return &ProfitsJson{}
-}
-
 // TQ_FIN_PROINCSTATEMENTNEW    中文名称：一般企业利润表(新准则产品表)
 // __none__ 前缀的字段是参考其他证券软件的F10功能定义的Json返回字段信息但在数据表中没有找到与之对应的字段,为了不打乱顺序,做个标注
-type ProfitsGeneral struct {
+type Profits struct {
 	Model `db:"-"`
 
 	ENDDATE    dbr.NullString //Date 	放置本次财报的截止日期
@@ -96,114 +52,49 @@ type ProfitsGeneral struct {
 	TOTPROFIT    dbr.NullFloat64 //ToPr		利润总额
 }
 
-func NewProfitsGeneral() *ProfitsGeneral {
-	return &ProfitsGeneral{
+func NewProfits() *Profits {
+	return &Profits{
 		Model: Model{
-			TableName: TABLE_TQ_OA_STCODE,
+			TableName: TABLE_TQ_FIN_PROINCSTATEMENTNEW,
 			Db:        MyCat,
 		},
 	}
 }
 
-func (this *ProfitsGeneral) getProfitsJsonList(compcode string, req *RequestParam) ([]*ProfitsJson, error) {
-	logging.Info("getProfitsJsonList %T, compcode %s", *this, compcode)
-	var (
-		sli_db []ProfitsGeneral
-	)
-	sli := make([]*ProfitsJson, 0)
+func (this *Profits) getList(compcode string, report_type int, per_page int, page int) ([]Profits, error) {
+	var sli []Profits
 
-	builder := this.Db.Select("*").From(TABLE_TQ_FIN_PROINCSTATEMENTNEW)
-	if req.Type != 0 {
-		builder.Where("REPORTDATETYPE=?", req.Type)
+	builder := this.Db.Select("*").From(this.TableName)
+	if report_type != 0 {
+		builder.Where("REPORTDATETYPE=?", report_type)
 	}
 	err := builder.Where("COMPCODE = ?", compcode).
 		Where("REPORTTYPE = ?", 1).
 		OrderBy("ENDDATE DESC").
-		Paginate(uint64(req.Page), uint64(req.PerPage)).
-		LoadStruct(&sli_db)
+		Paginate(uint64(page), uint64(per_page)).
+		LoadStruct(&sli)
 	if err != nil && err != dbr.ErrNotFound {
 		return nil, err
 	}
 
-	for _, v := range sli_db {
-		one := NewProfitsJson()
-
-		one.AILs = v.ASSEIMPALOSS.Float64
-		one.AREp = v.REINEXPE.Float64
-		one.BPAC = v.PARENETP.Float64
-		one.CoEp = v.POUNEXPE.Float64
-		one.CoRe = v.POUNINCO.Float64
-		one.CORe = v.BIZCOST.Float64
-		one.DPES = v.DILUTEDEPS.Float64
-		one.EPS = v.BASICEPS.Float64
-		one.FnEp = v.FINEXPE.Float64
-		one.IDEp = v.POLIDIVIEXPE.Float64
-		one.InRe = v.INTEINCO.Float64
-		one.ItEp = v.INTEEXPE.Float64
-		one.ITEp = v.INCOTAXEXPE.Float64
-		one.MgEp = v.MANAEXPE.Float64
-		one.MIIn = v.MINYSHARRIGH.Float64
-		one.NOEp = v.NONOEXPE.Float64
-		one.NORe = v.NONOREVE.Float64
-		one.NtIn = v.NETPROFIT.Float64
-		one.OATx = v.BIZTAX.Float64
-		one.OCOR = v.BIZTOTCOST.Float64
-		one.OpPr = v.PERPROFIT.Float64
-		one.OpRe = v.BIZINCO.Float64
-		one.SaEp = v.SALESEXPE.Float64
-		one.TOpR = v.BIZTOTINCO.Float64
-		one.ToPr = v.TOTPROFIT.Float64
-
-		if v.ENDDATE.Valid {
-			tm, err := time.Parse("20060102", v.ENDDATE.String)
-			if err != nil {
-				return nil, err
-			}
-			one.Date = tm.Unix()
-		}
-
-		sli = append(sli, one)
-	}
 	return sli, nil
 }
 
 //------------------------------------------------------------------------------
 
-type ProfitsInfo struct {
-}
-
-func NewProfitsInfo() *ProfitsInfo {
-	return &ProfitsInfo{}
-}
-
-func (this *ProfitsInfo) GetJson(req *RequestParam) (*ResponseFinAnaJson, error) {
-	logging.Info("GetJson %T, RequestParam: %+v", *this, *req)
+func (this *Profits) GetList(scode string, report_type int, per_page int, page int) ([]Profits, error) {
 
 	sc := NewSymbolToCompcode()
-	if err := sc.getCompcode(req.SCode); err != nil {
+	if err := sc.getCompcode(scode); err != nil {
 		return nil, err
 	}
 
 	if sc.COMPCODE.Valid == false {
-		logging.Error("finchina db: select COMPCODE from %s where SYMBOL='%s'", TABLE_TQ_OA_STCODE, req.SCode)
+		logging.Error("finchina db: select COMPCODE from %s where SYMBOL='%s'", TABLE_TQ_OA_STCODE, scode)
 		return nil, ErrNullComp
 	}
 
-	sli := NewProfitsGeneral()
-	list, err := sli.getProfitsJsonList(sc.COMPCODE.String, req)
-	if err != nil {
-		return nil, err
-	}
-
-	res := &ResponseFinAnaJson{
-		SCode: req.SCodeOrigin,
-		MU:    "人民币元",
-		AS:    "新会计准则",
-	}
-
-	res.List = list
-	res.Length = len(list)
-	return res, nil
+	return this.getList(sc.COMPCODE.String, report_type, per_page, page)
 }
 
 // TQ_FIN_PROBINCSTATEMENTNEW    中文名称：银行利润表(新准则产品表)

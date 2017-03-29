@@ -4,9 +4,15 @@ package company
 import (
 	"strconv"
 	"strings"
-
-	. "haina.com/market/finance/models/finchina"
 )
+
+type RequestParam struct {
+	SCodeOrigin string // 保留原参数scode
+	SCode       string // 截取股票代码数字部分后的scode
+	Type        int    // 类型(1:一季报 2:中报 3:三季报 4:年报)
+	PerPage     int    // 每页条数,默认4
+	Page        int    // 第几页的页码,默认1
+}
 
 func CheckAndNewRequestParam(scode string, stype string, perPage string, spage string) *RequestParam {
 	if len(scode) == 0 {
