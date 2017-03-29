@@ -1,6 +1,7 @@
-// F10 财务分析接口共用
 package company
 
+//------------------------------------------------------------------------------
+// F10 财务分析接口共用
 type RespFinAnaJson struct {
 	SCode  string      `json:"scode"`
 	MU     string      `json:"MU"`
@@ -24,3 +25,5 @@ func (this *RespFinAnaJson) NewSession(res Responser) *Session {
 		Responser:      res,
 	}
 }
+
+//------------------------------------------------------------------------------
