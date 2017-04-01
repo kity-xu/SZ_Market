@@ -9,21 +9,6 @@ import (
 type Dividend struct {
 }
 
-type Symbol struct {
-	models.Model `db:"-" `
-	COMPCODE     string
-}
-
-func NewSymbol() *Symbol {
-	return &Symbol{
-		Model: models.Model{
-			CacheKey:  "redis_key1",
-			TableName: TABLE_TQ_OA_STCODE,
-			Db:        models.MyCat,
-		},
-	}
-}
-
 //Dividend
 type Div struct {
 	models.Model       `db:"-" `
@@ -63,6 +48,7 @@ type SEO struct {
 	ACTISSQTY       dbr.NullFloat64 //						Vol    		//实际发行数量
 	PLANISSMAXQTY   dbr.NullFloat64 //拟发行数量上限 			PVol   		//预案发行数量
 	ENQUMAXPRICE    dbr.NullFloat64 //询价发行价格上限 		PPrice  	//预案发行价格
+	ISFINSUC        dbr.NullInt64   //融资是否成功  1：是  0：否
 
 	//AGMD string `json:"AGMD"` //股东大会决议公告日			??
 	//Step string `json:"Step"` //事情进展
@@ -90,6 +76,8 @@ type RO struct {
 	PUBLISHDATE dbr.NullString //首次公告日期 				PNDate   //预案公布日				??
 	LISTPUBDATE dbr.NullString //上市公告日 					DNDate   //决案公布日				??
 	UPDATEDATE  dbr.NullString //资料更新日期 				AGMD 	 //股东大会决议公告日		??
+
+	ISFINSUC dbr.NullInt64 //融资是否成功  1：是  0：否
 }
 
 // Repo(repurchase agreement)

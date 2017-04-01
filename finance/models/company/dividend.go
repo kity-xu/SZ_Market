@@ -10,6 +10,13 @@ type FinDivid struct {
 	ToCash   float64 //分红金额合计
 	SeoRaise float64 //增发实际募资净额合计
 	RoRaise  float64 //配股实际募资金额合计
+
+	Divcount int //分红次数
+	SEOcount int //增发次数
+	ROcount  int //配股次数
+
+	SeoSc int64 //增发成功数
+	RoSc  int64 //配股成功数
 }
 
 //Dividend
@@ -120,6 +127,7 @@ func getDivListjson(this *FinDivid, divs []finchina.Div) []*DivJson {
 			js.LisDate = v.LISTDATE.String
 		}
 
+		this.Divcount++
 		list = append(list, &js)
 	}
 	return list
@@ -144,6 +152,9 @@ func getSEOListjson(this *FinDivid, seos []finchina.SEO) []*SEOJson {
 		js.Vol = v.ACTISSQTY.Float64
 		js.Type = v.ISSUEMODEMEMO.String
 		this.SeoRaise += v.ACTNETRAISEAMT.Float64
+
+		this.SeoSc += v.ISFINSUC.Int64
+		this.SEOcount++
 
 		list = append(list, &js)
 	}
@@ -170,6 +181,9 @@ func getROListjson(this *FinDivid, ros []finchina.RO) []*ROJson {
 		js.Short = v.ALLOTSNAME.String
 		js.Vol = v.ACTISSQTY.Float64
 		this.RoRaise += v.ACTNETRAISEAMT.Float64
+
+		this.RoSc += v.ISFINSUC.Int64
+		this.ROcount++
 
 		list = append(list, &js)
 	}
