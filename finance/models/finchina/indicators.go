@@ -8,97 +8,21 @@ import (
 	"haina.com/share/logging"
 )
 
-// __none__ 前缀的字段是参考其他证券软件的F10功能定义的Json返回字段信息但在数据表中没有找到与之对应的字段,为了不打乱和Wiki文档对应顺序,做个标注
-type _IndicatorsGeneral struct {
+//参考富途F10财务分析关键指标的数据表 应由finchina数据库的 主要财务指标表 衍生财务指标表 财务数据_TTM指标表 TTM现金科目产品表 四张表中的部分数据组合而来
+type Indicators struct {
+	Model            `db:"-"`
+	PROFINMAININDEX  TQ_FIN_PROFINMAININDEX  //主要财务指标（产品表）
+	PROINDICDATA     TQ_FIN_PROINDICDATA     //衍生财务指标（产品表）
+	PROTTMINDIC      TQ_FIN_PROTTMINDIC      //财务数据_TTM指标（产品表）
+	PROCFSTTMSUBJECT TQ_FIN_PROCFSTTMSUBJECT //TTM现金科目产品表
+}
 
-	//// 每股指标
-	__none__EPSE   dbr.NullFloat64 //EPSE      每股收益_期末股本摊薄
-	__none__EPSTTM dbr.NullFloat64 //EPSTTM    每股收益_TTM
-	__none__PSAF   dbr.NullFloat64 //PSAF      每股公积金
-	__none__PSOE   dbr.NullFloat64 //PSOE      每股营业利润
-	__none__PSRTTM dbr.NullFloat64 //PSRTTM    每股营业收入_TTM
-
-	//// 盈利能力
-	__none__DSR       dbr.NullFloat64 //DSR       销售期间费用率
-	__none__DSRTTM    dbr.NullFloat64 //DSRTTM    销售期间费用率_TTM
-	__none__FEDBR     dbr.NullFloat64 //FEDBR     财务费用／营业总收入
-	__none__FEDBRTTM  dbr.NullFloat64 //FEDBRTTM  财务费用／营业总收入_TTM
-	__none__JROATTM   dbr.NullFloat64 //JROATTM   总资产净利率_TTM
-	__none__LAIDBR    dbr.NullFloat64 //LAIDBR    资产减值损失／营业总收入
-	__none__LAIDBRTTM dbr.NullFloat64 //LAIDBRTTM 资产减值损失／营业总收入_TTM
-	__none__MEDBR     dbr.NullFloat64 //MEDBR     管理费用／营业总收入
-	__none__MEDBRTTM  dbr.NullFloat64 //MEDBRTTM  管理费用／营业总收入_TTM
-	__none__NPAPC     dbr.NullFloat64 //NPAPC     归属母公司净利润
-	__none__NPOR      dbr.NullFloat64 //NPOR      净利润／营业总收入
-	__none__NPORTTM   dbr.NullFloat64 //NPORTTM   净利润／营业总收入_TTM
-	__none__NSR       dbr.NullFloat64 //NSR       销售净利率
-	__none__NSRTTM    dbr.NullFloat64 //NSRTTM    销售净利率_TTM
-	__none__OCDBR     dbr.NullFloat64 //OCDBR     营业总成本／营业总收入
-	__none__OCDBRTTM  dbr.NullFloat64 //OCDBRTTM  营业总成本／营业总收入_TTM
-	__none__ROETTM    dbr.NullFloat64 //ROETTM    净资产收益率_TTM
-	__none__SEDBR     dbr.NullFloat64 //SEDBR     销售费用／营业总收入
-	__none__SEDBRTTM  dbr.NullFloat64 //SEDBRTTM  销售费用／营业总收入_TTM
-
-	//// 偿债能力
-	__none__BPCSDIBD   dbr.NullFloat64 //BPCSDIBD   归属母公司股东的权益／带息债务
-	__none__BPCSDTL    dbr.NullFloat64 //BPCSDTL    归属母公司股东的权益／负债合计
-	__none__NBAGCFDCL  dbr.NullFloat64 //NBAGCFDCL  经营活动产生现金流量净额／流动负债
-	__none__NBAGCFDIBD dbr.NullFloat64 //NBAGCFDIBD 经营活动产生现金流量净额／带息债务
-	__none__NBAGCFDND  dbr.NullFloat64 //NBAGCFDND  经营活动产生现金流量净额／净债务
-	__none__NBAGCFDTL  dbr.NullFloat64 //NBAGCFDTL  经营活动产生现金流量净额／负债合计
-	__none__SQR        dbr.NullFloat64 //SQR        超速动比率
-	__none__TIE        dbr.NullFloat64 //TIE        利息保障倍数
-	__none__TNWDIBD    dbr.NullFloat64 //TNWDIBD    有形净值／带息债务
-
-	//// 成长能力
-	__none__APCSNPYG      dbr.NullFloat64 //APCSNPYG      归属母公司股东的净利润同比增长
-	__none__APCSNPYGD     dbr.NullFloat64 //APCSNPYGD     归属母公司股东的净利润(扣除)同比增长
-	__none__BAGCFNYOYG    dbr.NullFloat64 //BAGCFNYOYG    经营活动产生的现金流量净额同比增长
-	__none__BAGCFPSNYOYG  dbr.NullFloat64 //BAGCFPSNYOYG  每股经营活动产生的现金流量净额同比增长
-	__none__BEPSYG        dbr.NullFloat64 //BEPSYG        基本每股收益同比增长
-	__none__BIYG          dbr.NullFloat64 //BIYG          营业收入同比增长
-	__none__BPYG          dbr.NullFloat64 //BPYG          营业利润同比增长
-	__none__BSPCERBYGR    dbr.NullFloat64 //BSPCERBYGR    归属母公司股东的权益相对年初增长率
-	__none__DEPSYG        dbr.NullFloat64 //DEPSYG        稀释每股收益同比增长
-	__none__NAPSRBYGR     dbr.NullFloat64 //NAPSRBYGR     每股净资产相对年初增长率
-	__none__NAYG          dbr.NullFloat64 //NAYG          净资产同比增长
-	__none__NPYG          dbr.NullFloat64 //NPYG          净利润同比增长
-	__none__OP5YSPBPCNPGA dbr.NullFloat64 //OP5YSPBPCNPGA 过去五年同期归属母公司净利润平均增幅
-	__none__REDYG         dbr.NullFloat64 //REDYG         净资产收益率(摊薄)同比增长
-	__none__SGR           dbr.NullFloat64 //SGR           可持续增长率
-	__none__TARBYGR       dbr.NullFloat64 //TARBYGR       资产总计相对年初增长率
-	__none__TAYG          dbr.NullFloat64 //TAYG          总资产同比增长
-	__none__TPYG          dbr.NullFloat64 //TPYG          利润总额同比增长
-
-	//// 营运能力
-	//// 现金状况
-	__none__CSDAA       dbr.NullFloat64 //CSDAA        资本支出／折旧和摊销
-	__none__NBAGCF      dbr.NullFloat64 //NBAGCF       经营活动产生的现金流量净额
-	__none__NBAGCFDR    dbr.NullFloat64 //NBAGCFDR     经营活动产生的现金流量净额／营业收入
-	__none__NBAGCFDRTTM dbr.NullFloat64 //NBAGCFDRTTM  经营活动产生的现金流量净额／营业收入_TTM
-	__none__NPCL        dbr.NullFloat64 //NPCL         净利润现金含量
-	__none__SGPCRS      dbr.NullFloat64 //SGPCRS       销售商品提供劳务收到的现金
-	__none__TACRR       dbr.NullFloat64 //TACRR        总资产现金回收率
-
-	//// 分红能力
-	__none__CCEB dbr.NullFloat64 //CCEB 每股现金及现金等价物 余额
-	__none__RER  dbr.NullFloat64 //RER  留存盈余比率
-
-	//// 资本结构
-	__none__BPCSDIC   dbr.NullFloat64 //BPCSDIC 归属母公司股东的权益／全部投入资本
-	__none__CADTA     dbr.NullFloat64 //CADTA   流动资产／总资产
-	__none__CLDTL     dbr.NullFloat64 //CLDTL   流动负债／负债合计
-	__none__IBDDIC    dbr.NullFloat64 //IBDDIC  带息债务／全部投入资本
-	__none__NCADTA    dbr.NullFloat64 //NCADTA  非流动资产／总资产
-	__none__NCLDTL    dbr.NullFloat64 //NCLDTL  非流动负债／负债合计
-	__none__EQUTURNRT dbr.NullFloat64 //SHER    股东权益比率 股东权益周转率???
-	__none__LTLDSET   dbr.NullFloat64 //LTLDSET 长期负债／股东权益合计
-
-	//// 收益质量
-	__none__IIJVCDTP    dbr.NullFloat64 //IIJVCDTP    对联营合营公司投资收益／利润总额
-	__none__IIJVCDTPTTM dbr.NullFloat64 //IIJVCDTPTTM 对联营合营公司投资收益／利润总额_TTM
-
-	//// 杜邦分析
+func NewIndicators() *Indicators {
+	return &Indicators{
+		Model: Model{
+			Db: MyCat,
+		},
+	}
 }
 
 // TQ_FIN_PROFINMAININDEX     主要财务指标（产品表）
@@ -248,24 +172,100 @@ type TQ_FIN_PROCFSTTMSUBJECT struct {
 	CASHNETR dbr.NullFloat64 //CACENI       现金及现金等价物 净增加额
 }
 
-//参考富途F10财务分析关键指标的数据表 应由finchina数据库的 主要财务指标表 衍生财务指标表 财务数据_TTM指标表 TTM现金科目产品表 四张表中的部分数据组合而来
-type Indicators struct {
-	Model            `db:"-"`
-	PROFINMAININDEX  TQ_FIN_PROFINMAININDEX  //主要财务指标（产品表）
-	PROINDICDATA     TQ_FIN_PROINDICDATA     //衍生财务指标（产品表）
-	PROTTMINDIC      TQ_FIN_PROTTMINDIC      //财务数据_TTM指标（产品表）
-	PROCFSTTMSUBJECT TQ_FIN_PROCFSTTMSUBJECT //TTM现金科目产品表
+// __none__ 前缀的字段是参考其他证券软件的F10功能定义的Json返回字段信息,但在数据表中没有找到与之对应的字段,为不打乱与Wiki文档对应顺序而保留
+type _IndicatorsGeneral struct {
+
+	//// 每股指标
+	__none__EPSE   dbr.NullFloat64 //EPSE      每股收益_期末股本摊薄
+	__none__EPSTTM dbr.NullFloat64 //EPSTTM    每股收益_TTM
+	__none__PSAF   dbr.NullFloat64 //PSAF      每股公积金
+	__none__PSOE   dbr.NullFloat64 //PSOE      每股营业利润
+	__none__PSRTTM dbr.NullFloat64 //PSRTTM    每股营业收入_TTM
+
+	//// 盈利能力
+	__none__DSR       dbr.NullFloat64 //DSR       销售期间费用率
+	__none__DSRTTM    dbr.NullFloat64 //DSRTTM    销售期间费用率_TTM
+	__none__FEDBR     dbr.NullFloat64 //FEDBR     财务费用／营业总收入
+	__none__FEDBRTTM  dbr.NullFloat64 //FEDBRTTM  财务费用／营业总收入_TTM
+	__none__JROATTM   dbr.NullFloat64 //JROATTM   总资产净利率_TTM
+	__none__LAIDBR    dbr.NullFloat64 //LAIDBR    资产减值损失／营业总收入
+	__none__LAIDBRTTM dbr.NullFloat64 //LAIDBRTTM 资产减值损失／营业总收入_TTM
+	__none__MEDBR     dbr.NullFloat64 //MEDBR     管理费用／营业总收入
+	__none__MEDBRTTM  dbr.NullFloat64 //MEDBRTTM  管理费用／营业总收入_TTM
+	__none__NPAPC     dbr.NullFloat64 //NPAPC     归属母公司净利润
+	__none__NPOR      dbr.NullFloat64 //NPOR      净利润／营业总收入
+	__none__NPORTTM   dbr.NullFloat64 //NPORTTM   净利润／营业总收入_TTM
+	__none__NSR       dbr.NullFloat64 //NSR       销售净利率
+	__none__NSRTTM    dbr.NullFloat64 //NSRTTM    销售净利率_TTM
+	__none__OCDBR     dbr.NullFloat64 //OCDBR     营业总成本／营业总收入
+	__none__OCDBRTTM  dbr.NullFloat64 //OCDBRTTM  营业总成本／营业总收入_TTM
+	__none__ROETTM    dbr.NullFloat64 //ROETTM    净资产收益率_TTM
+	__none__SEDBR     dbr.NullFloat64 //SEDBR     销售费用／营业总收入
+	__none__SEDBRTTM  dbr.NullFloat64 //SEDBRTTM  销售费用／营业总收入_TTM
+
+	//// 偿债能力
+	__none__BPCSDIBD   dbr.NullFloat64 //BPCSDIBD   归属母公司股东的权益／带息债务
+	__none__BPCSDTL    dbr.NullFloat64 //BPCSDTL    归属母公司股东的权益／负债合计
+	__none__NBAGCFDCL  dbr.NullFloat64 //NBAGCFDCL  经营活动产生现金流量净额／流动负债
+	__none__NBAGCFDIBD dbr.NullFloat64 //NBAGCFDIBD 经营活动产生现金流量净额／带息债务
+	__none__NBAGCFDND  dbr.NullFloat64 //NBAGCFDND  经营活动产生现金流量净额／净债务
+	__none__NBAGCFDTL  dbr.NullFloat64 //NBAGCFDTL  经营活动产生现金流量净额／负债合计
+	__none__SQR        dbr.NullFloat64 //SQR        超速动比率
+	__none__TIE        dbr.NullFloat64 //TIE        利息保障倍数
+	__none__TNWDIBD    dbr.NullFloat64 //TNWDIBD    有形净值／带息债务
+
+	//// 成长能力
+	__none__APCSNPYG      dbr.NullFloat64 //APCSNPYG      归属母公司股东的净利润同比增长
+	__none__APCSNPYGD     dbr.NullFloat64 //APCSNPYGD     归属母公司股东的净利润(扣除)同比增长
+	__none__BAGCFNYOYG    dbr.NullFloat64 //BAGCFNYOYG    经营活动产生的现金流量净额同比增长
+	__none__BAGCFPSNYOYG  dbr.NullFloat64 //BAGCFPSNYOYG  每股经营活动产生的现金流量净额同比增长
+	__none__BEPSYG        dbr.NullFloat64 //BEPSYG        基本每股收益同比增长
+	__none__BIYG          dbr.NullFloat64 //BIYG          营业收入同比增长
+	__none__BPYG          dbr.NullFloat64 //BPYG          营业利润同比增长
+	__none__BSPCERBYGR    dbr.NullFloat64 //BSPCERBYGR    归属母公司股东的权益相对年初增长率
+	__none__DEPSYG        dbr.NullFloat64 //DEPSYG        稀释每股收益同比增长
+	__none__NAPSRBYGR     dbr.NullFloat64 //NAPSRBYGR     每股净资产相对年初增长率
+	__none__NAYG          dbr.NullFloat64 //NAYG          净资产同比增长
+	__none__NPYG          dbr.NullFloat64 //NPYG          净利润同比增长
+	__none__OP5YSPBPCNPGA dbr.NullFloat64 //OP5YSPBPCNPGA 过去五年同期归属母公司净利润平均增幅
+	__none__REDYG         dbr.NullFloat64 //REDYG         净资产收益率(摊薄)同比增长
+	__none__SGR           dbr.NullFloat64 //SGR           可持续增长率
+	__none__TARBYGR       dbr.NullFloat64 //TARBYGR       资产总计相对年初增长率
+	__none__TAYG          dbr.NullFloat64 //TAYG          总资产同比增长
+	__none__TPYG          dbr.NullFloat64 //TPYG          利润总额同比增长
+
+	//// 营运能力
+	//// 现金状况
+	__none__CSDAA       dbr.NullFloat64 //CSDAA        资本支出／折旧和摊销
+	__none__NBAGCF      dbr.NullFloat64 //NBAGCF       经营活动产生的现金流量净额
+	__none__NBAGCFDR    dbr.NullFloat64 //NBAGCFDR     经营活动产生的现金流量净额／营业收入
+	__none__NBAGCFDRTTM dbr.NullFloat64 //NBAGCFDRTTM  经营活动产生的现金流量净额／营业收入_TTM
+	__none__NPCL        dbr.NullFloat64 //NPCL         净利润现金含量
+	__none__SGPCRS      dbr.NullFloat64 //SGPCRS       销售商品提供劳务收到的现金
+	__none__TACRR       dbr.NullFloat64 //TACRR        总资产现金回收率
+
+	//// 分红能力
+	__none__CCEB dbr.NullFloat64 //CCEB 每股现金及现金等价物 余额
+	__none__RER  dbr.NullFloat64 //RER  留存盈余比率
+
+	//// 资本结构
+	__none__BPCSDIC   dbr.NullFloat64 //BPCSDIC 归属母公司股东的权益／全部投入资本
+	__none__CADTA     dbr.NullFloat64 //CADTA   流动资产／总资产
+	__none__CLDTL     dbr.NullFloat64 //CLDTL   流动负债／负债合计
+	__none__IBDDIC    dbr.NullFloat64 //IBDDIC  带息债务／全部投入资本
+	__none__NCADTA    dbr.NullFloat64 //NCADTA  非流动资产／总资产
+	__none__NCLDTL    dbr.NullFloat64 //NCLDTL  非流动负债／负债合计
+	__none__EQUTURNRT dbr.NullFloat64 //SHER    股东权益比率 股东权益周转率???
+	__none__LTLDSET   dbr.NullFloat64 //LTLDSET 长期负债／股东权益合计
+
+	//// 收益质量
+	__none__IIJVCDTP    dbr.NullFloat64 //IIJVCDTP    对联营合营公司投资收益／利润总额
+	__none__IIJVCDTPTTM dbr.NullFloat64 //IIJVCDTPTTM 对联营合营公司投资收益／利润总额_TTM
+
+	//// 杜邦分析
 }
 
-func NewIndicators() *Indicators {
-	return &Indicators{
-		Model: Model{
-			Db: MyCat,
-		},
-	}
-}
-
-// TQ_FIN_PROFINMAININDEX     主要财务指标（产品表）
+// 从 TQ_FIN_PROFINMAININDEX  主要财务指标（产品表）    取数据
 func (this *Indicators) getListFromTQ_FIN_PROFINMAININDEX(compcode string, report_type int, per_page int, page int) ([]TQ_FIN_PROFINMAININDEX, error) {
 	var (
 		sli_db []TQ_FIN_PROFINMAININDEX
@@ -292,8 +292,10 @@ func (this *Indicators) getListFromTQ_FIN_PROFINMAININDEX(compcode string, repor
 	return sli_db, nil
 }
 
-// TQ_FIN_PROINDICDATA      衍生财务指标（产品表）
-func (this *Indicators) getListFromTQ_FIN_PROINDICDATA(compcode string, report_type int, per_page int, page int) ([]TQ_FIN_PROINDICDATA, error) {
+type Date []string
+
+// 从 TQ_FIN_PROINDICDATA     衍生财务指标（产品表）    取数据
+func (this *Indicators) getListFromTQ_FIN_PROINDICDATA(compcode string, report_type int, per_page int, page int, date Date) ([]TQ_FIN_PROINDICDATA, error) {
 	var (
 		sli_db []TQ_FIN_PROINDICDATA
 		err    error
@@ -302,10 +304,18 @@ func (this *Indicators) getListFromTQ_FIN_PROINDICDATA(compcode string, report_t
 	if report_type != 0 {
 		builder.Where("REPORTDATETYPE=?", report_type)
 	}
+	if len(date) > 0 {
+		sets := ""
+		for _, v := range date {
+			sets += v + ","
+		}
+		sets = sets[:len(sets)-1]
+		builder.Where("ENDDATE in (" + sets + ")")
+	}
 	err = builder.Where("COMPCODE = ?", compcode).
 		Where("REPORTTYPE = 3").
-		OrderBy("REPORTTYPE ASC, ENDDATE DESC").
-		Paginate(uint64(page), uint64(per_page)).
+		OrderBy("ENDDATE DESC").
+		Limit(uint64(per_page)).
 		LoadStruct(&sli_db)
 	if err != nil && err != dbr.ErrNotFound {
 		return nil, err
@@ -313,8 +323,8 @@ func (this *Indicators) getListFromTQ_FIN_PROINDICDATA(compcode string, report_t
 	return sli_db, nil
 }
 
-// TQ_FIN_PROTTMINDIC     财务数据_TTM指标（产品表）
-func (this *Indicators) getListFromTQ_FIN_PROTTMINDIC(compcode string, report_type int, per_page int, page int) ([]TQ_FIN_PROTTMINDIC, error) {
+// 从 TQ_FIN_PROTTMINDIC      财务数据_TTM指标（产品表）取数据
+func (this *Indicators) getListFromTQ_FIN_PROTTMINDIC(compcode string, report_type int, per_page int, page int, date Date) ([]TQ_FIN_PROTTMINDIC, error) {
 	var (
 		sli_db []TQ_FIN_PROTTMINDIC
 		err    error
@@ -324,10 +334,18 @@ func (this *Indicators) getListFromTQ_FIN_PROTTMINDIC(compcode string, report_ty
 	if report_type != 0 {
 		builder.Where("REPORTDATETYPE=?", report_type)
 	}
+	if len(date) > 0 {
+		sets := ""
+		for _, v := range date {
+			sets += v + ","
+		}
+		sets = sets[:len(sets)-1]
+		builder.Where("ENDDATE in (" + sets + ")")
+	}
 	err = builder.Where("COMPCODE = ?", compcode).
 		Where("REPORTTYPE = 3").
-		OrderBy("REPORTTYPE ASC, ENDDATE DESC").
-		Paginate(uint64(page), uint64(per_page)).
+		OrderBy("ENDDATE DESC").
+		Limit(uint64(per_page)).
 		LoadStruct(&sli_db)
 	if err != nil && err != dbr.ErrNotFound {
 		return nil, err
@@ -335,8 +353,8 @@ func (this *Indicators) getListFromTQ_FIN_PROTTMINDIC(compcode string, report_ty
 	return sli_db, nil
 }
 
-// TQ_FIN_PROCFSTTMSUBJECT	  TTM现金科目产品表
-func (this *Indicators) getListFromTQ_FIN_PROCFSTTMSUBJECT(compcode string, report_type int, per_page int, page int) ([]TQ_FIN_PROCFSTTMSUBJECT, error) {
+// 从 TQ_FIN_PROCFSTTMSUBJECT TTM现金科目产品表        取数据
+func (this *Indicators) getListFromTQ_FIN_PROCFSTTMSUBJECT(compcode string, report_type int, per_page int, page int, date Date) ([]TQ_FIN_PROCFSTTMSUBJECT, error) {
 	var (
 		sli_db []TQ_FIN_PROCFSTTMSUBJECT
 		err    error
@@ -346,10 +364,18 @@ func (this *Indicators) getListFromTQ_FIN_PROCFSTTMSUBJECT(compcode string, repo
 	if report_type != 0 {
 		builder.Where("REPORTDATETYPE=?", report_type)
 	}
+	if len(date) > 0 {
+		sets := ""
+		for _, v := range date {
+			sets += v + ","
+		}
+		sets = sets[:len(sets)-1]
+		builder.Where("ENDDATE in (" + sets + ")")
+	}
 	err = builder.Where("COMPCODE = ?", compcode).
 		Where("REPORTTYPE = 3").
-		OrderBy("REPORTTYPE ASC, ENDDATE DESC").
-		Paginate(uint64(page), uint64(per_page)).
+		OrderBy("ENDDATE DESC").
+		Limit(uint64(per_page)).
 		LoadStruct(&sli_db)
 	if err != nil && err != dbr.ErrNotFound {
 		return nil, err
@@ -359,48 +385,59 @@ func (this *Indicators) getListFromTQ_FIN_PROCFSTTMSUBJECT(compcode string, repo
 
 func (this *Indicators) getList(compcode string, report_type int, per_page int, page int) ([]Indicators, error) {
 	var (
-		sli_db_TQ_FIN_PROFINMAININDEX  []TQ_FIN_PROFINMAININDEX
-		sli_db_TQ_FIN_PROINDICDATA     []TQ_FIN_PROINDICDATA
-		sli_db_TQ_FIN_PROTTMINDIC      []TQ_FIN_PROTTMINDIC
-		sli_db_TQ_FIN_PROCFSTTMSUBJECT []TQ_FIN_PROCFSTTMSUBJECT
-		err                            error
-		len1, len2, len3, len4         int
-		//sli                            []Indicators
+		slidb_TQ_FIN_PROFINMAININDEX  []TQ_FIN_PROFINMAININDEX
+		slidb_TQ_FIN_PROINDICDATA     []TQ_FIN_PROINDICDATA
+		slidb_TQ_FIN_PROTTMINDIC      []TQ_FIN_PROTTMINDIC
+		slidb_TQ_FIN_PROCFSTTMSUBJECT []TQ_FIN_PROCFSTTMSUBJECT
+		len1, len2, len3, len4        int
+		err                           error
+		dates                         Date
 	)
-	sli := make([]Indicators, 0)
+	sli := make([]Indicators, 0, per_page)
 
-	sli_db_TQ_FIN_PROFINMAININDEX, err = this.getListFromTQ_FIN_PROFINMAININDEX(compcode, report_type, per_page, page)
+	// 从 TQ_FIN_PROFINMAININDEX  主要财务指标（产品表）    取数据
+	slidb_TQ_FIN_PROFINMAININDEX, err = this.getListFromTQ_FIN_PROFINMAININDEX(compcode, report_type, per_page, page)
 	if err != nil {
 		return nil, err
 	}
-	if len1 = len(sli_db_TQ_FIN_PROFINMAININDEX); 0 == len1 {
+	if len1 = len(slidb_TQ_FIN_PROFINMAININDEX); 0 == len1 {
 		return sli, nil
 	}
+	// 生成截止日期数组,其余表按日期数组取数据
+	for _, v := range slidb_TQ_FIN_PROFINMAININDEX {
+		if v.ENDDATE.Valid {
+			date := v.ENDDATE.String
+			dates = append(dates, date)
+		}
+	}
 
-	sli_db_TQ_FIN_PROINDICDATA, err = this.getListFromTQ_FIN_PROINDICDATA(compcode, report_type, per_page, page)
+	// 从 TQ_FIN_PROINDICDATA     衍生财务指标（产品表）    取数据
+	slidb_TQ_FIN_PROINDICDATA, err = this.getListFromTQ_FIN_PROINDICDATA(compcode, report_type, per_page, page, dates)
 	if err != nil {
 		return nil, err
 	}
-	if len2 = len(sli_db_TQ_FIN_PROINDICDATA); len2 != len1 {
+	if len2 = len(slidb_TQ_FIN_PROINDICDATA); len2 != len1 {
 		logging.Error("finchina db: TQ_FIN_PROINDICDATA %d != TQ_FIN_PROFINMAININDEX %d", len2, len1)
 		return nil, ErrIncData
 	}
 
-	sli_db_TQ_FIN_PROTTMINDIC, err = this.getListFromTQ_FIN_PROTTMINDIC(compcode, report_type, per_page, page)
+	// 从 TQ_FIN_PROTTMINDIC      财务数据_TTM指标（产品表）取数据
+	slidb_TQ_FIN_PROTTMINDIC, err = this.getListFromTQ_FIN_PROTTMINDIC(compcode, report_type, per_page, page, dates)
 	if err != nil {
 		return nil, err
 	}
-	if len3 = len(sli_db_TQ_FIN_PROTTMINDIC); len3 != len1 {
+	if len3 = len(slidb_TQ_FIN_PROTTMINDIC); len3 != len1 {
 		logging.Error("finchina db: TQ_FIN_PROTTMINDIC %d != TQ_FIN_PROFINMAININDEX %d", len3, len1)
 		return nil, ErrIncData
 
 	}
 
-	sli_db_TQ_FIN_PROCFSTTMSUBJECT, err = this.getListFromTQ_FIN_PROCFSTTMSUBJECT(compcode, report_type, per_page, page)
+	// 从 TQ_FIN_PROCFSTTMSUBJECT TTM现金科目产品表        取数据
+	slidb_TQ_FIN_PROCFSTTMSUBJECT, err = this.getListFromTQ_FIN_PROCFSTTMSUBJECT(compcode, report_type, per_page, page, dates)
 	if err != nil {
 		return nil, err
 	}
-	if len4 = len(sli_db_TQ_FIN_PROCFSTTMSUBJECT); len4 != len1 {
+	if len4 = len(slidb_TQ_FIN_PROCFSTTMSUBJECT); len4 != len1 {
 		logging.Error("finchina db: TQ_FIN_PROCFSTTMSUBJECT %d != TQ_FIN_PROFINMAININDEX %d", len4, len1)
 		return nil, ErrIncData
 
@@ -408,10 +445,10 @@ func (this *Indicators) getList(compcode string, report_type int, per_page int, 
 
 	for n := 0; n < len1; n++ {
 		one := Indicators{
-			PROFINMAININDEX:  sli_db_TQ_FIN_PROFINMAININDEX[n],  //主要财务指标（产品表）
-			PROINDICDATA:     sli_db_TQ_FIN_PROINDICDATA[n],     //衍生财务指标（产品表）
-			PROTTMINDIC:      sli_db_TQ_FIN_PROTTMINDIC[n],      //财务数据_TTM指标（产品表）
-			PROCFSTTMSUBJECT: sli_db_TQ_FIN_PROCFSTTMSUBJECT[n], //TTM现金科目产品表
+			PROFINMAININDEX:  slidb_TQ_FIN_PROFINMAININDEX[n],  //主要财务指标（产品表）
+			PROINDICDATA:     slidb_TQ_FIN_PROINDICDATA[n],     //衍生财务指标（产品表）
+			PROTTMINDIC:      slidb_TQ_FIN_PROTTMINDIC[n],      //财务数据_TTM指标（产品表）
+			PROCFSTTMSUBJECT: slidb_TQ_FIN_PROCFSTTMSUBJECT[n], //TTM现金科目产品表
 		}
 		sli = append(sli, one)
 	}
