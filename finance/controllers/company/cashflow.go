@@ -37,6 +37,7 @@ func (this *CashflowInfo) GET(c *gin.Context) {
 		lib.WriteString(c, 40002, nil)
 		return
 	}
+	data.SCode = scode
 
 	lib.WriteString(c, 200, data)
 }
