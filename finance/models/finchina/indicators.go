@@ -465,10 +465,5 @@ func (this *Indicators) GetList(scode string, report_type int, per_page int, pag
 		return nil, err
 	}
 
-	if sc.COMPCODE.Valid == false {
-		logging.Error("finchina db: select COMPCODE from %s where SYMBOL='%s'", TABLE_TQ_OA_STCODE, scode)
-		return nil, ErrNullComp
-	}
-
 	return this.getList(sc.COMPCODE.String, report_type, per_page, page)
 }

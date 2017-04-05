@@ -57,3 +57,9 @@ const ( // 关键指标
 )
 
 //--------------------------------------------------------------------------------
+const (
+	REDIS_TTL = 60 * 60 * 24
+)
+const (
+	REDIS_SYMBOL_COMPCODE = "finchina:symbol:%s:compcode"
+)
