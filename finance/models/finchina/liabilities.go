@@ -134,6 +134,7 @@ func (this *Liabilities) GetList(scode string, report_type int, per_page int, pa
 
 	sc := NewSymbolToCompcode()
 	if err := sc.getCompcode(scode); err != nil {
+		logging.Error("%T GetList error: %s", *this, err)
 		return nil, err
 	}
 

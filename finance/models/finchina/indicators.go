@@ -462,6 +462,7 @@ func (this *Indicators) GetList(scode string, report_type int, per_page int, pag
 
 	sc := NewSymbolToCompcode()
 	if err := sc.getCompcode(scode); err != nil {
+		logging.Error("%T GetList error: %s", *this, err)
 		return nil, err
 	}
 
