@@ -40,7 +40,13 @@ func (this *CapitalizationInfo) GetChangesJson(c *gin.Context) {
 	enddate := c.Query(finchina.CONTEXT_END_DATE)
 	count := c.Query(finchina.CONTEXT_COUNT)
 	scode := strings.Split(c.Query(finchina.CONTEXT_SECURITYCODE), ".")[0]
-	value_int, err := strconv.Atoi(count)
+	var value_int = 0
+	var err error
+	if count == "" {
+		value_int = 10
+	} else {
+		value_int, err = strconv.Atoi(count)
+	}
 	if err != nil {
 		logging.Debug("%v", err)
 		lib.WriteString(c, 88888, nil)

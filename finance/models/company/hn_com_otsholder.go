@@ -7,31 +7,31 @@ import (
 	"haina.com/market/finance/models/finchina"
 )
 
-type Top10Json struct {
-	//SCode string `json:"SCode"` // 股票代码
+type Top10 struct {
+	ID    int64  `json:"-"`     // ID
+	ISHIS int    `json:"ISHIS"` // 是否上一报告期存在股东
 	Name  string `json:"Name"`  // 股东名称
 	Ovwet string `json:"Ovwet"` // 增持股份
 	Posi  string `json:"Posi"`  // 持股数
 	Prop  string `json:"Prop"`  // 持股数量占总股本比例
-	ISHIS int    `json:"ISHIS"` // 是否上一报告期存在股东
 }
 
 type TopList interface{}
 type RetTopInfoJson struct {
-	SCode   string      `json:"scode"`
-	Sum     string      `json:"Sum"`
-	Rate    string      `json:"Rate"`
 	CR      float64     `json:"CR"`
 	EndDate string      `json:"EndDate"`
+	Rate    string      `json:"Rate"`
+	SCode   string      `json:"scode"`
+	Sum     string      `json:"Sum"`
 	TopList interface{} `json:"TLSG"`
 }
 
 /**
   获取十大流通股东信息
 */
-func GetTop10List(enddate string, sCode string, limit int) (RetTopInfoJson, error) {
+func GetTop10Group(enddate string, scode string, limit int) (RetTopInfoJson, error) {
 
-	dataEnd, err := finchina.NewTop10().GetEndDate(sCode)
+	dataEnd, err := finchina.NewTQ_SK_OTSHOLDER().GetEndDate(scode)
 	var endStr = ""
 	for _, item := range dataEnd {
 		endStr += item.ENDDATE + ","
@@ -43,28 +43,28 @@ func GetTop10List(enddate string, sCode string, limit int) (RetTopInfoJson, erro
 		zendtata = dataEnd[0].ENDDATE
 	}
 
-	data, err := finchina.NewTop10().GetTop10List(zendtata, sCode, limit)
+	data, err := finchina.NewTQ_SK_OTSHOLDER().GetTop10Group(zendtata, scode, limit)
 
 	var rij RetTopInfoJson
-	jsns10 := []*Top10Json{}
+	jsns10 := []*Top10{}
 
 	for _, item := range data {
 
-		jsn, err := GetTop10Json(item)
+		jsn, err := GetTop10Info(item)
 		if err != nil {
-			//return jsns, err
+			return rij, err
 		}
 
 		jsns10 = append(jsns10, jsn)
 	}
 
-	tp := finchina.NewCalculate().GetSingleByExps(zendtata, sCode)
+	tp := finchina.NewCalculate().GetSingleCalculate(zendtata, scode)
 	//计算上次累计持股
 	var sSum float64
 	for index, item := range dataEnd {
 		if zendtata == item.ENDDATE {
 			if index < len(dataEnd)-1 {
-				tp1 := finchina.NewCalculate().GetSingleByExps(dataEnd[index+1].ENDDATE, sCode)
+				tp1 := finchina.NewCalculate().GetSingleCalculate(dataEnd[index+1].ENDDATE, scode)
 				sSum, err = strconv.ParseFloat(tp1.Sumh, 64)
 				break
 			}
@@ -73,7 +73,7 @@ func GetTop10List(enddate string, sCode string, limit int) (RetTopInfoJson, erro
 	}
 
 	rij.TopList = jsns10
-	rij.SCode = sCode
+	rij.SCode = scode
 	rij.Sum = tp.Sumh
 	rij.Rate = tp.Rate
 	var Sums float64
@@ -88,18 +88,19 @@ func GetTop10List(enddate string, sCode string, limit int) (RetTopInfoJson, erro
 	return rij, err
 }
 
-// 获取JSON
-func GetTop10Json(top10 *finchina.Top10) (*Top10Json, error) {
-	var jsn Top10Json
-	if len(top10.SHHOLDERNAME) < 1 {
+// 获取Top10信息
+func GetTop10Info(tso *finchina.TQ_SK_OTSHOLDER) (*Top10, error) {
+	var jsn Top10
+	if len(tso.SHHOLDERNAME) < 1 {
 		return &jsn, errors.New("obj is nil")
 	}
 
-	return &Top10Json{
-		Name:  top10.SHHOLDERNAME,
-		Ovwet: top10.HOLDERSUMCHG.String,
-		Posi:  top10.HOLDERAMT,
-		Prop:  top10.HOLDERRTO,
-		ISHIS: top10.ISHIS,
+	return &Top10{
+		//ID:    top10.ID,
+		ISHIS: tso.ISHIS,
+		Name:  tso.SHHOLDERNAME,
+		Ovwet: tso.HOLDERSUMCHG.String,
+		Posi:  tso.HOLDERAMT,
+		Prop:  tso.HOLDERRTO,
 	}, nil
 }

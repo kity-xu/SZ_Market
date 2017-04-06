@@ -7,17 +7,18 @@ import (
 )
 
 //总股本
-type SharestruchgJson struct {
+type StructureEquity struct {
+	ID     int64  `json:"-"`      // ID
 	OuSh   string `json:"OuSh"`   // 流通股份
 	OuShTO string `json:"OuShTO"` // 流通股份所占比例
 	NOS    string `json:"NOS"`    // 未流通股份
 	NOSTO  string `json:"Prop"`   // 未流通股份所占比例
 	ROS    string `json:"ROS"`    // 限售流通股份
 	ROSTO  string `json:"ROSTO"`  // 限售流通股份所占比例
-}
+	//}
 
-//流通A股本
-type SharestruchgAJson struct {
+	//流通A股本
+	//type SharestruchgA struct {
 	//流通A股
 
 	CAMT   string `json:"CAMT"`   // 已上市流通A股
@@ -29,7 +30,8 @@ type SharestruchgAJson struct {
 }
 
 //股本变动
-type ChangesEquityJson struct {
+type ChangesEquity struct {
+	ID   int64  `json:"-"`    // ID
 	CDCV string `json:"CDCV"` // 变动日期对应值
 	CCCV string `json:"CCCV"` // 变动原因对应值
 	NSCV string `json:"NSCV"` // 流通A股数及变化比例对应值
@@ -49,32 +51,33 @@ type RetTrucInfoJson struct {
 //////////////股本变动
 type ShaChaList interface{}
 type RetShaInfoJson struct {
+	SCode      string      `json:"scode"`
 	ShaChaList interface{} `json:"ChEq"`
 }
 
 /**
   获取股本结构信息
 */
-func GetStructure(sCode string) (RetTrucInfoJson, error) {
-	data, err := finchina.NewSharestruchg().GetSingleByExps(sCode)
+func GetStructure(scode string) (RetTrucInfoJson, error) {
+	data, err := finchina.NewTQ_SK_SHARESTRUCHG().GetSingleBySCode(scode)
 	var js RetTrucInfoJson
-	jsn, err := GetStruJson(data)
-	jsna, err := GetAJson(data)
+	jsn, err := GetStruInfo(data)
+	jsna, err := GetAInfo(data)
 
-	js.SCode = sCode
+	js.SCode = scode
 	js.TrucList = jsn
 	js.TrucAList = jsna
 	return js, err
 }
 
 // 获取JSON
-func GetStruJson(sharestruchg *finchina.Sharestruchg) (*SharestruchgJson, error) {
-	var jsn SharestruchgJson
+func GetStruInfo(sharestruchg *finchina.TQ_SK_SHARESTRUCHG) (*StructureEquity, error) {
+	var jsn StructureEquity
 	if len(sharestruchg.CIRCSKAMT) < 1 {
 		return &jsn, errors.New("obj is nil")
 	}
 
-	return &SharestruchgJson{
+	return &StructureEquity{
 		OuSh:   sharestruchg.CIRCSKAMT,   // 流通股份
 		OuShTO: sharestruchg.CIRCSKRTO,   // 流通股份所占比例
 		ROS:    sharestruchg.LIMSKAMT,    // 限售流通股份
@@ -85,13 +88,13 @@ func GetStruJson(sharestruchg *finchina.Sharestruchg) (*SharestruchgJson, error)
 }
 
 // 获取流通A股JSON
-func GetAJson(sharestruchg *finchina.Sharestruchg) (*SharestruchgAJson, error) {
-	var jsn SharestruchgAJson
+func GetAInfo(sharestruchg *finchina.TQ_SK_SHARESTRUCHG) (*StructureEquity, error) {
+	var jsn StructureEquity
 	if len(sharestruchg.CIRCAAMT.String) < 1 {
 		return &jsn, errors.New("obj is nil")
 	}
 
-	return &SharestruchgAJson{
+	return &StructureEquity{
 		//流通A股
 		CAMT:   sharestruchg.CIRCAAMT.String,     // 已上市流通A股
 		CAMTTO: sharestruchg.CIRCAAMTTO,          // 已上市流通A股所占比例
@@ -106,36 +109,36 @@ func GetAJson(sharestruchg *finchina.Sharestruchg) (*SharestruchgAJson, error) {
 /**
   获取股本变动信息
 */
-func GetChangesStrInfo(enddate string, sCode string, limit int) (RetShaInfoJson, error) {
-	//return finchina.NewChangesEquity().GetChangesStrJson(enddate, sCode, limit)
-	data, err := finchina.NewChangesEquity().GetChangesStrJson(enddate, sCode, limit)
+func GetChangesStrInfo(enddate string, scode string, limit int) (RetShaInfoJson, error) {
+	data, err := finchina.NewTQ_SK_SHARESTRUCHG().GetChangesStrGroup(enddate, scode, limit)
 	var rij RetShaInfoJson
-	jsns := []*ChangesEquityJson{}
+	jsns := []*ChangesEquity{}
 
 	for _, item := range data {
-		jsn, err := GetChaEquJson(item)
+		jsn, err := GetChaEquInfo(item)
 		if err != nil {
-			//return jsns, err
+			return rij, err
 		}
 
 		jsns = append(jsns, jsn)
 	}
+	rij.SCode = scode
 	rij.ShaChaList = jsns
 	return rij, err
 }
 
 // 获取JSON
-func GetChaEquJson(ce *finchina.ChangesEquity) (*ChangesEquityJson, error) {
-	var jsn ChangesEquityJson
-	if len(ce.ENDDATE) < 1 {
+func GetChaEquInfo(ce *finchina.TQ_SK_SHARESTRUCHG) (*ChangesEquity, error) {
+	var jsn ChangesEquity
+	if len(ce.ENDDATEV) < 1 {
 		return &jsn, errors.New("obj is nil")
 	}
 
-	return &ChangesEquityJson{
-		CDCV: ce.ENDDATE,    // 变动日期对应值
-		CCCV: ce.SHCHGRSN,   // 变动原因对应值
-		NSCV: ce.CIRCAAMT,   // 流通A股数及变化比例对应值
-		SPCV: ce.RECIRCAAMT, // 限售A股数及变动比例对应值
-		TPCV: ce.TOTALSHARE, // 总股本及变化比例对应值
+	return &ChangesEquity{
+		CDCV: ce.ENDDATEV,    // 变动日期对应值
+		CCCV: ce.SHCHGRSNV,   // 变动原因对应值
+		NSCV: ce.CIRCAAMTV,   // 流通A股数及变化比例对应值
+		SPCV: ce.RECIRCAAMTV, // 限售A股数及变动比例对应值
+		TPCV: ce.TOTALSHAREV, // 总股本及变化比例对应值
 	}, nil
 }
