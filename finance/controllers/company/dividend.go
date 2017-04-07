@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"haina.com/market/finance/models"
 	"haina.com/market/finance/models/company"
 	"haina.com/share/lib"
 )
@@ -37,16 +38,16 @@ type roData struct {
 }
 
 func (this *DividendInfo) GetDiv(c *gin.Context) {
-	scode := c.Query("scode")
+	scode := c.Query(models.CONTEXT_SCODE)
 	sets, e := strconv.Atoi(c.Query("sets"))
 	if e != nil {
-		lib.WriteString(c, 40004, "invalid sets..")
+		lib.WriteString(c, 40004, e.Error())
 		return
 	}
 	fin := new(company.Dividend)
-	divs, err := fin.GetDivListJson(uint64(sets), strings.Split(scode, ".")[0])
+	divs, err := fin.GetDividendList(uint64(sets), strings.Split(scode, ".")[0])
 	if err != nil {
-		lib.WriteString(c, 300, err.Error())
+		lib.WriteString(c, 40002, err.Error())
 		return
 	}
 	var data divData
@@ -59,11 +60,11 @@ func (this *DividendInfo) GetDiv(c *gin.Context) {
 }
 
 func (this *DividendInfo) GetSEO(c *gin.Context) {
-	scode := c.Query("scode")
+	scode := c.Query(models.CONTEXT_SCODE)
 	fin := new(company.SEO)
-	seos, err := fin.GetSEOListJson(strings.Split(scode, ".")[0])
+	seos, err := fin.GetSEOList(strings.Split(scode, ".")[0])
 	if err != nil {
-		lib.WriteString(c, 300, err.Error())
+		lib.WriteString(c, 40002, err.Error())
 		return
 	}
 	var data Data
@@ -77,11 +78,11 @@ func (this *DividendInfo) GetSEO(c *gin.Context) {
 	lib.WriteString(c, 200, data)
 }
 func (this *DividendInfo) GetRO(c *gin.Context) {
-	scode := c.Query("scode")
+	scode := c.Query(models.CONTEXT_SCODE)
 	fin := new(company.RO)
-	ros, err := fin.GetROListJson(strings.Split(scode, ".")[0])
+	ros, err := fin.GetROList(strings.Split(scode, ".")[0])
 	if err != nil {
-		lib.WriteString(c, 300, err.Error())
+		lib.WriteString(c, 40002, err.Error())
 	}
 	var data Data
 	data.Scode = scode

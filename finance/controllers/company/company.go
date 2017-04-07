@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"haina.com/market/finance/models"
 	"haina.com/market/finance/models/company"
 	"haina.com/share/lib"
 )
@@ -21,9 +22,9 @@ type Share struct {
 }
 
 func (this *Company) GetInfo(c *gin.Context) {
-	scode := c.Query("scode")
+	scode := c.Query(models.CONTEXT_SCODE)
 
-	cominfo, err := new(company.CompInfo).GetCompInfoFromFC(strings.Split(scode, ".")[0])
+	cominfo, err := new(company.CompInfo).GetCompInfo(strings.Split(scode, ".")[0])
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 	}
@@ -36,9 +37,9 @@ func (this *Company) GetInfo(c *gin.Context) {
 
 // 获取高管信息
 func (this *Company) GetManagreInfo(c *gin.Context) {
-	secode := c.Query("scode")
+	secode := c.Query(models.CONTEXT_SCODE)
 
-	list, err := new(company.HnManager).GetManagerInfo(strings.Split(secode, ".")[0])
+	list, err := new(company.HnManager).GetManagerList(strings.Split(secode, ".")[0])
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 		return

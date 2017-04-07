@@ -25,9 +25,9 @@ type CompInfo struct {
 	Tele    string `json:"Tele"`    //联系人电话
 }
 
-func (this *CompInfo) GetCompInfoFromFC(scode string) (*CompInfo, error) {
+func (this *CompInfo) GetCompInfo(scode string) (*CompInfo, error) {
 	var js CompInfo
-	v, err := new(finchina.TQ_COMP_INFO).GetCompInfo(scode)
+	v, err := new(finchina.TQ_COMP_INFO).GetCompInfoFromFC(scode)
 	if err != nil {
 		return &js, err
 	}

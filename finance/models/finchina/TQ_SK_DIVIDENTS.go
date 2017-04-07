@@ -39,7 +39,7 @@ func (this *TQ_SK_DIVIDENTS) newTQ_SK_DIVIDENTS() *TQ_SK_DIVIDENTS {
 }
 
 //获取Div数据
-func (this *TQ_SK_DIVIDENTS) GetDivList(sets uint64, scode string) ([]TQ_SK_DIVIDENTS, error) {
+func (this *TQ_SK_DIVIDENTS) GetDivListFromFC(sets uint64, scode string) ([]TQ_SK_DIVIDENTS, error) {
 	var divs []TQ_SK_DIVIDENTS
 	div := this.newTQ_SK_DIVIDENTS()
 

@@ -1,8 +1,6 @@
 package company
 
 import (
-	"strings"
-
 	"haina.com/market/finance/models/finchina"
 )
 
@@ -27,17 +25,17 @@ type Dividend struct {
 	Tran     float64 `json:"Tran"`     //转股（股）
 }
 
-func (this *Dividend) GetDivListJson(sets uint64, scode string) (*[]*Dividend, error) {
+func (this *Dividend) GetDividendList(sets uint64, scode string) (*[]*Dividend, error) {
 	list := make([]*Dividend, 0)
-	divs, err := new(finchina.TQ_SK_DIVIDENTS).GetDivList(sets, scode)
+	divs, err := new(finchina.TQ_SK_DIVIDENTS).GetDivListFromFC(sets, scode)
 	if err != nil {
 		return &list, err
 	}
-	list = this.getDivListjson(divs)
+	list = this.newDivListjson(divs)
 	return &list, err
 }
 
-func (this *Dividend) getDivListjson(divs []finchina.TQ_SK_DIVIDENTS) []*Dividend {
+func (this *Dividend) newDivListjson(divs []finchina.TQ_SK_DIVIDENTS) []*Dividend {
 	list := make([]*Dividend, 0)
 	for _, v := range divs {
 		var js Dividend
@@ -52,11 +50,7 @@ func (this *Dividend) getDivListjson(divs []finchina.TQ_SK_DIVIDENTS) []*Dividen
 		js.RegDate = v.EQURECORDDATE.String
 		js.Tran = v.TRANADDRT.Float64
 		this.ToCash += v.TOTCASHDV.Float64
-		if strings.EqualFold(v.LISTDATE.String, "19000101") {
-			js.LisDate = "--"
-		} else {
-			js.LisDate = v.LISTDATE.String
-		}
+		js.LisDate = v.LISTDATE.String
 
 		this.Divcount++
 		list = append(list, &js)

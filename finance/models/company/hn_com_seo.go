@@ -28,17 +28,17 @@ type SEO struct {
 	Vol     float64 `json:"Vol"`     //实际发行数量
 }
 
-func (this *SEO) GetSEOListJson(scode string) (*[]*SEO, error) {
+func (this *SEO) GetSEOList(scode string) (*[]*SEO, error) {
 	list := make([]*SEO, 0)
-	seos, err := new(finchina.TQ_SK_PROADDISS).GetSEOList(scode)
+	seos, err := new(finchina.TQ_SK_PROADDISS).GetSEOListFromFC(scode)
 	if err != nil {
 		return &list, err
 	}
-	list = this.getSEOListjson(seos)
+	list = this.newSEOListjson(seos)
 	return &list, err
 }
 
-func (this *SEO) getSEOListjson(seos []finchina.TQ_SK_PROADDISS) []*SEO {
+func (this *SEO) newSEOListjson(seos []finchina.TQ_SK_PROADDISS) []*SEO {
 	list := make([]*SEO, 0)
 
 	for _, v := range seos {

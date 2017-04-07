@@ -40,7 +40,7 @@ func (this *TQ_COMP_INFO) newTQ_COMP_INFO() *TQ_COMP_INFO {
 }
 
 //获取公司信息数据
-func (this *TQ_COMP_INFO) GetCompInfo(scode string) (*TQ_COMP_INFO, error) {
+func (this *TQ_COMP_INFO) GetCompInfoFromFC(scode string) (*TQ_COMP_INFO, error) {
 	comp := this.newTQ_COMP_INFO()
 
 	//根据股票代码获取公司内码

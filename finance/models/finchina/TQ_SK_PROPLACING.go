@@ -44,7 +44,7 @@ func (this *TQ_SK_PROPLACING) newTQ_SK_PROPLACING() *TQ_SK_PROPLACING {
 }
 
 //获取配股RO数据
-func (this *TQ_SK_PROPLACING) GetROList(scode string) ([]TQ_SK_PROPLACING, error) {
+func (this *TQ_SK_PROPLACING) GetROListFromFC(scode string) ([]TQ_SK_PROPLACING, error) {
 	var ros []TQ_SK_PROPLACING
 	ro := this.newTQ_SK_PROPLACING()
 

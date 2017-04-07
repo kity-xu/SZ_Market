@@ -14,9 +14,9 @@ type HnManager struct {
 	PublistDate string  `json:"PublistDate"` //持股变动公布日期
 }
 
-func (this *HnManager) GetManagerInfo(scode string) (*[]*HnManager, error) {
+func (this *HnManager) GetManagerList(scode string) (*[]*HnManager, error) {
 	list := make([]*HnManager, 0)
-	primal, err := new(finchina.TQ_COMP_MANAGER).GetManagers(scode) //公司高管表
+	primal, err := new(finchina.TQ_COMP_MANAGER).GetManagersFromFC(scode) //公司高管表
 	if err != nil {
 		return &list, err
 	}
@@ -43,9 +43,10 @@ func (this *HnManager) GetManagerInfo(scode string) (*[]*HnManager, error) {
 	return &list, err
 }
 
+//获取高管持股数
 func (this *HnManager) getManagersHoldAMT(scode string) (map[string]finchina.HolderChange, error) {
 	amts := make(map[string]finchina.HolderChange)
-	holders, err := new(finchina.TQ_COMP_SKHOLDERCHG).GetHoldAMTlist(scode) //高管及关联人持股变动表
+	holders, err := new(finchina.TQ_COMP_SKHOLDERCHG).GetHoldAMTlistFromFC(scode) //高管及关联人持股变动表
 
 	for _, v := range hoderChangeToOnly(holders) { //以高管代码（PSCODE）为key与结构体建立一一对应关系
 		amts[v.HOLDNAME.String] = v
@@ -53,6 +54,7 @@ func (this *HnManager) getManagersHoldAMT(scode string) (map[string]finchina.Hol
 	return amts, err //返回map
 }
 
+//高管信息表数据去重，取UPDATEDATE最新
 func managersToOnly(primal []finchina.TQ_COMP_MANAGER) []finchina.TQ_COMP_MANAGER {
 	swap := make(map[string]finchina.TQ_COMP_MANAGER)
 
@@ -77,7 +79,7 @@ func managersToOnly(primal []finchina.TQ_COMP_MANAGER) []finchina.TQ_COMP_MANAGE
 	return managers
 }
 
-//去重， 取PUBLISHDATE 最新的
+//高管持股变动表去重，取PUBLISHDATE最新
 func hoderChangeToOnly(primal []finchina.HolderChange) []finchina.HolderChange {
 	swap := make(map[string]finchina.HolderChange)
 

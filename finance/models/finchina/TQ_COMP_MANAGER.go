@@ -38,7 +38,7 @@ func (this *TQ_COMP_MANAGER) newTQ_COMP_MANAGER() *TQ_COMP_MANAGER {
 	}
 }
 
-func (this *TQ_COMP_MANAGER) GetManagers(scode string) ([]TQ_COMP_MANAGER, error) {
+func (this *TQ_COMP_MANAGER) GetManagersFromFC(scode string) ([]TQ_COMP_MANAGER, error) {
 	var primal []TQ_COMP_MANAGER
 	mg := this.newTQ_COMP_MANAGER()
 

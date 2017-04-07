@@ -46,7 +46,7 @@ func (this *TQ_COMP_SKHOLDERCHG) newTQ_COMP_SKHOLDERCHG() *TQ_COMP_SKHOLDERCHG {
 	}
 }
 
-func (this *TQ_COMP_SKHOLDERCHG) GetHoldAMTlist(scode string) ([]HolderChange, error) {
+func (this *TQ_COMP_SKHOLDERCHG) GetHoldAMTlistFromFC(scode string) ([]HolderChange, error) {
 	var holders []HolderChange
 	amt := this.newTQ_COMP_SKHOLDERCHG()
 	sc := NewTQ_OA_STCODE()

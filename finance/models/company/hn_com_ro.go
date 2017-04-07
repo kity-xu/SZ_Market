@@ -27,17 +27,17 @@ type RO struct {
 	Vol     float64 `json:"Vol"`     //实际配股数量
 }
 
-func (this *RO) GetROListJson(scode string) (*[]*RO, error) {
+func (this *RO) GetROList(scode string) (*[]*RO, error) {
 	list := make([]*RO, 0)
-	ros, err := new(finchina.TQ_SK_PROPLACING).GetROList(scode)
+	ros, err := new(finchina.TQ_SK_PROPLACING).GetROListFromFC(scode)
 	if err != nil {
 		return &list, err
 	}
-	list = this.getROListjson(ros)
+	list = this.newROListjson(ros)
 	return &list, err
 }
 
-func (this *RO) getROListjson(ros []finchina.TQ_SK_PROPLACING) []*RO {
+func (this *RO) newROListjson(ros []finchina.TQ_SK_PROPLACING) []*RO {
 	list := make([]*RO, 0)
 
 	for _, v := range ros {
