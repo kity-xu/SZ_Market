@@ -4,25 +4,48 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"haina.com/market/finance/models/finchina"
+	"haina.com/market/finance/models/company"
 	"haina.com/share/lib"
 )
 
-type CompanyInfo struct {
+type Company struct {
 }
 
-func NewCompanyInfo() *CompanyInfo {
-	return &CompanyInfo{}
+func NewCompany() *Company {
+	return &Company{}
 }
 
-func (this *CompanyInfo) GetInfo(c *gin.Context) {
-	para := c.Query("scode")
+type Share struct {
+	Scode string      `json:"scode"`
+	List  interface{} `json:"list"`
+}
 
-	if !strings.EqualFold(para, "600036.SH") {
-		lib.WriteString(c, 300, "invalid scode..")
+func (this *Company) GetInfo(c *gin.Context) {
+	scode := c.Query("scode")
+
+	cominfo, err := new(company.CompInfo).GetCompInfoFromFC(strings.Split(scode, ".")[0])
+	if err != nil {
+		lib.WriteString(c, 300, err.Error())
+	}
+	var data Share
+	data.Scode = scode
+	data.List = cominfo
+
+	lib.WriteString(c, 200, data)
+}
+
+// 获取高管信息
+func (this *Company) GetManagreInfo(c *gin.Context) {
+	secode := c.Query("scode")
+
+	list, err := new(company.HnManager).GetManagerInfo(strings.Split(secode, ".")[0])
+	if err != nil {
+		lib.WriteString(c, 300, err.Error())
 		return
 	}
-	var cominfo *finchina.Company
-	cominfo = finchina.NewCompany()
-	lib.WriteString(c, 200, cominfo)
+	var data Share
+	data.Scode = secode
+	data.List = list
+
+	lib.WriteString(c, 200, data)
 }

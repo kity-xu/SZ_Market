@@ -2,6 +2,7 @@ package company
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"haina.com/market/finance/models/company"
@@ -14,8 +15,6 @@ type DividendInfo struct {
 func NewDividendInfo() *DividendInfo {
 	return &DividendInfo{}
 }
-
-type List interface{}
 
 type divData struct {
 	Scode  string      `json:"scode"`  //证券内码
@@ -44,8 +43,8 @@ func (this *DividendInfo) GetDiv(c *gin.Context) {
 		lib.WriteString(c, 40004, "invalid sets..")
 		return
 	}
-	fin := new(company.FinDivid)
-	divs, err := fin.GetDivListJson(uint64(sets), scode)
+	fin := new(company.Dividend)
+	divs, err := fin.GetDivListJson(uint64(sets), strings.Split(scode, ".")[0])
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 		return
@@ -61,8 +60,8 @@ func (this *DividendInfo) GetDiv(c *gin.Context) {
 
 func (this *DividendInfo) GetSEO(c *gin.Context) {
 	scode := c.Query("scode")
-	fin := new(company.FinDivid)
-	seos, err := fin.GetSEOListJson(scode)
+	fin := new(company.SEO)
+	seos, err := fin.GetSEOListJson(strings.Split(scode, ".")[0])
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 		return
@@ -79,8 +78,8 @@ func (this *DividendInfo) GetSEO(c *gin.Context) {
 }
 func (this *DividendInfo) GetRO(c *gin.Context) {
 	scode := c.Query("scode")
-	fin := new(company.FinDivid)
-	ros, err := fin.GetROListJson(scode)
+	fin := new(company.RO)
+	ros, err := fin.GetROListJson(strings.Split(scode, ".")[0])
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 	}

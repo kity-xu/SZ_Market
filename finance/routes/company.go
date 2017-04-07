@@ -8,13 +8,13 @@ import (
 func RegCompany(rg *gin.RouterGroup) {
 
 	// 公司简介
-	rg.GET("/company/info", company.NewCompanyInfo().GetInfo)
+	rg.GET("/company/info", company.NewCompany().GetInfo)
 
 	//公司高管信息
-	rg.GET("/company/administrator/info", company.NewAdministrator().GetAdminInfo)
+	rg.GET("/company/manager/info", company.NewCompany().GetManagreInfo)
 
 	//公司高管持股变动
-	rg.GET("/company/administrator/eqchange", company.NewAdministrator().GetAdminEquityChange)
+	//rg.GET("/company/administrator/eqchange", company.NewAdministrator().GetAdminEquityChange)
 
 	// 融资分红
 	rg.GET("/company/dividend", company.NewDividendInfo().GetDiv)
