@@ -93,7 +93,7 @@ func (this *TQ_FIN_PROCFSTATEMENTNEW) getListByCompcode(compcode string, report_
 
 func (this *TQ_FIN_PROCFSTATEMENTNEW) GetList(scode string, report_type int, per_page int, page int) ([]TQ_FIN_PROCFSTATEMENTNEW, error) {
 
-	sc := NewSymbolToCompcode()
+	sc := NewTQ_OA_STCODE()
 	if err := sc.getCompcode(scode); err != nil {
 		logging.Error("%T GetList error: %s", *this, err)
 		return nil, err

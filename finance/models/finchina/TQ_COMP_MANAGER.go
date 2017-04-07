@@ -43,7 +43,7 @@ func (this *TQ_COMP_MANAGER) GetManagers(scode string) ([]TQ_COMP_MANAGER, error
 	mg := this.newTQ_COMP_MANAGER()
 
 	//根据股票代码获取公司内码
-	sc := NewSymbolToCompcode()
+	sc := NewTQ_OA_STCODE()
 	if err := sc.getCompcode(scode); err != nil {
 		return primal, err
 	}

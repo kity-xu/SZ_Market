@@ -47,7 +47,7 @@ func (this *TQ_SK_PROADDISS) GetSEOList(scode string) ([]TQ_SK_PROADDISS, error)
 	seo := this.newTQ_SK_PROADDISS()
 
 	//根据股票代码获取公司内码
-	sc := NewSymbolToCompcode()
+	sc := NewTQ_OA_STCODE()
 	if err := sc.getCompcode(scode); err != nil {
 		return seos, err
 	}

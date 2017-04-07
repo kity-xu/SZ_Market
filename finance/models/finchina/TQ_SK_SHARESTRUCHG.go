@@ -76,7 +76,7 @@ func NewTQ_SK_SHARESTRUCHGTx(tx *dbr.Tx) *TQ_SK_SHARESTRUCHG {
 func (this *TQ_SK_SHARESTRUCHG) GetSingleBySCode(scode string) (*TQ_SK_SHARESTRUCHG, error) {
 	var cheq *TQ_SK_SHARESTRUCHG
 	//根据证券代码获取公司内码
-	sc := NewSymbolToCompcode()
+	sc := NewTQ_OA_STCODE()
 	if err := sc.getCompcode(scode); err != nil {
 		return this, err
 	}
@@ -110,7 +110,7 @@ func (this *TQ_SK_SHARESTRUCHG) GetSingleBySCode(scode string) (*TQ_SK_SHARESTRU
 func (this *TQ_SK_SHARESTRUCHG) GetChangesStrGroup(enddate string, scode string, limit int) ([]*TQ_SK_SHARESTRUCHG, error) {
 	var data []*TQ_SK_SHARESTRUCHG
 	//根据证卷代码获取公司内码
-	sc := NewSymbolToCompcode()
+	sc := NewTQ_OA_STCODE()
 	if err := sc.getCompcode(scode); err != nil {
 		return data, err
 	}

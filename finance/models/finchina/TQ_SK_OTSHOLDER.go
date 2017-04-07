@@ -66,7 +66,7 @@ type Calculate struct {
 func (this *TQ_SK_OTSHOLDER) GetEndDate(sCode string) ([]*TQ_SK_OTSHOLDER, error) {
 	var dataTop10 []*TQ_SK_OTSHOLDER
 	//根据证券代码获取公司内码
-	sc := NewSymbolToCompcode()
+	sc := NewTQ_OA_STCODE()
 	if err := sc.getCompcode(sCode); err != nil {
 		return dataTop10, err
 
@@ -89,7 +89,7 @@ func (this *TQ_SK_OTSHOLDER) GetEndDate(sCode string) ([]*TQ_SK_OTSHOLDER, error
 // 获单条数据
 func (this *Calculate) GetSingleCalculate(enddate string, scode string) *Calculate {
 	//根据证券代码获取公司内码
-	sc := NewSymbolToCompcode()
+	sc := NewTQ_OA_STCODE()
 	if err := sc.getCompcode(scode); err != nil {
 		return this
 
@@ -111,7 +111,7 @@ func (this *Calculate) GetSingleCalculate(enddate string, scode string) *Calcula
 func (this *TQ_SK_OTSHOLDER) GetTop10Group(enddate string, scode string, limit int) ([]*TQ_SK_OTSHOLDER, error) {
 	var data []*TQ_SK_OTSHOLDER
 	//根据证券代码获取公司内码
-	sc := NewSymbolToCompcode()
+	sc := NewTQ_OA_STCODE()
 	if err := sc.getCompcode(scode); err != nil {
 		return data, err
 

@@ -44,7 +44,7 @@ func (this *TQ_SK_DIVIDENTS) GetDivList(sets uint64, scode string) ([]TQ_SK_DIVI
 	div := this.newTQ_SK_DIVIDENTS()
 
 	//根据股票代码获取公司内码
-	sc := NewSymbolToCompcode()
+	sc := NewTQ_OA_STCODE()
 	if err := sc.getCompcode(scode); err != nil {
 		return divs, err
 	}

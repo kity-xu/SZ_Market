@@ -49,7 +49,7 @@ func (this *TQ_COMP_SKHOLDERCHG) newTQ_COMP_SKHOLDERCHG() *TQ_COMP_SKHOLDERCHG {
 func (this *TQ_COMP_SKHOLDERCHG) GetHoldAMTlist(scode string) ([]HolderChange, error) {
 	var holders []HolderChange
 	amt := this.newTQ_COMP_SKHOLDERCHG()
-	sc := NewSymbolToCompcode()
+	sc := NewTQ_OA_STCODE()
 	if err := sc.getCompcode(scode); err != nil {
 		return holders, err
 	}

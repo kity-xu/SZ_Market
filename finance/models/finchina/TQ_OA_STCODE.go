@@ -13,15 +13,15 @@ import (
 	"haina.com/share/store/redis"
 )
 
-// SymbolToCompcode    证券内码表
+// TQ_OA_STCODE    证券内码表
 // ---------------------------------------------------------------------
-type SymbolToCompcode struct {
+type TQ_OA_STCODE struct {
 	Model    `db:"-"`
 	COMPCODE dbr.NullString //公司代码(公司内码) 通过 SYMBOL 得到
 }
 
-func NewSymbolToCompcode() *SymbolToCompcode {
-	return &SymbolToCompcode{
+func NewTQ_OA_STCODE() *TQ_OA_STCODE {
+	return &TQ_OA_STCODE{
 		Model: Model{
 			TableName: TABLE_TQ_OA_STCODE,
 			Db:        MyCat,
@@ -29,7 +29,7 @@ func NewSymbolToCompcode() *SymbolToCompcode {
 	}
 }
 
-func (this *SymbolToCompcode) getCompcode(symbol string) error {
+func (this *TQ_OA_STCODE) getCompcode(symbol string) error {
 	key := fmt.Sprintf(REDIS_SYMBOL_COMPCODE, symbol)
 	v, err := redis.Get(key)
 	if err != nil {
@@ -62,6 +62,6 @@ func (this *SymbolToCompcode) getCompcode(symbol string) error {
 
 	return nil
 }
-func (this *SymbolToCompcode) GetCompcode(symbol string) error {
+func (this *TQ_OA_STCODE) GetCompcode(symbol string) error {
 	return this.getCompcode(symbol)
 }

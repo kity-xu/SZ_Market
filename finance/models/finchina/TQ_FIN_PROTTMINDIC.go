@@ -79,7 +79,7 @@ func (this *TQ_FIN_PROTTMINDIC) getListByCompcode(compcode string, report_type i
 }
 
 func (this *TQ_FIN_PROTTMINDIC) GetListByEnddates(scode string, report_type int, per_page int, page int, date DateList) ([]TQ_FIN_PROTTMINDIC, error) {
-	sc := NewSymbolToCompcode()
+	sc := NewTQ_OA_STCODE()
 	if err := sc.getCompcode(scode); err != nil {
 		logging.Error("%T GetListByEnddates error: %s", *this, err)
 		return nil, err
