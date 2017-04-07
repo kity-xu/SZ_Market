@@ -1,7 +1,6 @@
 package company
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -78,6 +77,9 @@ func (this *EquityInfo) GetOrganizationJson(c *gin.Context) {
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
 
 	data, err := company.GetCompGroup(scode)
-	fmt.Println(err)
+	if err != nil {
+		lib.WriteString(c, 300, err.Error())
+		return
+	}
 	lib.WriteString(c, 200, data)
 }

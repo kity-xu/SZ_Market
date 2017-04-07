@@ -1,7 +1,7 @@
 package finchina
 
 import (
-	"fmt"
+	"haina.com/share/logging"
 
 	"haina.com/share/gocraft/dbr"
 	. "haina.com/share/models"
@@ -80,7 +80,7 @@ func (this *TQ_SK_OTSHOLDER) GetEndDate(sCode string) ([]*TQ_SK_OTSHOLDER, error
 	_, err := this.SelectWhere(bulid, nil).LoadStructs(&dataTop10)
 
 	if err != nil {
-		fmt.Println(err)
+		logging.Debug("%v", err)
 		return dataTop10, err
 	}
 	return dataTop10, err
@@ -101,7 +101,9 @@ func (this *Calculate) GetSingleCalculate(enddate string, scode string) *Calcula
 		OrderBy("HOLDERAMT desc limit 10)a")
 	err := this.SelectWhere(builder, nil).
 		LoadStruct(this)
-	fmt.Println(err)
+	if err != nil {
+		logging.Debug("%v", err)
+	}
 	return this
 }
 
@@ -125,7 +127,7 @@ func (this *TQ_SK_OTSHOLDER) GetTop10Group(enddate string, scode string, limit i
 	_, err := this.SelectWhere(bulid, nil).LoadStructs(&data)
 
 	if err != nil {
-		fmt.Println(err)
+		logging.Debug("%v", err)
 		return data, err
 	}
 

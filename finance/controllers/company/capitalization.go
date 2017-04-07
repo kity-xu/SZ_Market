@@ -1,7 +1,6 @@
 package company
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -27,7 +26,8 @@ func (this *CapitalizationInfo) GetStructureJson(c *gin.Context) {
 
 	data, err := company.GetStructure(scode)
 	if err != nil {
-		fmt.Println(err)
+		lib.WriteString(c, 300, err.Error())
+		return
 	}
 	lib.WriteString(c, 200, data)
 }
@@ -53,7 +53,8 @@ func (this *CapitalizationInfo) GetChangesJson(c *gin.Context) {
 	}
 	data, err := company.GetChangesStrInfo(enddate, scode, value_int)
 	if err != nil {
-		fmt.Println(err)
+		lib.WriteString(c, 300, err.Error())
+		return
 	}
 	lib.WriteString(c, 200, data)
 }

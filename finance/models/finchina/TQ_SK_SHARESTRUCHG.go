@@ -1,7 +1,7 @@
 package finchina
 
 import (
-	"fmt"
+	"haina.com/share/logging"
 
 	"haina.com/share/gocraft/dbr"
 	. "haina.com/share/models"
@@ -84,8 +84,9 @@ func (this *TQ_SK_SHARESTRUCHG) GetSingleBySCode(scode string) (*TQ_SK_SHARESTRU
 		From(this.TableName).
 		Where("COMPCODE=" + sc.COMPCODE.String).OrderBy(" ENDDATE desc ")
 	err1 := this.SelectWhere(shBulid, nil).Limit(1).LoadStruct(&cheq)
-	fmt.Println(err1)
-
+	if err1 != nil {
+		logging.Debug("%v", err1)
+	}
 	var strs = ""
 	strs += "ENDDATE, CIRCSKAMT,CIRCSKRTO , LIMSKAMT, LIMSKRTO,	NCIRCAMT ,NONNEGSKRTO,	TOTALSHARE ,"
 	strs += " CIRCAAMT ,(CIRCAAMT/TOTALSHARE)As CIRCAAMTTO,"

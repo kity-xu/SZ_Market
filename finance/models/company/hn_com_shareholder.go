@@ -4,6 +4,7 @@ import (
 	"haina.com/market/finance/models/finchina"
 )
 
+// 机构持股
 type OrganizationCom struct {
 	EntAnn        float64 // 企业年金持股数
 	EntAnns       float64 // 企业年金持股所占比例
@@ -27,7 +28,7 @@ type OrganizationCom struct {
 	SocInsFuns    float64 // 社保基金持股所占比例
 }
 
-//
+// 返回机构持股json
 type OrganZAJson struct {
 	EntAnn        float64 // 企业年金持股数
 	EntAnns       float64 // 企业年金持股所占比例
