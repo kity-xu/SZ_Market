@@ -1,10 +1,9 @@
 package finchina
 
 import (
-	"fmt"
+	"haina.com/share/logging"
 
 	"haina.com/share/gocraft/dbr"
-	"haina.com/share/logging"
 	. "haina.com/share/models"
 )
 
@@ -15,8 +14,9 @@ import (
 */
 
 //总股本
-type Sharestruchg struct {
+type TQ_SK_SHARESTRUCHG struct {
 	Model       `db:"-" `
+	ID          int64  // ID
 	CIRCSKAMT   string // 流通股份
 	CIRCSKRTO   string // 流通股份所占比例
 	LIMSKAMT    string // 限售流通股份
@@ -44,20 +44,17 @@ type Sharestruchg struct {
 	RECIRCAAMT     dbr.NullString // 限售流通A股
 	RECIRCAAMTTO   string         // 限售流通A股所占比例
 
+	//股本变动
+
+	ENDDATEV    string // 变动日期对应值
+	SHCHGRSNV   string // 变动原因对应值
+	CIRCAAMTV   string // 流通A股数及变化比例对应值
+	RECIRCAAMTV string // 限售A股数及变动比例对应值
+	TOTALSHAREV string // 总股本及变化比例对应值
 }
 
-//股本变动
-type ChangesEquity struct {
-	Model      `db:"-" `
-	ENDDATE    string // 变动日期对应值
-	SHCHGRSN   string // 变动原因对应值
-	CIRCAAMT   string // 流通A股数及变化比例对应值
-	RECIRCAAMT string // 限售A股数及变动比例对应值
-	TOTALSHARE string // 总股本及变化比例对应值
-}
-
-func NewSharestruchg() *Sharestruchg {
-	return &Sharestruchg{
+func NewTQ_SK_SHARESTRUCHG() *TQ_SK_SHARESTRUCHG {
+	return &TQ_SK_SHARESTRUCHG{
 		Model: Model{
 			TableName: TABLE_TQ_SK_SHARESTRUCHG,
 			Db:        MyCat,
@@ -65,8 +62,8 @@ func NewSharestruchg() *Sharestruchg {
 	}
 }
 
-func NewSharestruchgTx(tx *dbr.Tx) *Sharestruchg {
-	return &Sharestruchg{
+func NewTQ_SK_SHARESTRUCHGTx(tx *dbr.Tx) *TQ_SK_SHARESTRUCHG {
+	return &TQ_SK_SHARESTRUCHG{
 		Model: Model{
 			TableName: TABLE_TQ_SK_SHARESTRUCHG,
 			Db:        MyCat,
@@ -75,36 +72,21 @@ func NewSharestruchgTx(tx *dbr.Tx) *Sharestruchg {
 	}
 }
 
-func NewChangesEquity() *ChangesEquity {
-	return &ChangesEquity{
-		Model: Model{
-			TableName: TABLE_TQ_SK_SHARESTRUCHG,
-			Db:        MyCat,
-		},
-	}
-}
-
 //获取股本结构信息
-func (this *Sharestruchg) GetSingleByExps(sCode string) (*Sharestruchg, error) {
-	//根据证卷代码获取公司内码
+func (this *TQ_SK_SHARESTRUCHG) GetSingleBySCode(scode string) (*TQ_SK_SHARESTRUCHG, error) {
+	var cheq *TQ_SK_SHARESTRUCHG
+	//根据证券代码获取公司内码
 	sc := NewSymbolToCompcode()
-	if err := sc.getCompcode(sCode); err != nil {
-		//return nil, err
-
+	if err := sc.getCompcode(scode); err != nil {
+		return this, err
 	}
-
-	if sc.COMPCODE.Valid == false {
-		logging.Error("finchina db: select COMPCODE from %s where SYMBOL='%s'", TABLE_TQ_OA_STCODE, sc.COMPCODE)
-		//return nil, ErrNullComp
-	}
-
-	var cheq *ChangesEquity
-	shBulid := this.Db.Select(" ENDDATE ").
+	shBulid := this.Db.Select("ENDDATE AS ENDDATEV ").
 		From(this.TableName).
-		Where(" COMPCODE=" + sc.COMPCODE.String).OrderBy(" ENDDATE desc ")
+		Where("COMPCODE=" + sc.COMPCODE.String).OrderBy(" ENDDATE desc ")
 	err1 := this.SelectWhere(shBulid, nil).Limit(1).LoadStruct(&cheq)
-	fmt.Println(err1)
-
+	if err1 != nil {
+		logging.Debug("%v", err1)
+	}
 	var strs = ""
 	strs += "ENDDATE, CIRCSKAMT,CIRCSKRTO , LIMSKAMT, LIMSKRTO,	NCIRCAMT ,NONNEGSKRTO,	TOTALSHARE ,"
 	strs += " CIRCAAMT ,(CIRCAAMT/TOTALSHARE)As CIRCAAMTTO,"
@@ -112,12 +94,12 @@ func (this *Sharestruchg) GetSingleByExps(sCode string) (*Sharestruchg, error) {
 	strs += " RECIRCAAMT,(RECIRCAAMT/TOTALSHARE)As RECIRCAAMTTO"
 	bulid := this.Db.Select(strs).
 		From(this.TableName).
-		Where(" ENDDATE = " + cheq.ENDDATE + " and COMPCODE=" + sc.COMPCODE.String)
+		Where("ENDDATE = " + cheq.ENDDATEV + " and COMPCODE=" + sc.COMPCODE.String)
 	err := this.SelectWhere(bulid, nil).
 		Limit(1).
 		LoadStruct(this)
 	if err != nil {
-		//return jsn, err
+		return this, err
 	}
 
 	return this, err
@@ -125,34 +107,29 @@ func (this *Sharestruchg) GetSingleByExps(sCode string) (*Sharestruchg, error) {
 
 /////////////////////////股本变动
 
-func (this *ChangesEquity) GetChangesStrJson(enddate string, sCode string, limit int) ([]*ChangesEquity, error) {
-
+func (this *TQ_SK_SHARESTRUCHG) GetChangesStrGroup(enddate string, scode string, limit int) ([]*TQ_SK_SHARESTRUCHG, error) {
+	var data []*TQ_SK_SHARESTRUCHG
 	//根据证卷代码获取公司内码
 	sc := NewSymbolToCompcode()
-	if err := sc.getCompcode(sCode); err != nil {
-		//return nil, err
-
+	if err := sc.getCompcode(scode); err != nil {
+		return data, err
 	}
 
-	if sc.COMPCODE.Valid == false {
-		logging.Error("finchina db: select COMPCODE from %s where SYMBOL='%s'", TABLE_TQ_OA_STCODE, sc.COMPCODE)
-		//return nil, ErrNullComp
+	var enddateDx = ""
+	if enddate != "" {
+		enddateDx = " and ENDDATE < " + enddate
 	}
-
-	var data []*ChangesEquity
-
-	bulid := this.Db.Select(" ENDDATE,SHCHGRSN,TOTALSHARE,CIRCAAMT, RECIRCAAMT ").
+	bulid := this.Db.Select("ENDDATE AS ENDDATEV,SHCHGRSN AS SHCHGRSNV,TOTALSHARE AS TOTALSHAREV,CIRCAAMT AS CIRCAAMTV, RECIRCAAMT AS RECIRCAAMTV").
 		From(this.TableName).
-		Where(" COMPCODE=" + sc.COMPCODE.String).
-		OrderBy(" ENDDATE  desc ")
-	if limit > 0 {
-		bulid = bulid.Limit(uint64(limit))
-	}
+		Where("COMPCODE=" + sc.COMPCODE.String + enddateDx).
+		OrderBy("ENDDATE  desc ")
+
+	bulid = bulid.Limit(uint64(limit))
 
 	_, err := this.SelectWhere(bulid, nil).LoadStructs(&data)
 
 	if err != nil {
-		//return nil, err
+		return data, err
 	}
 
 	return data, nil
