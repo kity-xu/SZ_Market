@@ -43,7 +43,7 @@ func NewTQ_SK_SHAREHOLDERNUMTx(tx *dbr.Tx) *TQ_SK_SHAREHOLDERNUM {
 // 获取多条股东人数信息
 func (this *TQ_SK_SHAREHOLDERNUM) GetListByExps(enddate string, scode string, limit int) ([]*TQ_SK_SHAREHOLDERNUM, error) {
 	var data []*TQ_SK_SHAREHOLDERNUM
-	//根据证卷代码获取公司内码
+	//根据证券代码获取公司内码
 	sc := NewSymbolToCompcode()
 	if err := sc.getCompcode(scode); err != nil {
 		return data, err

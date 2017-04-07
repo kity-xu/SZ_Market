@@ -75,7 +75,7 @@ func NewTQ_SK_SHARESTRUCHGTx(tx *dbr.Tx) *TQ_SK_SHARESTRUCHG {
 //获取股本结构信息
 func (this *TQ_SK_SHARESTRUCHG) GetSingleBySCode(scode string) (*TQ_SK_SHARESTRUCHG, error) {
 	var cheq *TQ_SK_SHARESTRUCHG
-	//根据证卷代码获取公司内码
+	//根据证券代码获取公司内码
 	sc := NewSymbolToCompcode()
 	if err := sc.getCompcode(scode); err != nil {
 		return this, err
