@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"haina.com/share/gocraft/dbr"
-	"haina.com/share/logging"
 	. "haina.com/share/models"
 )
 
@@ -114,11 +113,6 @@ func (this *TQ_SK_OTSHOLDER) GetTop10Group(enddate string, scode string, limit i
 	if err := sc.getCompcode(scode); err != nil {
 		return data, err
 
-	}
-
-	if sc.COMPCODE.Valid == false {
-		logging.Error("finchina db: select COMPCODE from %s where SYMBOL='%s'", TABLE_TQ_OA_STCODE, sc.COMPCODE)
-		return data, ErrNullComp
 	}
 
 	bulid := this.Db.Select(" * ").

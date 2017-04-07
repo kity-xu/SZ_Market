@@ -6,11 +6,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"haina.com/market/finance/models"
 	"haina.com/market/finance/models/company"
-	"haina.com/market/finance/models/finchina"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
-	//"haina.com/share/store/redis"
 )
 
 type EquityInfo struct {
@@ -25,9 +24,9 @@ func NewEquityInfo() *EquityInfo {
 */
 func (this *EquityInfo) GetShareholderJson(c *gin.Context) {
 
-	enddate := c.Query(finchina.CONTEXT_END_DATE)
-	count := c.Query(finchina.CONTEXT_COUNT)
-	scode := strings.Split(c.Query(finchina.CONTEXT_SECURITYCODE), ".")[0]
+	enddate := c.Query(models.CONTEXT_END_DATE)
+	count := c.Query(models.CONTEXT_COUNT)
+	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
 	var value_int = 0
 	var err error
 	if count == "" {
@@ -51,9 +50,9 @@ func (this *EquityInfo) GetShareholderJson(c *gin.Context) {
 */
 func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 
-	enddate := c.Query(finchina.CONTEXT_END_DATE)
-	count := c.Query(finchina.CONTEXT_COUNT)
-	scode := strings.Split(c.Query(finchina.CONTEXT_SECURITYCODE), ".")[0]
+	enddate := c.Query(models.CONTEXT_END_DATE)
+	count := c.Query(models.CONTEXT_COUNT)
+	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
 	var value_int = 0
 	var err error
 	if count == "" {
@@ -76,7 +75,7 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 获取机构持股信息
 */
 func (this *EquityInfo) GetOrganizationJson(c *gin.Context) {
-	scode := strings.Split(c.Query(finchina.CONTEXT_SECURITYCODE), ".")[0]
+	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
 
 	data, err := company.GetCompGroup(scode)
 	fmt.Println(err)

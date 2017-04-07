@@ -17,15 +17,6 @@ const (
 	TABLE_TQ_SK_LCPERSON       = "TQ_SK_LCPERSON"       // 上市公司董事名单
 )
 
-// Context and Session Categorys
-// --------------------------------------------------------------------------------
-
-const (
-	CONTEXT_END_DATE     = "enddate"      // 起始时间（默认当前时间）
-	CONTEXT_COUNT        = "count"        // 条数（默认10条）
-	CONTEXT_SECURITYCODE = "securitycode" // 证卷代码
-)
-
 //--------------------------------------------------------------------------------
 // 财务分析
 const ( // 利润表
