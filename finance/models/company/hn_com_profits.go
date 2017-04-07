@@ -2,10 +2,12 @@
 package company
 
 import (
-	"time"
-
 	"haina.com/market/finance/models/finchina"
 )
+
+type Profits struct {
+	FinChinaProfits
+}
 
 type ProfitsJson struct {
 	Date int64 `json:"Date"`
@@ -45,93 +47,51 @@ type ProfitsJson struct {
 	ToPr float64 `json:"ToPr"` //利润总额
 }
 
-func NewProfitsJson() *ProfitsJson {
-	return &ProfitsJson{}
-}
-
 //------------------------------------------------------------------------------
-type Profits struct {
-}
 
 func NewProfits() *Profits {
 	return &Profits{}
 }
 
-func (this *Profits) getList(scode string, report_type int, per_page int, page int) ([]Profits, error) {
-	return nil, nil
-}
 func (this *Profits) GetList(scode string, report_type int, per_page int, page int) ([]Profits, error) {
-	return nil, nil
-}
-func (this *Profits) getJson(scode string, report_type int, per_page int, page int) ([]ProfitsJson, error) {
-	return NewFinChinaProfits().getJson(scode, report_type, per_page, page)
-}
-func (this *Profits) GetJson(scode string, report_type int, per_page int, page int) (*RespFinAnaJson, error) {
-	ls, err := this.getJson(scode, report_type, per_page, page)
-	if err != nil {
-		return nil, err
-	}
-	jsn := &RespFinAnaJson{
-		MU:     "人民币元",
-		AS:     "新会计准则",
-		Length: len(ls),
-		List:   ls,
-	}
-	return jsn, nil
+	return NewFinChinaProfits().getProfitsList(scode, report_type, per_page, page)
 }
 
 //------------------------------------------------------------------------------
 type FinChinaProfits struct {
+	finchina.TQ_FIN_PROINCSTATEMENTNEW
 }
 
 func NewFinChinaProfits() *FinChinaProfits {
 	return &FinChinaProfits{}
 }
 
-func (this *FinChinaProfits) getJson(scode string, report_type int, per_page int, page int) ([]ProfitsJson, error) {
-	sli := make([]ProfitsJson, 0, per_page)
-	ls, err := finchina.NewProfits().GetList(scode, report_type, per_page, page)
+func (this *FinChinaProfits) getProfitsList(scode string, report_type int, per_page int, page int) ([]Profits, error) {
+	var (
+		slidb []finchina.TQ_FIN_PROINCSTATEMENTNEW
+		len1  int
+		err   error
+	)
+	sli := make([]Profits, 0, per_page)
+
+	slidb, err = finchina.NewTQ_FIN_PROINCSTATEMENTNEW().GetList(scode, report_type, per_page, page)
 	if err != nil {
 		return nil, err
 	}
-	for _, v := range ls {
-		one := ProfitsJson{
-			AILs: v.ASSEIMPALOSS.Float64,
-			AREp: v.REINEXPE.Float64,
-			BPAC: v.PARENETP.Float64,
-			CoEp: v.POUNEXPE.Float64,
-			CoRe: v.POUNINCO.Float64,
-			CORe: v.BIZCOST.Float64,
-			DPES: v.DILUTEDEPS.Float64,
-			EPS:  v.BASICEPS.Float64,
-			FnEp: v.FINEXPE.Float64,
-			IDEp: v.POLIDIVIEXPE.Float64,
-			InRe: v.INTEINCO.Float64,
-			ItEp: v.INTEEXPE.Float64,
-			ITEp: v.INCOTAXEXPE.Float64,
-			MgEp: v.MANAEXPE.Float64,
-			MIIn: v.MINYSHARRIGH.Float64,
-			NOEp: v.NONOEXPE.Float64,
-			NORe: v.NONOREVE.Float64,
-			NtIn: v.NETPROFIT.Float64,
-			OATx: v.BIZTAX.Float64,
-			OCOR: v.BIZTOTCOST.Float64,
-			OpPr: v.PERPROFIT.Float64,
-			OpRe: v.BIZINCO.Float64,
-			SaEp: v.SALESEXPE.Float64,
-			TOpR: v.BIZTOTINCO.Float64,
-			ToPr: v.TOTPROFIT.Float64,
-		}
+	if len1 = len(slidb); 0 == len1 {
+		return sli, nil
+	}
 
-		if v.ENDDATE.Valid {
-			tm, err := time.Parse("20060102", v.ENDDATE.String)
-			if err != nil {
-				return nil, err
-			}
-			one.Date = tm.Unix()
+	for _, v := range slidb {
+		one := Profits{
+			FinChinaProfits: FinChinaProfits{
+				TQ_FIN_PROINCSTATEMENTNEW: v,
+			},
 		}
-
 		sli = append(sli, one)
 	}
+
 	return sli, nil
 }
+
+//ls, err := finchina.NewTQ_FIN_PROINCSTATEMENTNEW().GetList(scode, report_type, per_page, page)

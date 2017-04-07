@@ -1,4 +1,4 @@
-// 利润数据
+// 利润表
 package finchina
 
 import (
@@ -10,7 +10,7 @@ import (
 
 // TQ_FIN_PROINCSTATEMENTNEW    中文名称：一般企业利润表(新准则产品表)
 // __none__ 前缀的字段是参考其他证券软件的F10功能定义的Json返回字段信息,但在数据表中没有找到与之对应的字段,为不打乱与Wiki文档对应顺序而保留
-type Profits struct {
+type TQ_FIN_PROINCSTATEMENTNEW struct {
 	Model `db:"-"`
 
 	ENDDATE    dbr.NullString //Date 	放置本次财报的截止日期
@@ -52,8 +52,8 @@ type Profits struct {
 	TOTPROFIT    dbr.NullFloat64 //ToPr		利润总额
 }
 
-func NewProfits() *Profits {
-	return &Profits{
+func NewTQ_FIN_PROINCSTATEMENTNEW() *TQ_FIN_PROINCSTATEMENTNEW {
+	return &TQ_FIN_PROINCSTATEMENTNEW{
 		Model: Model{
 			TableName: TABLE_TQ_FIN_PROINCSTATEMENTNEW,
 			Db:        MyCat,
@@ -61,8 +61,8 @@ func NewProfits() *Profits {
 	}
 }
 
-func (this *Profits) getList(compcode string, report_type int, per_page int, page int) ([]Profits, error) {
-	var sli []Profits
+func (this *TQ_FIN_PROINCSTATEMENTNEW) getListByCompcode(compcode string, report_type int, per_page int, page int) ([]TQ_FIN_PROINCSTATEMENTNEW, error) {
+	var sli []TQ_FIN_PROINCSTATEMENTNEW
 
 	builder := this.Db.Select("*").From(this.TableName)
 	if report_type != 0 {
@@ -82,7 +82,7 @@ func (this *Profits) getList(compcode string, report_type int, per_page int, pag
 
 //------------------------------------------------------------------------------
 
-func (this *Profits) GetList(scode string, report_type int, per_page int, page int) ([]Profits, error) {
+func (this *TQ_FIN_PROINCSTATEMENTNEW) GetList(scode string, report_type int, per_page int, page int) ([]TQ_FIN_PROINCSTATEMENTNEW, error) {
 
 	sc := NewSymbolToCompcode()
 	if err := sc.getCompcode(scode); err != nil {
@@ -90,7 +90,7 @@ func (this *Profits) GetList(scode string, report_type int, per_page int, page i
 		return nil, err
 	}
 
-	return this.getList(sc.COMPCODE.String, report_type, per_page, page)
+	return this.getListByCompcode(sc.COMPCODE.String, report_type, per_page, page)
 }
 
 // TQ_FIN_PROBINCSTATEMENTNEW    中文名称：银行利润表(新准则产品表)

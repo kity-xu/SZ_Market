@@ -1,4 +1,4 @@
-// 现金流量数据
+// 现金流量表
 package finchina
 
 import (
@@ -10,7 +10,7 @@ import (
 
 // TQ_FIN_PROCFSTATEMENTNEW	  一般企业现金流量表(新准则产品表)
 // __none__ 前缀的字段是参考其他证券软件的F10功能定义的Json返回字段信息,但在数据表中没有找到与之对应的字段,为不打乱与Wiki文档对应顺序而保留
-type Cashflow struct {
+type TQ_FIN_PROCFSTATEMENTNEW struct {
 	Model `db:"-"`
 
 	ENDDATE    dbr.NullString //Date 	放置本次财报的截止日期
@@ -61,8 +61,8 @@ type Cashflow struct {
 	FINCASHOUTF      dbr.NullFloat64 //PmoFA	筹资活动现金流出小计
 }
 
-func NewCashflow() *Cashflow {
-	return &Cashflow{
+func NewTQ_FIN_PROCFSTATEMENTNEW() *TQ_FIN_PROCFSTATEMENTNEW {
+	return &TQ_FIN_PROCFSTATEMENTNEW{
 		Model: Model{
 			TableName: TABLE_TQ_FIN_PROCFSTATEMENTNEW,
 			Db:        MyCat,
@@ -70,8 +70,8 @@ func NewCashflow() *Cashflow {
 	}
 }
 
-func (this *Cashflow) getList(compcode string, report_type int, per_page int, page int) ([]Cashflow, error) {
-	var sli []Cashflow
+func (this *TQ_FIN_PROCFSTATEMENTNEW) getListByCompcode(compcode string, report_type int, per_page int, page int) ([]TQ_FIN_PROCFSTATEMENTNEW, error) {
+	var sli []TQ_FIN_PROCFSTATEMENTNEW
 
 	builder := this.Db.Select("*").From(this.TableName)
 	if report_type != 0 {
@@ -91,7 +91,7 @@ func (this *Cashflow) getList(compcode string, report_type int, per_page int, pa
 
 //------------------------------------------------------------------------------
 
-func (this *Cashflow) GetList(scode string, report_type int, per_page int, page int) ([]Cashflow, error) {
+func (this *TQ_FIN_PROCFSTATEMENTNEW) GetList(scode string, report_type int, per_page int, page int) ([]TQ_FIN_PROCFSTATEMENTNEW, error) {
 
 	sc := NewSymbolToCompcode()
 	if err := sc.getCompcode(scode); err != nil {
@@ -99,7 +99,7 @@ func (this *Cashflow) GetList(scode string, report_type int, per_page int, page 
 		return nil, err
 	}
 
-	return this.getList(sc.COMPCODE.String, report_type, per_page, page)
+	return this.getListByCompcode(sc.COMPCODE.String, report_type, per_page, page)
 }
 
 //--------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-// F10 财务分析接口共用
+// 证券内码表
 package finchina
 
 import (
@@ -13,6 +13,7 @@ import (
 	"haina.com/share/store/redis"
 )
 
+// SymbolToCompcode    证券内码表
 // ---------------------------------------------------------------------
 type SymbolToCompcode struct {
 	Model    `db:"-"`
@@ -35,13 +36,13 @@ func (this *SymbolToCompcode) getCompcode(symbol string) error {
 		if err != redigo.ErrNil {
 			logging.Error("Redis get %s: %s", key, err)
 		}
-		err := this.Db.Select("COMPCODE").From(this.TableName).Where("SYMBOL=?", symbol).Limit(1).LoadStruct(this)
+		err := this.Db.Select("*").From(this.TableName).Where("SYMBOL=?", symbol).Limit(1).LoadStruct(this)
 		if err != nil {
 			logging.Error("finchina db: getCompcode: %s", err)
 			return err
 		}
 		if this.COMPCODE.Valid == false {
-			logging.Error("finchina db: getCompcode: select COMPCODE from %s where SYMBOL='%s'", TABLE_TQ_OA_STCODE, symbol)
+			logging.Error("finchina db: getCompcode: Query COMPCODE is NULL by SYMBOL='%s'", TABLE_TQ_OA_STCODE, symbol)
 			return ErrNullComp
 		}
 		if err := redis.Setex(key, REDIS_TTL, []byte(this.COMPCODE.String)); err != nil {
@@ -60,4 +61,7 @@ func (this *SymbolToCompcode) getCompcode(symbol string) error {
 	}
 
 	return nil
+}
+func (this *SymbolToCompcode) GetCompcode(symbol string) error {
+	return this.getCompcode(symbol)
 }

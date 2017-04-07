@@ -1,7 +1,6 @@
 package company
 
-//------------------------------------------------------------------------------
-// F10 财务分析接口共用
+// F10 财务分析接口应答共用
 type RespFinAnaJson struct {
 	SCode  string      `json:"scode"`
 	MU     string      `json:"MU"`
@@ -13,17 +12,3 @@ type RespFinAnaJson struct {
 type Responser interface {
 	GetJson(scode string, report_type int, per_page int, page int) (*RespFinAnaJson, error)
 }
-
-type Session struct {
-	Responser
-	*RespFinAnaJson
-}
-
-func (this *RespFinAnaJson) NewSession(res Responser) *Session {
-	return &Session{
-		RespFinAnaJson: this,
-		Responser:      res,
-	}
-}
-
-//------------------------------------------------------------------------------

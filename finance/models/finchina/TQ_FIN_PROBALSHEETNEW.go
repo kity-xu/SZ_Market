@@ -1,4 +1,5 @@
-// 资产负债数据
+// 资产负债表
+// TQ_FIN_PROBALSHEETNEW	  一般企业资产负债表(新准则产品表)
 package finchina
 
 import (
@@ -10,7 +11,7 @@ import (
 
 //  TQ_FIN_PROBALSHEETNEW	  一般企业资产负债表(新准则产品表)
 // __none__ 前缀的字段是参考其他证券软件的F10功能定义的Json返回字段信息,但在数据表中没有找到与之对应的字段,为不打乱与Wiki文档对应顺序而保留
-type Liabilities struct {
+type TQ_FIN_PROBALSHEETNEW struct {
 	Model `db:"-"`
 
 	ENDDATE    dbr.NullString //Date 	放置本次财报的截止日期
@@ -97,11 +98,10 @@ type Liabilities struct {
 	TOTLIABSHAREQUI dbr.NullFloat64 //TLSE     负债和所有者权益（或股东权益）总计
 	TREASTK         dbr.NullFloat64 //TrSc     库存股 表中名称(减：库存股)
 	UNDIPROF        dbr.NullFloat64 //UdPr     未分配利润
-
 }
 
-func NewLiabilities() *Liabilities {
-	return &Liabilities{
+func NewTQ_FIN_PROBALSHEETNEW() *TQ_FIN_PROBALSHEETNEW {
+	return &TQ_FIN_PROBALSHEETNEW{
 		Model: Model{
 			TableName: TABLE_TQ_FIN_PROBALSHEETNEW,
 			Db:        MyCat,
@@ -109,8 +109,8 @@ func NewLiabilities() *Liabilities {
 	}
 }
 
-func (this *Liabilities) getList(compcode string, report_type int, per_page int, page int) ([]Liabilities, error) {
-	var sli []Liabilities
+func (this *TQ_FIN_PROBALSHEETNEW) getListByCompcode(compcode string, report_type int, per_page int, page int) ([]TQ_FIN_PROBALSHEETNEW, error) {
+	var sli []TQ_FIN_PROBALSHEETNEW
 
 	builder := this.Db.Select("*").From(this.TableName)
 	if report_type != 0 {
@@ -130,7 +130,7 @@ func (this *Liabilities) getList(compcode string, report_type int, per_page int,
 
 //------------------------------------------------------------------------------
 
-func (this *Liabilities) GetList(scode string, report_type int, per_page int, page int) ([]Liabilities, error) {
+func (this *TQ_FIN_PROBALSHEETNEW) GetList(scode string, report_type int, per_page int, page int) ([]TQ_FIN_PROBALSHEETNEW, error) {
 
 	sc := NewSymbolToCompcode()
 	if err := sc.getCompcode(scode); err != nil {
@@ -138,7 +138,7 @@ func (this *Liabilities) GetList(scode string, report_type int, per_page int, pa
 		return nil, err
 	}
 
-	return this.getList(sc.COMPCODE.String, report_type, per_page, page)
+	return this.getListByCompcode(sc.COMPCODE.String, report_type, per_page, page)
 }
 
 //--------------------------------------------------------------------------------

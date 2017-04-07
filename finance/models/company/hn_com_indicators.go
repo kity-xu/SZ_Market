@@ -2,10 +2,13 @@
 package company
 
 import (
-	"time"
-
 	"haina.com/market/finance/models/finchina"
+	"haina.com/share/logging"
 )
+
+type Indicators struct {
+	FinChinaIndicators
+}
 
 type IndicatorsJson struct {
 	Date int64 `json:"Date"`
@@ -178,182 +181,100 @@ type IndicatorsJson struct {
 	NPDBR    float64 `json:"NPDBR"`    //净利润／营业总收入
 }
 
-func NewIndicatorsJson() *IndicatorsJson {
-	return &IndicatorsJson{}
-}
-
 //------------------------------------------------------------------------------
-type Indicators struct {
-}
 
 func NewIndicators() *Indicators {
 	return &Indicators{}
 }
 
-func (this *Indicators) getList(scode string, report_type int, per_page int, page int) ([]Indicators, error) {
-	return nil, nil
-}
+// 获取数据列表
 func (this *Indicators) GetList(scode string, report_type int, per_page int, page int) ([]Indicators, error) {
-	return nil, nil
-}
-func (this *Indicators) getJson(scode string, report_type int, per_page int, page int) ([]IndicatorsJson, error) {
-	return NewFinChinaIndicators().getJson(scode, report_type, per_page, page)
-}
-func (this *Indicators) GetJson(scode string, report_type int, per_page int, page int) (*RespFinAnaJson, error) {
-	ls, err := this.getJson(scode, report_type, per_page, page)
-	if err != nil {
-		return nil, err
-	}
-	jsn := &RespFinAnaJson{
-		MU:     "人民币元",
-		AS:     "新会计准则",
-		Length: len(ls),
-		List:   ls,
-	}
-	return jsn, nil
+	return NewFinChinaIndicators().getIndicatorsList(scode, report_type, per_page, page)
 }
 
 //------------------------------------------------------------------------------
+
 type FinChinaIndicators struct {
+	PROFINMAININDEX  finchina.TQ_FIN_PROFINMAININDEX  //主要财务指标（产品表）
+	PROINDICDATA     finchina.TQ_FIN_PROINDICDATA     //衍生财务指标（产品表）
+	PROTTMINDIC      finchina.TQ_FIN_PROTTMINDIC      //财务数据_TTM指标（产品表）
+	PROCFSTTMSUBJECT finchina.TQ_FIN_PROCFSTTMSUBJECT //TTM现金科目产品表
 }
 
 func NewFinChinaIndicators() *FinChinaIndicators {
 	return &FinChinaIndicators{}
 }
 
-func (this *FinChinaIndicators) getJson(scode string, report_type int, per_page int, page int) ([]IndicatorsJson, error) {
-	sli := make([]IndicatorsJson, 0, per_page)
-	ls, err := finchina.NewIndicators().GetList(scode, report_type, per_page, page)
+func (this *FinChinaIndicators) getIndicatorsList(scode string, report_type int, per_page int, page int) ([]Indicators, error) {
+	var (
+		slidb_TQ_FIN_PROFINMAININDEX  []finchina.TQ_FIN_PROFINMAININDEX
+		slidb_TQ_FIN_PROINDICDATA     []finchina.TQ_FIN_PROINDICDATA
+		slidb_TQ_FIN_PROTTMINDIC      []finchina.TQ_FIN_PROTTMINDIC
+		slidb_TQ_FIN_PROCFSTTMSUBJECT []finchina.TQ_FIN_PROCFSTTMSUBJECT
+		dates                         finchina.DateList
+		len1, len2, len3, len4        int
+		err                           error
+	)
+	sli := make([]Indicators, 0, per_page)
+
+	// 从 TQ_FIN_PROFINMAININDEX  主要财务指标（产品表）    取数据
+	slidb_TQ_FIN_PROFINMAININDEX, err = finchina.NewTQ_FIN_PROFINMAININDEX().GetList(scode, report_type, per_page, page)
 	if err != nil {
 		return nil, err
 	}
-	for _, v := range ls {
-		node := IndicatorsJson{
-			// TQ_FIN_PROFINMAININDEX     主要财务指标（产品表）
-			DEPS:        v.PROFINMAININDEX.EPSFULLDILUTED.Float64, //稀释每股收益
-			EPS:         v.PROFINMAININDEX.EPSBASIC.Float64,       //基本每股收益
-			PSNA:        v.PROFINMAININDEX.NAPS.Float64,           //每股净资产(值)
-			ONIDTPTTM:   v.PROFINMAININDEX.NVALCHGITOTP.Float64,   //价值变动净收益／利润总额_TTM
-			NIVCDTPTTM:  v.PROFINMAININDEX.NNONOPITOTP.Float64,    //营业外收支净额／利润总额_TTM
-			NPADNRGALNP: v.PROFINMAININDEX.OPANITOTP.Float64,      //经营活动净收益／利润总额_TTM
-
-			// TQ_FIN_PROINDICDATA      衍生财务指标（产品表）
-			//// 每股指标
-			PSCR:   v.PROINDICDATA.CRPS.Float64,     //每股资本公积金
-			PSECF:  v.PROINDICDATA.FCFFPS.Float64,   //每股企业自由现金流量
-			PSR:    v.PROINDICDATA.OPREVPS.Float64,  //每股营业收入
-			PSRE:   v.PROINDICDATA.REPS.Float64,     //每股留存收益
-			PSSCF:  v.PROINDICDATA.FCFEPS.Float64,   //每股股东自由现金流量
-			PSSR:   v.PROINDICDATA.SRPS.Float64,     //每股盈余公积金
-			PSTR:   v.PROINDICDATA.TOPREVPS.Float64, //每股营业总收入
-			PSUP:   v.PROINDICDATA.UPPS.Float64,     //每股未分配利润
-			PSNCF:  v.PROINDICDATA.NCFPS.Float64,    //每股现金流量净额
-			PSNBCF: v.PROINDICDATA.OPNCFPS.Float64,  //每股经营活动产生的现金流量净额
-
-			//// 盈利能力
-			CPR:      v.PROINDICDATA.PROTOTCRT.Float64,      // 成本费用利润率
-			EBITDR:   v.PROINDICDATA.EBITTOTOPI.Float64,     // 息税前利润／营业总收入
-			JROA:     v.PROINDICDATA.ROAAANNUAL.Float64,     // 总资产净利率
-			NPADNRGL: v.PROINDICDATA.NPCUT.Float64,          // 扣除非经常性损益后的净利润
-			OPR:      v.PROINDICDATA.OPPRORT.Float64,        // 营业利润率
-			ROEA:     v.PROINDICDATA.ROEAVG.Float64,         // 净资产收益率_平均
-			ROED:     v.PROINDICDATA.ROEDILUTED.Float64,     // 净资产收益率_摊薄
-			ROEDD:    v.PROINDICDATA.ROEDILUTEDCUT.Float64,  // 净资产收益率_扣除摊薄
-			ROEDW:    v.PROINDICDATA.ROEWEIGHTEDCUT.Float64, // 净资产收益率_扣除加权
-			ROEW:     v.PROINDICDATA.ROEWEIGHTED.Float64,    // 净资产收益率_加权
-			SCR:      v.PROINDICDATA.SCOSTRT.Float64,        // 销售成本率
-			SGPM:     v.PROINDICDATA.SGPMARGIN.Float64,      // 销售毛利率
-
-			//// 偿债能力
-			CFLR:   v.PROINDICDATA.OPNCFTOCURLIAB.Float64,  //    现金流动负债比
-			CR:     v.PROINDICDATA.CURRENTRT.Float64,       //    流动比率
-			ER:     v.PROINDICDATA.EQURT.Float64,           //    产权比率
-			LTLRWC: v.PROINDICDATA.LTMLIABTOOPCAP.Float64,  //    长期负债与营运资金比率 ???
-			QR:     v.PROINDICDATA.QUICKRT.Float64,         //    速动比率
-			TNWDND: v.PROINDICDATA.NTANGASSTONDEBT.Float64, //    有形净值／净债务
-			TNWDR:  v.PROINDICDATA.TDEBTTOFART.Float64,     //    有形净值债务率
-
-			//// 成长能力
-			//// 营运能力
-			APTD: v.PROINDICDATA.ACCPAYTDAYS.Float64,     // 应付帐款周转天数
-			APTR: v.PROINDICDATA.ACCPAYRT.Float64,        // 应付帐款周转率
-			ARTD: v.PROINDICDATA.ACCRECGTURNDAYS.Float64, // 应收帐款周转天数
-			ARTR: v.PROINDICDATA.ACCRECGTURNRT.Float64,   // 应收帐款周转率
-			CATR: v.PROINDICDATA.CURASSTURNRT.Float64,    // 流动资产周转率
-			FATR: v.PROINDICDATA.FATURNRT.Float64,        // 固定资产周转率
-			ITD:  v.PROINDICDATA.INVTURNDAYS.Float64,     // 存货周转天数
-			ITR:  v.PROINDICDATA.INVTURNRT.Float64,       // 存货周转率
-			OC:   v.PROINDICDATA.OPCYCLE.Float64,         // 营业周期
-			SETR: v.PROINDICDATA.EQUTURNRT.Float64,       // 股东权益周转率
-			TATR: v.PROINDICDATA.TATURNRT.Float64,        // 总资产周转率
-
-			//// 现金状况
-			FCFl:      v.PROINDICDATA.FCFF.Float64,            // 自由现金流量
-			NBAGCFDNE: v.PROINDICDATA.OPANCFTOOPNI.Float64,    // 经营活动产生的现金流量净额／经营活动净收益
-			SGPCRSDR:  v.PROINDICDATA.SCASHREVTOOPIRT.Float64, // 销售商品提供劳务收到的现金／营业收入
-
-			//// 分红能力
-			CDPM: v.PROINDICDATA.CDCOVER.Float64,  // 现金股利保障倍数
-			DPM:  v.PROINDICDATA.DIVCOVER.Float64, // 股利保障倍数
-			DPR:  v.PROINDICDATA.DPR.Float64,      // 股利支付率
-			DPS:  v.PROINDICDATA.CDPS.Float64,     // 每股股利
-
-			//// 资本结构
-			ALR:    v.PROINDICDATA.ASSLIABRT.Float64,    // 资产负债率
-			BPDTA:  v.PROINDICDATA.TDEBTTOTA.Float64,    // 应付债券／总资产
-			EM:     v.PROINDICDATA.EM.Float64,           // 权益乘数
-			FAR:    v.PROINDICDATA.LTMLIABTOTFA.Float64, // 固定资产比率 长期负债与固定资产比率???
-			IAR:    v.PROINDICDATA.TCAPTOTART.Float64,   // 无形资产比率 资本与资产比率???
-			LTASR:  v.PROINDICDATA.LTMASSRT.Float64,     // 长期资产适合率
-			LTBDTA: v.PROINDICDATA.LTMLIABTOTA.Float64,  // 长期借款／总资产 长期负债/总资产???
-			WC:     v.PROINDICDATA.WORKCAP.Float64,      // 营运资金
-
-			//// 收益质量
-			IDP:        v.PROINDICDATA.INCOTAXTOTP.Float64,  // 所得税／利润总额
-			ONIDTP:     v.PROINDICDATA.NVALCHGITOTP.Float64, // 价值变动净收益／利润总额
-			NIVCDTP:    v.PROINDICDATA.NNONOPITOTP.Float64,  // 营业外收支净额／利润总额
-			NNOIDTP:    v.PROINDICDATA.NPCUTTONP.Float64,    // 扣除非经常损益后的净利润／净利润 扣除非经常性损益后的净利润/归属母公司的净利润???
-			NNOIDTPTTM: v.PROINDICDATA.OPANITOTP.Float64,    // 经营活动净收益／利润总额
-
-			//// 杜邦分析
-			BPCNPSNP: v.PROINDICDATA.NPTONOCONMS.Float64, // 归属母公司股东的净利润／净利润 归属母公司股东的净利润/含少数股东损益的净利润???
-			EMDA:     v.PROINDICDATA.EMCONMS.Float64,     // 权益乘数_杜邦分析 资本结构里已使用了EM(权益乘数) 此处为权益乘数(含少数股权的净资产)!!!???
-			NIDTP:    v.PROINDICDATA.NPTOTP.Float64,      // 净利润／利润总额 归属母公司的净利润/利润总额???
-			NPDBR:    v.PROINDICDATA.OPNCFTOOPTI.Float64, // 净利润／营业总收入 经营性现金净流量/营业总收入???
-
-			// TQ_FIN_PROTTMINDIC     财务数据_TTM指标（产品表）
-			//// 每股指标
-			PSNBCFTTM: v.PROTTMINDIC.OPNCFPS.Float64, // 每股经营活动产生的现金流量净额_TTM
-			PSNCFTTM:  v.PROTTMINDIC.NCFPS.Float64,   // 每股现金流量净额_TTM
-
-			//// 盈利能力
-			EBITDRTTM: v.PROTTMINDIC.EBITTOTOPI.Float64, // 息税前利润／营业总收入_TTM
-			SGPMTTM:   v.PROTTMINDIC.SGPMARGIN.Float64,  // 销售毛利率_TTM
-
-			//// 偿债能力
-			//// 成长能力
-			//// 营运能力
-			//// 现金状况
-			NBAGCFDNETTM: v.PROTTMINDIC.OPANCFTOOPNI.Float64,    // 经营活动产生的现金流量净额／经营活动净收益_TTM
-			SGPCRSDRTTM:  v.PROTTMINDIC.SCASHREVTOOPIRT.Float64, // 销售商品提供劳务收到的现金／营业收入_TTM
-
-			//// 分红能力
-			//// 资本结构
-			//// 收益质量
-			//// 杜邦分析
-
-			// TQ_FIN_PROCFSTTMSUBJECT	  TTM现金科目产品表
-			CACENI: v.PROCFSTTMSUBJECT.CASHNETR.Float64, //     现金及现金等价物 净增加额
+	if len1 = len(slidb_TQ_FIN_PROFINMAININDEX); 0 == len1 {
+		return sli, nil
+	}
+	// 生成截止日期数组,其余表按日期数组取数据
+	for _, v := range slidb_TQ_FIN_PROFINMAININDEX {
+		if v.ENDDATE.Valid {
+			date := v.ENDDATE.String
+			dates = append(dates, date)
 		}
-		if v.PROFINMAININDEX.ENDDATE.Valid {
-			tm, err := time.Parse("20060102", v.PROFINMAININDEX.ENDDATE.String)
-			if err != nil {
-				return nil, err
-			}
-			node.Date = tm.Unix()
-		}
+	}
 
-		sli = append(sli, node)
+	// 从 TQ_FIN_PROINDICDATA     衍生财务指标（产品表）    取数据
+	slidb_TQ_FIN_PROINDICDATA, err = finchina.NewTQ_FIN_PROINDICDATA().GetListByEnddates(scode, report_type, per_page, page, dates)
+	if err != nil {
+		return nil, err
+	}
+	if len2 = len(slidb_TQ_FIN_PROINDICDATA); len2 != len1 {
+		logging.Error("finchina db: TQ_FIN_PROINDICDATA %d != TQ_FIN_PROFINMAININDEX %d", len2, len1)
+		return nil, finchina.ErrIncData
+	}
+
+	// 从 TQ_FIN_PROTTMINDIC      财务数据_TTM指标（产品表）取数据
+	slidb_TQ_FIN_PROTTMINDIC, err = finchina.NewTQ_FIN_PROTTMINDIC().GetListByEnddates(scode, report_type, per_page, page, dates)
+	if err != nil {
+		return nil, err
+	}
+	if len3 = len(slidb_TQ_FIN_PROTTMINDIC); len3 != len1 {
+		logging.Error("finchina db: TQ_FIN_PROTTMINDIC %d != TQ_FIN_PROFINMAININDEX %d", len3, len1)
+		return nil, finchina.ErrIncData
+
+	}
+
+	// 从 TQ_FIN_PROCFSTTMSUBJECT TTM现金科目产品表        取数据
+	slidb_TQ_FIN_PROCFSTTMSUBJECT, err = finchina.NewTQ_FIN_PROCFSTTMSUBJECT().GetListByEnddates(scode, report_type, per_page, page, dates)
+	if err != nil {
+		return nil, err
+	}
+	if len4 = len(slidb_TQ_FIN_PROCFSTTMSUBJECT); len4 != len1 {
+		logging.Error("finchina db: TQ_FIN_PROCFSTTMSUBJECT %d != TQ_FIN_PROFINMAININDEX %d", len4, len1)
+		return nil, finchina.ErrIncData
+
+	}
+
+	for n := 0; n < len1; n++ {
+		one := Indicators{
+			FinChinaIndicators: FinChinaIndicators{
+				PROFINMAININDEX:  slidb_TQ_FIN_PROFINMAININDEX[n],  //主要财务指标（产品表）
+				PROINDICDATA:     slidb_TQ_FIN_PROINDICDATA[n],     //衍生财务指标（产品表）
+				PROTTMINDIC:      slidb_TQ_FIN_PROTTMINDIC[n],      //财务数据_TTM指标（产品表）
+				PROCFSTTMSUBJECT: slidb_TQ_FIN_PROCFSTTMSUBJECT[n], //TTM现金科目产品表
+			},
+		}
+		sli = append(sli, one)
 	}
 
 	return sli, nil

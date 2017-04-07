@@ -40,11 +40,11 @@ func RegCompany(rg *gin.RouterGroup) {
 
 	// 财务分析
 	// 关键指标表
-	rg.GET("/company/indicators", company.NewIndicatorsInfo().GET)
+	rg.GET("/company/indicators", company.NewIndicators().GET)
 	// 利润表
-	rg.GET("/company/profits", company.NewProfitsInfo().GET)
+	rg.GET("/company/profits", company.NewProfits().GET)
 	// 资产负债表
-	rg.GET("/company/liabilities", company.NewLiabilitiesInfo().GET)
+	rg.GET("/company/liabilities", company.NewLiabilities().GET)
 	// 现金流量表
-	rg.GET("/company/cashflow", company.NewCashflowInfo().GET)
+	rg.GET("/company/cashflow", company.NewCashflow().GET)
 }
