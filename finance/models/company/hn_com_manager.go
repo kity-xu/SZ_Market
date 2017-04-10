@@ -6,12 +6,12 @@ import (
 )
 
 type HnManager struct {
-	//Pscode     string  `json:"Pscode"`     //高管代码
-	Name        string  `json:"Name"`        //高管姓名
-	Duty        string  `json:"Duty"`        //职务
-	HoldAMT     float64 `json:"Holdamt"`     //持股数
-	UpdateDate  string  `json:"UpdateDate"`  //公司高管资料更新日期
-	PublistDate string  `json:"PublistDate"` //持股变动公布日期
+	//Pscode     string  `json:"Pscode"` //高管代码
+	Name        string  `json:"Name"`    //高管姓名
+	Duty        string  `json:"Duty"`    //职务
+	HoldAMT     float64 `json:"Holdamt"` //持股数
+	UpdateDate  string  `json:"UpDate"`  //公司高管资料更新日期
+	PublistDate string  `json:"PubDate"` //持股变动公布日期
 }
 
 func (this *HnManager) GetManagerList(scode string) (*[]*HnManager, error) {

@@ -5,12 +5,18 @@ import (
 	"haina.com/market/finance/models/finchina"
 )
 
-//Seasoned Equity Offerings
 type SEO struct {
-	SeoRaise float64
-	SeoSc    int64
-	SEOcount int
+	Scode   string  `json:"scode"`
+	Cash    float64 `json:"tocash"`
+	Count   int     `json:"count"`
+	Success int     `json:"success"`
+	Faild   int     `json:"faild"`
+	Ing     int     `json:"ing"`
+	List    interface{}
+}
 
+//Seasoned Equity Offerings
+type SEOJson struct {
 	AGMD    string  `json:"AGMD"`    //股东大会决议公告日
 	IECD    string  `json:"IECD"`    //发审委公告日
 	LisDate string  `json:"LisDate"` //新股上市日
@@ -28,8 +34,8 @@ type SEO struct {
 	Vol     float64 `json:"Vol"`     //实际发行数量
 }
 
-func (this *SEO) GetSEOList(scode string) (*[]*SEO, error) {
-	list := make([]*SEO, 0)
+func (this *SEO) GetSEOList(scode string) (*SEO, error) {
+	var list SEO
 	seos, err := new(finchina.TQ_SK_PROADDISS).GetSEOListFromFC(scode)
 	if err != nil {
 		return &list, err
@@ -38,11 +44,16 @@ func (this *SEO) GetSEOList(scode string) (*[]*SEO, error) {
 	return &list, err
 }
 
-func (this *SEO) newSEOListjson(seos []finchina.TQ_SK_PROADDISS) []*SEO {
-	list := make([]*SEO, 0)
+func (this *SEO) newSEOListjson(seos []finchina.TQ_SK_PROADDISS) SEO {
+	var seo SEO
+	list := make([]SEOJson, 0)
+
+	var cash float64
+	//	var sc int
+	var count int
 
 	for _, v := range seos {
-		var js SEO
+		var js SEOJson
 		js.IECD = v.CSRCAPPRAGREEDATE.String
 		js.LisDate = v.UPDATEDATE.String
 		//js.PNDate=  v.ADDISSPUBDATE.String
@@ -56,12 +67,20 @@ func (this *SEO) newSEOListjson(seos []finchina.TQ_SK_PROADDISS) []*SEO {
 		js.Val = v.ACTNETRAISEAMT.Float64
 		js.Vol = v.ACTISSQTY.Float64
 		js.Type = v.ISSUEMODEMEMO.String
-		this.SeoRaise += v.ACTNETRAISEAMT.Float64
+		cash += v.ACTNETRAISEAMT.Float64
+		//sc += int(v.ISFINSUC.Int64)
+		count++
+		if "1" == v.ISSUESTATUS.String {
+			seo.Ing += 1
+		} else if "7" == v.ISSUESTATUS.String || "8" == v.ISSUESTATUS.String {
+			seo.Success += 1
+		}
 
-		this.SeoSc += v.ISFINSUC.Int64
-		this.SEOcount++
-
-		list = append(list, &js)
+		list = append(list, js)
 	}
-	return list
+	seo.Count = count
+	seo.Cash = cash
+	seo.Faild = seo.Count - seo.Success - seo.Ing
+	seo.List = list
+	return seo
 }

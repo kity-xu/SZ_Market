@@ -29,6 +29,8 @@ type TQ_SK_PROADDISS struct {
 
 	//AGMD string `json:"AGMD"` //股东大会决议公告日			??
 	//Step string `json:"Step"` //事情进展
+
+	ISSUESTATUS dbr.NullString //发行状态
 }
 
 func (this *TQ_SK_PROADDISS) newTQ_SK_PROADDISS() *TQ_SK_PROADDISS {

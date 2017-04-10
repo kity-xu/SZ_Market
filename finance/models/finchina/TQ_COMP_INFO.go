@@ -23,10 +23,10 @@ type TQ_COMP_INFO struct {
 	MANAGER       dbr.NullString //总经理
 	BIZSCOPE      dbr.NullString //经营范围
 	OFFICEZIPCODE dbr.NullString //公司办公地址邮编
-	//省份
-	COMPSNAME dbr.NullString //机构简称
-	REGADDR   dbr.NullString //注册地址
-	COMPTEL   dbr.NullString //公司电话
+	REGION        dbr.NullString //省份
+	COMPSNAME     dbr.NullString //机构简称
+	REGADDR       dbr.NullString //注册地址
+	COMPTEL       dbr.NullString //公司电话
 }
 
 func (this *TQ_COMP_INFO) newTQ_COMP_INFO() *TQ_COMP_INFO {

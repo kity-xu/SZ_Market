@@ -13,9 +13,6 @@ func RegCompany(rg *gin.RouterGroup) {
 	//公司高管信息
 	rg.GET("/company/manager/info", company.NewCompany().GetManagreInfo)
 
-	//公司高管持股变动
-	//rg.GET("/company/administrator/eqchange", company.NewAdministrator().GetAdminEquityChange)
-
 	// 融资分红
 	rg.GET("/company/dividend", company.NewDividendInfo().GetDiv)
 	rg.GET("/company/refinance", company.NewDividendInfo().GetSEO)

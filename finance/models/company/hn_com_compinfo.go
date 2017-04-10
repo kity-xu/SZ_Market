@@ -46,7 +46,7 @@ func (this *CompInfo) GetCompInfo(scode string) (*CompInfo, error) {
 	js.Manager = v.MANAGER.String
 	js.Other = v.BIZSCOPE.String
 	js.Postc = v.OFFICEZIPCODE.String
-	//js.Prov = ?
+	js.Prov = v.REGION.String
 	js.Short = v.COMPSNAME.String
 	js.Site = v.REGADDR.String
 	js.Tele = v.COMPTEL.String

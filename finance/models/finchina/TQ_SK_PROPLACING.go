@@ -30,7 +30,8 @@ type TQ_SK_PROPLACING struct {
 	LISTPUBDATE dbr.NullString //上市公告日 					DNDate   //决案公布日				??
 	UPDATEDATE  dbr.NullString //资料更新日期 				AGMD 	 //股东大会决议公告日		??
 
-	ISFINSUC dbr.NullInt64 //融资是否成功  1：是  0：否
+	ISFINSUC    dbr.NullInt64  //融资是否成功  1：是  0：否
+	ISSUESTATUS dbr.NullString //发行状态
 }
 
 func (this *TQ_SK_PROPLACING) newTQ_SK_PROPLACING() *TQ_SK_PROPLACING {

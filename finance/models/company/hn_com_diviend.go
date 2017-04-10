@@ -4,11 +4,15 @@ import (
 	"haina.com/market/finance/models/finchina"
 )
 
-//Dividend
 type Dividend struct {
-	ToCash   float64
-	Divcount int
+	Scode string  `json:"scode"`
+	Cash  float64 `json:"tocash"`
+	Count int     `json:"count"`
+	List  interface{}
+}
 
+//Dividend
+type DividendJson struct {
 	Bene     string  `json:"Bene"`     //分红对象
 	Bonus    float64 `json:"Bonus"`    //送股（股）
 	Date     string  `json:"Data"`     //年度
@@ -25,8 +29,8 @@ type Dividend struct {
 	Tran     float64 `json:"Tran"`     //转股（股）
 }
 
-func (this *Dividend) GetDividendList(sets uint64, scode string) (*[]*Dividend, error) {
-	list := make([]*Dividend, 0)
+func (this *Dividend) GetDividendList(sets uint64, scode string) (*Dividend, error) {
+	var list Dividend
 	divs, err := new(finchina.TQ_SK_DIVIDENTS).GetDivListFromFC(sets, scode)
 	if err != nil {
 		return &list, err
@@ -35,10 +39,13 @@ func (this *Dividend) GetDividendList(sets uint64, scode string) (*[]*Dividend, 
 	return &list, err
 }
 
-func (this *Dividend) newDivListjson(divs []finchina.TQ_SK_DIVIDENTS) []*Dividend {
-	list := make([]*Dividend, 0)
+func (this *Dividend) newDivListjson(divs []finchina.TQ_SK_DIVIDENTS) Dividend {
+	var div Dividend
+	list := make([]DividendJson, 0)
+	var cash float64
+	var count int
 	for _, v := range divs {
-		var js Dividend
+		var js DividendJson
 		js.Bene = v.GRAOBJ.String
 		js.Bonus = v.PROBONUSRT.Float64
 		js.Date = v.DIVIYEAR.String
@@ -49,11 +56,14 @@ func (this *Dividend) newDivListjson(divs []finchina.TQ_SK_DIVIDENTS) []*Dividen
 		js.ExDate = v.XDRDATE.String
 		js.RegDate = v.EQURECORDDATE.String
 		js.Tran = v.TRANADDRT.Float64
-		this.ToCash += v.TOTCASHDV.Float64
+		cash += v.TOTCASHDV.Float64
 		js.LisDate = v.LISTDATE.String
 
-		this.Divcount++
-		list = append(list, &js)
+		count++
+		list = append(list, js)
 	}
-	return list
+	div.List = list
+	div.Cash = cash
+	div.Count = count
+	return div
 }
