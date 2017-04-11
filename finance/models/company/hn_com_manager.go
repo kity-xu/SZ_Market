@@ -2,7 +2,6 @@ package company
 
 import (
 	"haina.com/market/finance/models/finchina"
-	"haina.com/share/logging"
 )
 
 type HnManager struct {
@@ -69,12 +68,10 @@ func managersToOnly(primal []finchina.TQ_COMP_MANAGER) []finchina.TQ_COMP_MANAGE
 		}
 	}
 	var count int = 0
-	for k, v := range swap {
+	for _, v := range swap {
 		managers = append(managers, v)
-		logging.Debug("key of managers map %d:", k)
 		count++
 	}
-	logging.Debug("count of managers %d:", count)
 
 	return managers
 }
@@ -90,12 +87,10 @@ func hoderChangeToOnly(primal []finchina.HolderChange) []finchina.HolderChange {
 		}
 	}
 	var count int = 0
-	for k, v := range swap {
+	for _, v := range swap {
 		holders = append(holders, v)
-		logging.Debug("key of hoderChange map %d:", k)
 		count++
 	}
-	logging.Debug("count of hoderChange %d:", count)
 
 	return holders
 }
