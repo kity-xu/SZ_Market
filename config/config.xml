@@ -22,6 +22,10 @@
             <appId>market_finance</appId>
             <configFile>finance.xml</configFile>
         </projects>
+		<projects>
+            <appId>market_hqpublish</appId>
+            <configFile>hqpublish.xml</configFile>
+        </projects>
     </appSettings>
     <emailSetting>
         <addr>notification@mail.facework.im</addr>

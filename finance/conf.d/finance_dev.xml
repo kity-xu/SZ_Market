@@ -46,7 +46,6 @@
     <database>
         <driverName>mysql</driverName>
         <dataSource>publisher:Haina$A7Kha@tcp(123.56.30.141:3306)/finchinafcdd?charset=utf8</dataSource>
-
     </database>
     <redisStore>
         <addr>192.168.18.200:6379</addr>

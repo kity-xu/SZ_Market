@@ -1,8 +1,0 @@
-[INFO] 2017-03-14 17:52:20.7029  app.go:78 --------------------------------------------- [0m
-[INFO] 2017-03-14 17:52:20.7029  app.go:79 App Name:market_finance [0m
-[INFO] 2017-03-14 17:52:20.7029  app.go:80 Server started, version 0.0.1.0 [0m
-[INFO] 2017-03-14 17:52:20.7029  app.go:81 Start-up time: 2017-03-14 17:52:20 [0m
-[INFO] 2017-03-14 17:52:20.7029  app.go:82 Local Address: 192.168.9.211 [0m
-[INFO] 2017-03-14 17:52:20.7029  app.go:91 :5700 - Listening [0m
-[INFO] 2017-03-14 17:52:20.7029  app.go:92 -------------------------------------------- [0m
-[35m[CRITICAL] 2017-03-14 17:52:21.7987  app.go:137 dial tcp 139.224.11.122:6379: connectex: No connection could be made because the target machine actively refused it. [0m
