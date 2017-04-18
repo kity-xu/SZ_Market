@@ -2,15 +2,12 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	"haina.com/market/hqpublish/controllers/publish"
 	"haina.com/share/lib"
 )
 
 func RegPublish(rg *gin.RouterGroup) {
 
-	// test
-	rg.GET("/ping", pong)
-}
-
-func pong(c *gin.Context) {
-	lib.WriteString(c, 200, "pong")
+	// 股票代码表
+	rg.GET("/securitytable", publish.NewSecurityTable().GET) //默认pb模式
 }

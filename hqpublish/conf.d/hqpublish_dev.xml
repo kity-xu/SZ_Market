@@ -53,7 +53,7 @@
     <redisStore>
         <addr>192.168.18.200:6379</addr>
         <auth>8dc40c2c4598ae5a</auth>
-        <db>1</db>
+        <db>0</db>
         <timeout>3</timeout> 
     </redisStore>
 </configuration>
