@@ -10,4 +10,5 @@ const (
 
 const (
 	CONTEXT_FORMAT = "format" // 数据格式
+	CONTEXT_SNID   = "snid"   // snid
 )
