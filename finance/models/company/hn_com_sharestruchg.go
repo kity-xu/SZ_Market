@@ -42,12 +42,12 @@ type ChangesEquity struct {
 }
 
 ////////////股本结构
-type TrucList interface{}
-type TrucAList interface{}
-type RetTrucInfoJson struct {
-	SCode    string      `json:"scode"`
-	TrucList interface{} `json:"TSC"`
-	//TrucAList interface{} `json:"CAS"`
+type TrucsList interface{}
+
+//type TrucAList interface{}
+type RetTrucsInfoJson struct {
+	SCode     string `json:"scode"`
+	TrucsList interface{}
 }
 
 //////////////股本变动
@@ -57,40 +57,58 @@ type RetShaInfoJson struct {
 	ShaChaList interface{} `json:"ChEq"`
 }
 
-/**
-  获取股本结构信息
-*/
-func GetStructure(scode string, ntype string) (RetTrucInfoJson, error) {
-	data, err := finchina.NewTQ_SK_SHARESTRUCHG().GetSingleBySCode(scode)
-	//	var js RetTrucInfoJson
-	//	//jsn, err := GetStruInfo(data)
+///**
+//  获取股本结构信息
+//*/
+//func _GetStructure(scode string, selwhe string, limit int) (RetTrucsInfoJson, error) {
+//	data, err := finchina.NewTQ_SK_SHARESTRUCHG().GetSingleBySCode(scode, selwhe, limit)
+//	//	var js RetTrucInfoJson
+//	//	//jsn, err := GetStruInfo(data)
 
-	//	//jsna, err := GetAInfo(data)
+//	//	//jsna, err := GetAInfo(data)
 
-	//	js.SCode = scode
-	//	js.TrucList = jsn
-	//	js.TrucAList = jsna
-	//	return js, err
-	var rij RetTrucInfoJson
-	jsns := []*StructureEquity{}
+//	//	js.SCode = scode
+//	//	js.TrucList = jsn
+//	//	js.TrucAList = jsna
+//	//	return js, err
+//	var rtj RetTrucInfoJson
+//	jsnse := []*StructureEquity{}
+
+//	for _, item := range data {
+
+//		//if len(item.ENDDATE) > 6 {
+//		//str := item.ENDDATE[4:]
+
+//		//}
+//		jsn, err := GetAInfo(item)
+//		if err != nil {
+//			return rtj, err
+//		}
+//		jsnse = append(jsnse, jsn)
+//	}
+//	rtj.SCode = scode
+//	rtj.TrucList = jsnse
+//	return rtj, err
+//}
+func GetStructure(scode string, selwhe string, limit int) ([]*StructureEquity, error) {
+	data, err := finchina.NewTQ_SK_SHARESTRUCHG().GetSingleBySCode(scode, selwhe, limit)
+
+	//var rtj RetTrucInfoJson
+	jsnse := []*StructureEquity{}
 
 	for _, item := range data {
 
-		if len(item.ENDDATE) > 6 {
-			//str := item.ENDDATE[4:2]
-			//fmt.Println("sfsfsf", str)
-		}
+		//if len(item.ENDDATE) > 6 {
+		//str := item.ENDDATE[4:]
 
+		//}
 		jsn, err := GetAInfo(item)
 		if err != nil {
-			return rij, err
+			return nil, err
 		}
-
-		jsns = append(jsns, jsn)
+		jsnse = append(jsnse, jsn)
 	}
-	rij.SCode = scode
-	rij.TrucList = jsns
-	return rij, err
+	return jsnse, err
 }
 
 //// 获取JSON
@@ -131,7 +149,6 @@ func GetAInfo(st *finchina.TQ_SK_SHARESTRUCHG) (*StructureEquity, error) {
 		RECIRCAAMT: st.RECIRCAAMT,               // 限售流通A股
 		AGenCap:    st.CIRCAAMT + st.RECIRCAAMT, // A股总股本
 		Edate:      st.ENDDATE,                  // 截止日期
-
 	}, nil
 
 }

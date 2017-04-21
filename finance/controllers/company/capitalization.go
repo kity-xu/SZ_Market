@@ -23,16 +23,49 @@ func NewCapitalizationInfo() *CapitalizationInfo {
 */
 func (this *CapitalizationInfo) GetStructureJson(c *gin.Context) {
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
+	count := c.Query(models.CONTEXT_COUNT)
+
+	var value_int = 0
+	var err error
+	if count != "" {
+		value_int, err = strconv.Atoi(count)
+	} else {
+		value_int = 8
+	}
+
+	if err != nil {
+		//logging.Debug("%v", err)
+		return
+	}
 	ntype := c.Query(models.CONTEXT_NTYPE) // 查询类型 d0 全部 d1 一季度  d2 半年报 d3 三季度  d4 年报
+	var selwhe = ""
+	if ntype == "d0" || ntype == "" { // 查询全部
+		selwhe = ""
+	}
+	if ntype == "d1" { // 一季度
+		selwhe = " and ENDDATE LIKE '%0330' "
+	}
+	if ntype == "d2" { // 半年
+		selwhe = " and ENDDATE LIKE '%0629' "
+	}
+	if ntype == "d3" { // 三季度
+		selwhe = " and ENDDATE LIKE '%0929' "
+	}
+	if ntype == "d4" { // 年度
+		selwhe = " and ENDDATE LIKE '%1230' "
+	}
 
-	logging.Info("参数 %v", ntype)
-
-	data, err := company.GetStructure(scode, ntype)
+	data, err := company.GetStructure(scode, selwhe, value_int)
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 		return
 	}
-	lib.WriteString(c, 200, data)
+
+	var rtj company.RetTrucsInfoJson
+	rtj.SCode = scode
+	rtj.TrucsList = data
+
+	lib.WriteString(c, 200, &rtj)
 }
 
 /**
