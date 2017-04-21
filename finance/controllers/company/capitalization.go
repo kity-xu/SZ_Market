@@ -23,7 +23,10 @@ func NewCapitalizationInfo() *CapitalizationInfo {
 */
 func (this *CapitalizationInfo) GetStructureJson(c *gin.Context) {
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
-	ntype := c.Query(models.CONTEXT_NTYPE) // 查询类型 0 全部 1 一季度  2 半年报 3 三季度  4 年报
+	ntype := c.Query(models.CONTEXT_NTYPE) // 查询类型 d0 全部 d1 一季度  d2 半年报 d3 三季度  d4 年报
+
+	logging.Info("参数 %v", ntype)
+
 	data, err := company.GetStructure(scode, ntype)
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())

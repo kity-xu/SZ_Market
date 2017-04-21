@@ -15,35 +15,40 @@ import (
 
 //总股本
 type TQ_SK_SHARESTRUCHG struct {
-	Model       `db:"-" `
-	ID          int64  // ID
-	CIRCSKAMT   string // 流通股份
-	CIRCSKRTO   string // 流通股份所占比例
-	LIMSKAMT    string // 限售流通股份
-	LIMSKRTO    string // 限售流通股份所占比例
-	NCIRCAMT    string // 未流通股份
-	NONNEGSKRTO string // 未流通股份所占比例
+	Model `db:"-" `
+	//------------------------------------------------------------------------------原接口
+	//	ID    int64 // ID
+	//	CIRCSKAMT   string // 流通股份
+	//	CIRCSKRTO   string // 流通股份所占比例
+	//	LIMSKAMT    string // 限售流通股份
+	//	LIMSKRTO    string // 限售流通股份所占比例
+	//	NCIRCAMT    string // 未流通股份
+	//	NONNEGSKRTO string // 未流通股份所占比例
 	//流通A股
-	CIRCAAMT   dbr.NullString // 已上市流通A股
-	CIRCAAMTTO string         // 已上市流通A股所占比例
+	//	CIRCAAMT   dbr.NullString // 已上市流通A股
+	//	CIRCAAMTTO string         // 已上市流通A股所占比例
 	//未找到对应字段默认为空
 	//---------------
-	SIPS   dbr.NullString // 战略投资者配售持股
-	SIPSTO string         // 战略投资者配售持股所占比例
-	GCPS   dbr.NullString // 一般法人配售持股
-	GCPSTO string         // 一般法人配售持股所占比例
-	FPS    dbr.NullString // 基金配售持股
-	FPSTO  string         // 基金配售持股所占比例
-	ARIU   dbr.NullString // 增发未上市
-	ARIUTO string         // 增发未上市所占比例
-	ASIU   dbr.NullString // 配股未上市
-	ASIUTO string         // 配股未上市所占比例
+	//	SIPS   dbr.NullString // 战略投资者配售持股
+	//	SIPSTO string         // 战略投资者配售持股所占比例
+	//	GCPS   dbr.NullString // 一般法人配售持股
+	//	GCPSTO string         // 一般法人配售持股所占比例
+	//	FPS    dbr.NullString // 基金配售持股
+	//	FPSTO  string         // 基金配售持股所占比例
+	//	ARIU   dbr.NullString // 增发未上市
+	//	ARIUTO string         // 增发未上市所占比例
+	//	ASIU   dbr.NullString // 配股未上市
+	//	ASIUTO string         // 配股未上市所占比例
 	//----------------
-	OTHERCIRCAMT   dbr.NullString // 其他流通股
-	OTHERCIRCAMTTO string         // 其他流通股所占比例
-	RECIRCAAMT     dbr.NullString // 限售流通A股
-	RECIRCAAMTTO   string         // 限售流通A股所占比例
-
+	//	OTHERCIRCAMT   dbr.NullString // 其他流通股
+	//	OTHERCIRCAMTTO string         // 其他流通股所占比例
+	//	RECIRCAAMT     dbr.NullString // 限售流通A股
+	//	RECIRCAAMTTO   string         // 限售流通A股所占比例
+	//------------------------------------------------------------------------------
+	TOTALSHARE float32 // 总股本
+	CIRCAAMT   float32 // 流通A股
+	RECIRCAAMT float32 // 限售流通A股
+	ENDDATE    string  // 截止日期
 	//股本变动
 
 	ENDDATEV    string // 变动日期对应值
@@ -73,36 +78,41 @@ func NewTQ_SK_SHARESTRUCHGTx(tx *dbr.Tx) *TQ_SK_SHARESTRUCHG {
 }
 
 //获取股本结构信息
-func (this *TQ_SK_SHARESTRUCHG) GetSingleBySCode(scode string) (*TQ_SK_SHARESTRUCHG, error) {
-	var cheq *TQ_SK_SHARESTRUCHG
+func (this *TQ_SK_SHARESTRUCHG) GetSingleBySCode(scode string) ([]*TQ_SK_SHARESTRUCHG, error) {
+	var sharinfo []*TQ_SK_SHARESTRUCHG
+
 	//根据证券代码获取公司内码
 	sc := NewTQ_OA_STCODE()
 	if err := sc.getCompcode(scode); err != nil {
-		return this, err
+		return sharinfo, err
 	}
-	shBulid := this.Db.Select("ENDDATE AS ENDDATEV ").
+	// ------------------------------------------------------------------原接口
+	//var cheq *TQ_SK_SHARESTRUCHG
+	//	shBulid := this.Db.Select("ENDDATE AS ENDDATEV ").
+	//		From(this.TableName).
+	//		Where("COMPCODE=" + sc.COMPCODE.String + selwhe).
+	//		OrderBy(" ENDDATE desc ")
+	//	err1 := this.SelectWhere(shBulid, nil).Limit(1).LoadStruct(&cheq)
+	//	if err1 != nil {
+	//		logging.Debug("%v", err1)
+	//	}
+	//	var strs = ""
+	//	strs += "ENDDATE, CIRCSKAMT,CIRCSKRTO , LIMSKAMT, LIMSKRTO,	NCIRCAMT ,NONNEGSKRTO,	TOTALSHARE ,"
+	//	strs += " CIRCAAMT ,(CIRCAAMT/TOTALSHARE)As CIRCAAMTTO,"
+	//	strs += " OTHERCIRCAMT,(OTHERCIRCAMT/TOTALSHARE)As OTHERCIRCAMTTO,"
+	//	strs += " RECIRCAAMT,(RECIRCAAMT/TOTALSHARE)As RECIRCAAMTTO"
+	// ------------------------------------------------------------------原接口
+
+	bulid := this.Db.Select("*").
 		From(this.TableName).
-		Where("COMPCODE=" + sc.COMPCODE.String).OrderBy(" ENDDATE desc ")
-	err1 := this.SelectWhere(shBulid, nil).Limit(1).LoadStruct(&cheq)
-	if err1 != nil {
-		logging.Debug("%v", err1)
-	}
-	var strs = ""
-	strs += "ENDDATE, CIRCSKAMT,CIRCSKRTO , LIMSKAMT, LIMSKRTO,	NCIRCAMT ,NONNEGSKRTO,	TOTALSHARE ,"
-	strs += " CIRCAAMT ,(CIRCAAMT/TOTALSHARE)As CIRCAAMTTO,"
-	strs += " OTHERCIRCAMT,(OTHERCIRCAMT/TOTALSHARE)As OTHERCIRCAMTTO,"
-	strs += " RECIRCAAMT,(RECIRCAAMT/TOTALSHARE)As RECIRCAAMTTO"
-	bulid := this.Db.Select(strs).
-		From(this.TableName).
-		Where("ENDDATE = " + cheq.ENDDATEV + " and COMPCODE=" + sc.COMPCODE.String)
-	err := this.SelectWhere(bulid, nil).
-		Limit(1).
-		LoadStruct(this)
+		Where("COMPCODE=" + sc.COMPCODE.String)
+	_, err := this.SelectWhere(bulid, nil).LoadStructs(&sharinfo)
 	if err != nil {
-		return this, err
+		logging.Info("查询出错")
+		return sharinfo, err
 	}
 
-	return this, err
+	return sharinfo, err
 }
 
 /////////////////////////股本变动
