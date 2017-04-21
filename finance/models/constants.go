@@ -16,6 +16,7 @@ const (
 	CONTEXT_COUNT    = "count"   // 条数（默认10条）
 	CONTEXT_RETNUM   = 9999      // 默认返回条数（取足够大）
 	CONTEXT_SCODE    = "scode"   // 证券代码
+	CONTEXT_NTYPE    = "ntype"   // 类型
 )
 
 // F10财务分析接口URL请求相关参数
