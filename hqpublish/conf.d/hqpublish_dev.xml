@@ -20,8 +20,8 @@
         <listen>:85</listen>
     </appSettings>
      <listenAndServe>
-        <port>:7210</port>
-        <logport>:7211</logport>
+        <port>:7220</port>
+        <logport>:7221</logport>
     </listenAndServe>
     <emailSetting>
         <addr>notification@mail.haina.com</addr>
@@ -45,12 +45,15 @@
     </session>
     <database>
         <driverName>mysql</driverName>
-        <dataSource>haina:A9fa51$85dc40c2c@tcp(192.168.18.200:3306)/haina_major?charset=utf8</dataSource>
+        <dataSource>publisher:Haina$A7Kha@tcp(123.56.30.141:3306)/finchinafcdd?charset=utf8</dataSource>
     </database>
+    <mongoStore>
+        <source>192.168.18.200:27017/hgs</source>
+    </mongoStore>
     <redisStore>
         <addr>192.168.18.200:6379</addr>
         <auth>8dc40c2c4598ae5a</auth>
-        <db>1</db>
+        <db>0</db>
         <timeout>3</timeout> 
     </redisStore>
 </configuration>

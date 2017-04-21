@@ -27,6 +27,10 @@
 			<appId>hqpost</appId>
 			<configFile>hqpost.xml</configFile>     
 		</projects>		
+		<projects>
+            <appId>market_hqpublish</appId>
+            <configFile>hqpublish.xml</configFile>
+        </projects>
     </appSettings>
     <emailSetting>
         <addr>notification@mail.facework.im</addr>
