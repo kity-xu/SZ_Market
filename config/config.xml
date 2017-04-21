@@ -19,9 +19,14 @@
         <environment>development</environment>
        
         <projects>
-            <appId>market_finance</appId>
-            <configFile>finance.xml</configFile>
+			<appId>market_finance</appId>
+			<configFile>finance.xml</configFile>	    
         </projects>
+		
+		<projects>
+			<appId>hqpost</appId>
+			<configFile>hqpost.xml</configFile>     
+		</projects>		
     </appSettings>
     <emailSetting>
         <addr>notification@mail.facework.im</addr>
