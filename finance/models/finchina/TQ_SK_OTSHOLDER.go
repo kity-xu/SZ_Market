@@ -14,15 +14,16 @@ import (
 */
 
 type TQ_SK_OTSHOLDER struct {
-	Model        `db:"-" `
-	ID           int64          // ID
-	ENDDATE      string         // 放置本次股东信息的截止日期
-	HOLDERSUMCHG dbr.NullString // 增持股份 (?大于1是增持小于是减少)
-	HOLDERAMT    string         // 持股数
-	HOLDERRTO    string         // 持股数量占总股本比例
-	ISHIS        int            // 是否上一报告期存在股东
-	SYMBOL       string         // 股票代码
-	SHHOLDERNAME string         // 股东名称
+	Model            `db:"-" `
+	ID               int64           // ID
+	ENDDATE          string          // 放置本次股东信息的截止日期
+	HOLDERSUMCHG     dbr.NullFloat64 // 增持股份 (?大于1是增持小于是减少)
+	HOLDERAMT        float64         // 持股数
+	HOLDERRTO        float64         // 持股数量占总股本比例
+	PCTOFFLOATSHARES float64         // 持股数量占流通A股比例
+	ISHIS            int             // 是否上一报告期存在股东
+	SYMBOL           string          // 股票代码
+	SHHOLDERNAME     string          // 股东名称
 }
 
 func NewTQ_SK_OTSHOLDER() *TQ_SK_OTSHOLDER {
@@ -63,7 +64,7 @@ type Calculate struct {
 /**
   获取结算时间列表
 */
-func (this *TQ_SK_OTSHOLDER) GetEndDate(sCode string) ([]*TQ_SK_OTSHOLDER, error) {
+func (this *TQ_SK_OTSHOLDER) GetEndDate(sCode string, edata string, limit int) ([]*TQ_SK_OTSHOLDER, error) {
 	var dataTop10 []*TQ_SK_OTSHOLDER
 	//根据证券代码获取公司内码
 	sc := NewTQ_OA_STCODE()
@@ -74,8 +75,8 @@ func (this *TQ_SK_OTSHOLDER) GetEndDate(sCode string) ([]*TQ_SK_OTSHOLDER, error
 
 	bulid := this.Db.Select("DISTINCT(ENDDATE)").
 		From(this.TableName).
-		Where("COMPCODE=" + sc.COMPCODE.String).
-		OrderBy("ENDDATE desc").Limit(8)
+		Where("COMPCODE=" + sc.COMPCODE.String + edata + " and ISVALID=1").
+		OrderBy("ENDDATE desc").Limit(uint64(limit))
 
 	_, err := this.SelectWhere(bulid, nil).LoadStructs(&dataTop10)
 
@@ -108,7 +109,7 @@ func (this *Calculate) GetSingleCalculate(enddate string, scode string) *Calcula
 }
 
 // 获取十大流通股东信息
-func (this *TQ_SK_OTSHOLDER) GetTop10Group(enddate string, scode string, limit int) ([]*TQ_SK_OTSHOLDER, error) {
+func (this *TQ_SK_OTSHOLDER) GetTop10Group(enddate string, scode string) ([]*TQ_SK_OTSHOLDER, error) {
 	var data []*TQ_SK_OTSHOLDER
 	//根据证券代码获取公司内码
 	sc := NewTQ_OA_STCODE()
@@ -119,10 +120,10 @@ func (this *TQ_SK_OTSHOLDER) GetTop10Group(enddate string, scode string, limit i
 
 	bulid := this.Db.Select(" * ").
 		From(this.TableName).
-		Where("COMPCODE = '" + sc.COMPCODE.String + "' and ENDDATE= '" + enddate + "'").
-		OrderBy("HOLDERAMT  desc ")
+		Where("COMPCODE = '" + sc.COMPCODE.String + "' and ENDDATE IN (" + enddate + ")").
+		OrderBy("ENDDATE,HOLDERAMT  desc ")
 
-	bulid = bulid.Limit(uint64(limit))
+	//bulid = bulid.Limit(10)
 
 	_, err := this.SelectWhere(bulid, nil).LoadStructs(&data)
 
