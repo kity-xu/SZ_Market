@@ -9,7 +9,7 @@ import (
 type RequestParam struct {
 	SCode   string // 截取股票代码数字部分后的scode
 	Type    int    // 类型(1:一季报 2:中报 3:三季报 4:年报)
-	PerPage int    // 每页条数,默认4
+	PerPage int    // 每页条数,默认100
 	Page    int    // 第几页的页码,默认1
 }
 
@@ -36,7 +36,7 @@ func CheckAndNewRequestParam(scode string, stype string, perPage string, spage s
 	}
 
 	if len(perPage) == 0 {
-		iperPage = 4
+		iperPage = 100
 	} else {
 		i, err := strconv.Atoi(perPage)
 		if err != nil || i < 1 {
