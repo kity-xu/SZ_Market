@@ -105,7 +105,7 @@ func (this *TQ_SK_SHARESTRUCHG) GetSingleBySCode(scode string, selwhe string, li
 
 	bulid := this.Db.Select("*").
 		From(this.TableName).
-		Where("COMPCODE=" + sc.COMPCODE.String + selwhe).OrderBy("ENDDATE desc")
+		Where("COMPCODE=" + sc.COMPCODE.String + selwhe + " and ISVALID =1").OrderBy("ENDDATE desc")
 	if limit > 0 {
 		bulid = bulid.Limit(uint64(limit))
 	}
@@ -135,7 +135,7 @@ func (this *TQ_SK_SHARESTRUCHG) GetChangesStrGroup(enddate string, scode string,
 	}
 	bulid := this.Db.Select("ENDDATE AS ENDDATEV,SHCHGRSN AS SHCHGRSNV,TOTALSHARE AS TOTALSHAREV,CIRCAAMT AS CIRCAAMTV, RECIRCAAMT AS RECIRCAAMTV").
 		From(this.TableName).
-		Where("COMPCODE=" + sc.COMPCODE.String + enddateDx).
+		Where("COMPCODE=" + sc.COMPCODE.String + enddateDx + " and ISVALID =1").
 		OrderBy("ENDDATE  desc ")
 
 	bulid = bulid.Limit(uint64(limit))

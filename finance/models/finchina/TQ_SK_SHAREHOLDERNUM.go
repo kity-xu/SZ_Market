@@ -52,7 +52,7 @@ func (this *TQ_SK_SHAREHOLDERNUM) GetListByExps(scode string, limit int, strdate
 
 	bulid := this.Db.Select("*").
 		From(this.TableName).
-		Where("COMPCODE = " + sc.COMPCODE.String + strdate).
+		Where("COMPCODE = " + sc.COMPCODE.String + strdate + " and ISVALID =1").
 		OrderBy("ENDDATE  desc ")
 
 	if limit > 0 {

@@ -121,7 +121,7 @@ func (this *TQ_SK_OTSHOLDER) GetTop10Group(enddate string, scode string) ([]*TQ_
 
 	bulid := this.Db.Select(" * ").
 		From(this.TableName).
-		Where("COMPCODE = '" + sc.COMPCODE.String + "' and ENDDATE IN (" + enddate + ")").
+		Where("COMPCODE = '" + sc.COMPCODE.String + "' and ENDDATE IN (" + enddate + ") and ISVALID =1").
 		OrderBy("ENDDATE,HOLDERAMT  desc ")
 
 	//bulid = bulid.Limit(10)
