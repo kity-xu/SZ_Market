@@ -20,6 +20,7 @@ type TQ_SK_OTSHOLDER struct {
 	HOLDERSUMCHG     dbr.NullFloat64 // 增持股份 (?大于1是增持小于是减少)
 	HOLDERAMT        float64         // 持股数
 	HOLDERRTO        float64         // 持股数量占总股本比例
+	HOLDERSUMCHGRATE dbr.NullFloat64 // 持股数量增减幅度
 	PCTOFFLOATSHARES float64         // 持股数量占流通A股比例
 	ISHIS            int             // 是否上一报告期存在股东
 	SYMBOL           string          // 股票代码

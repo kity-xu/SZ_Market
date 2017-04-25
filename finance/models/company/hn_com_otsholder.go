@@ -11,6 +11,7 @@ type Top10 struct {
 	Name  string  `json:"Name"`  // 股东名称
 	Ovwet float64 `json:"Ovwet"` // 增持股份
 	Posi  float64 `json:"Posi"`  // 持股数
+	Hshr  float64 `json:"Hshr"`  // 持股数量增减幅度
 	Prop  float64 `json:"Prop"`  // 持股数量占总股本比例
 	Ptos  float64 `json:"Ptos"`  // 持股数量占流通A股比例
 }
@@ -72,6 +73,7 @@ func GetTop10Group(enddate string, scode string, limit int) ([]*RetTopInfoJson, 
 				jsn.ISHIS = item.ISHIS
 				jsn.Name = item.SHHOLDERNAME
 				jsn.Ovwet = item.HOLDERSUMCHG.Float64
+				jsn.Hshr = item.HOLDERSUMCHGRATE.Float64
 				jsn.Posi = item.HOLDERAMT
 				jsn.Ptos = item.PCTOFFLOATSHARES
 				jsn.Prop = item.HOLDERRTO
