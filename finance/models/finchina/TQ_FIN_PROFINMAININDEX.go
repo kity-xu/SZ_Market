@@ -67,8 +67,9 @@ func (this *TQ_FIN_PROFINMAININDEX) getListByCompcode(compcode string, report_ty
 	if report_type != 0 {
 		builder.Where("REPORTDATETYPE=?", report_type)
 	}
-	err = builder.Where("COMPCODE = ?", compcode).
-		Where("REPORTTYPE = 3").
+	err = builder.Where("COMPCODE=?", compcode).
+		Where("ISVALID=1").
+		Where("REPORTTYPE=?", 3).
 		OrderBy("REPORTTYPE ASC, ENDDATE DESC").
 		Paginate(uint64(page), uint64(per_page)).
 		LoadStruct(&sli_db)

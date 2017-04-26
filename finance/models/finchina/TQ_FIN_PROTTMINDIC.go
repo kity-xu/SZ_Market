@@ -67,8 +67,9 @@ func (this *TQ_FIN_PROTTMINDIC) getListByCompcode(compcode string, report_type i
 		sets = sets[:len(sets)-1]
 		builder.Where("ENDDATE in (" + sets + ")")
 	}
-	err = builder.Where("COMPCODE = ?", compcode).
-		Where("REPORTTYPE = 3").
+	err = builder.Where("COMPCODE=?", compcode).
+		Where("ISVALID=1").
+		Where("REPORTTYPE=?", 3).
 		OrderBy("ENDDATE DESC").
 		Limit(uint64(per_page)).
 		LoadStruct(&sli_db)
