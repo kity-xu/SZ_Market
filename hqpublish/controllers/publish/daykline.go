@@ -18,7 +18,7 @@ func NewDayKLine() *DayKLine {
 // 获取日K先历史数据
 func (this *DayKLine) GET(c *gin.Context) {
 	snid := c.Query(models.CONTEXT_SNID)
-	key := "kline:day:" + snid
+	key := "hgs:hq:" + snid + ":hkday"
 	klpbinfo, err := redigo.Bytes(redis.Get(key))
 	if err != nil {
 		// 没找到
