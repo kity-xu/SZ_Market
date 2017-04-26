@@ -48,18 +48,19 @@ func (this *SecurityTable) GetJson(c *gin.Context) {
 }
 
 func (this *SecurityTable) GetPB(c *gin.Context) {
-	var reply securitytable.ReplySecurityCodeTable
-	securitytable, err := publish.NewSecurityTable().GetSecurityTable()
+	var (
+		replypb []byte
+		err     error
+	)
+	replypb, err = publish.NewSecurityTable().GetSecurityTableReplyBytes()
 	if err != nil {
-		reply.Code = 40002
-	} else {
-		reply.Code = 200
-		reply.Stable = securitytable
+		reply := securitytable.ReplySecurityCodeTable{
+			Code: 40002,
+		}
+		replypb, err = proto.Marshal(&reply)
+		if err != nil {
+			logging.Error("pb marshal error: %v", err)
+		}
 	}
-	v, err := proto.Marshal(&reply)
-	if err != nil {
-		logging.Info("%v", err)
-		return
-	}
-	lib.WriteData(c, v)
+	lib.WriteData(c, replypb)
 }
