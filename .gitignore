@@ -12,3 +12,7 @@ hqpublish/hqpublish.exe
 hqpublish/bin/market_hqpublish
 hqpublish/hqpublish_linux_amd64
 
+hqpost/hqpost
+hqpost/hqpost.exe
+hqpost/bin/market_hqpost
+hqpost/hqpost_linux_amd64

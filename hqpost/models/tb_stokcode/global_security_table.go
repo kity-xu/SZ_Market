@@ -19,8 +19,8 @@ func GetMongoModel() *mongo.Model {
 	}
 }
 
-func GetSecurityTableFromMG() ([]Code, error) {
-	var codes []Code
+func GetSecurityTableFromMG() (*[]*Code, error) {
+	var codes []*Code
 	mogo := GetMongoModel()
 
 	exps := bson.M{}
@@ -30,5 +30,5 @@ func GetSecurityTableFromMG() ([]Code, error) {
 	}
 	logging.Debug("lenght of stockcode tables:%v", len(codes))
 
-	return codes, err
+	return &codes, err
 }

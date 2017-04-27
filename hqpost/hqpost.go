@@ -30,7 +30,7 @@ func main() {
 	ginpprof.Wrapper(r)
 
 	//行情数据更新
-	new(market.Security).UpdateMarket(cfg)
+	market.Update(cfg)
 
 	logging.Error("%s", r.Run(cfg.Serve.Port))
 }
