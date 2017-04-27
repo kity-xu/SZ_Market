@@ -68,8 +68,9 @@ func (this *TQ_FIN_PROINCSTATEMENTNEW) getListByCompcode(compcode string, report
 	if report_type != 0 {
 		builder.Where("REPORTDATETYPE=?", report_type)
 	}
-	err := builder.Where("COMPCODE = ?", compcode).
-		Where("REPORTTYPE = ?", 1).
+	err := builder.Where("COMPCODE=?", compcode).
+		Where("ISVALID=1").
+		Where("REPORTTYPE=?", 1).
 		OrderBy("ENDDATE DESC").
 		Paginate(uint64(page), uint64(per_page)).
 		LoadStruct(&sli)

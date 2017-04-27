@@ -28,18 +28,19 @@ func (this *EquityInfo) GetShareholderJson(c *gin.Context) {
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
 	var value_int = 0
 	var err error
-	if count == "" {
-		value_int = 10
-	} else {
+	if count != "" {
 		value_int, err = strconv.Atoi(count)
-	}
-	if err != nil {
-		logging.Debug("%v", err)
-		lib.WriteString(c, 88888, nil)
+		logging.Info("类型转换%v", err)
+	} else {
+		value_int = 10
 	}
 
 	//根据条件查询股东信息
-	data, err := company.GetShareholderGroup(enddate, scode, value_int)
+	var strDate = ""
+	if enddate != "" {
+		strDate = " and ENDDATE<'" + enddate + "'"
+	}
+	data, err := company.GetShareholderGroup(scode, value_int, strDate)
 
 	lib.WriteString(c, 200, data)
 }

@@ -1,106 +1,95 @@
 package company
 
 import (
-	"errors"
-	"strconv"
-
 	"haina.com/market/finance/models/finchina"
+	//"haina.com/share/logging"
 )
 
 type Top10 struct {
-	ID    int64  `json:"-"`     // ID
-	ISHIS int    `json:"ISHIS"` // 是否上一报告期存在股东
-	Name  string `json:"Name"`  // 股东名称
-	Ovwet string `json:"Ovwet"` // 增持股份
-	Posi  string `json:"Posi"`  // 持股数
-	Prop  string `json:"Prop"`  // 持股数量占总股本比例
+	ID    int64   `json:"-"`     // ID
+	ISHIS int     `json:"ISHIS"` // 是否上一报告期存在股东
+	Name  string  `json:"Name"`  // 股东名称
+	Ovwet float64 `json:"Ovwet"` // 增持股份
+	Posi  float64 `json:"Posi"`  // 持股数
+	Hshr  float64 `json:"Hshr"`  // 持股数量增减幅度
+	Prop  float64 `json:"Prop"`  // 持股数量占总股本比例
+	Ptos  float64 `json:"Ptos"`  // 持股数量占流通A股比例
 }
 
-type TopList interface{}
+type TLSG interface{}
 type RetTopInfoJson struct {
-	CR      float64     `json:"CR"`
-	EndDate string      `json:"EndDate"`
-	Rate    string      `json:"Rate"`
-	SCode   string      `json:"scode"`
-	Sum     string      `json:"Sum"`
-	TopList interface{} `json:"TLSG"`
+	CR float64 `json:"CR"`
+	//EndDate string      `json:"EndDate"`
+	Rate  float64     `json:"Rate"`
+	SCode string      `json:"scode"`
+	Sum   float64     `json:"Sum"`
+	Edate string      `json:"Edate"`
+	TLSG  interface{} `json:"TLSG"`
 }
 
 /**
   获取十大流通股东信息
 */
-func GetTop10Group(enddate string, scode string, limit int) (RetTopInfoJson, error) {
+func GetTop10Group(enddate string, scode string, limit int) ([]*RetTopInfoJson, error) {
 
-	dataEnd, err := finchina.NewTQ_SK_OTSHOLDER().GetEndDate(scode)
-	var endStr = ""
-	for _, item := range dataEnd {
-		endStr += item.ENDDATE + ","
-	}
-	var zendtata = ""
+	// 根据证券代码 开始时间 查询条数 查询日期
+	var selwhe = " "
 	if enddate != "" {
-		zendtata = enddate
-	} else {
-		zendtata = dataEnd[0].ENDDATE
+		selwhe = " and ENDDATE < '" + enddate + "' "
+	}
+	dataEnd, err := finchina.NewTQ_SK_OTSHOLDER().GetEndDate(scode, selwhe, limit+1)
+
+	var whel = ""
+	for _, item := range dataEnd {
+		whel += "'" + item.ENDDATE + "',"
+	}
+	if len(whel) > 1 {
+		whel = whel[0 : len(whel)-1]
 	}
 
-	data, err := finchina.NewTQ_SK_OTSHOLDER().GetTop10Group(zendtata, scode, limit)
-
-	var rij RetTopInfoJson
-	jsns10 := []*Top10{}
-
-	for _, item := range data {
-
-		jsn, err := GetTop10Info(item)
-		if err != nil {
-			return rij, err
-		}
-
-		jsns10 = append(jsns10, jsn)
-	}
-
-	tp := finchina.NewCalculate().GetSingleCalculate(zendtata, scode)
-	//计算上次累计持股
-	var sSum float64
-	for index, item := range dataEnd {
-		if zendtata == item.ENDDATE {
+	// 查询9组十大流通股东
+	data, err := finchina.NewTQ_SK_OTSHOLDER().GetTop10Group(whel, scode)
+	// 外循环9个日期 内循环9组十大流通股东数据
+	rtpj := []*RetTopInfoJson{}
+	for index, itm := range dataEnd {
+		var rij RetTopInfoJson
+		var sumv1 = 0.0 // 累计
+		var crv1 = 0.0  // 较上期变化
+		var rat1 = 0.0  // 累计占路通股本比
+		objz := []*Top10{}
+		for _, item := range data {
+			// 上期
 			if index < len(dataEnd)-1 {
-				tp1 := finchina.NewCalculate().GetSingleCalculate(dataEnd[index+1].ENDDATE, scode)
-				sSum, err = strconv.ParseFloat(tp1.Sumh, 64)
-				break
+				if dataEnd[index+1].ENDDATE == item.ENDDATE {
+					crv1 += item.HOLDERAMT
+				}
+			}
+			// 最新一期
+			if itm.ENDDATE == item.ENDDATE {
+				sumv1 += item.HOLDERAMT
+				rat1 += item.PCTOFFLOATSHARES
+				// ----------
+				var jsn Top10
+				jsn.ISHIS = item.ISHIS
+				jsn.Name = item.SHHOLDERNAME
+				jsn.Ovwet = item.HOLDERSUMCHG.Float64
+				jsn.Hshr = item.HOLDERSUMCHGRATE.Float64
+				jsn.Posi = item.HOLDERAMT
+				jsn.Ptos = item.PCTOFFLOATSHARES
+				jsn.Prop = item.HOLDERRTO
+				objz = append(objz, &jsn)
 			}
 		}
-
+		crv1 = sumv1 - crv1 // 较上期变化
+		// 保存一组数据
+		rij.CR = crv1
+		rij.Sum = sumv1
+		rij.Rate = rat1
+		rij.SCode = scode
+		rij.Edate = itm.ENDDATE
+		rij.TLSG = objz
+		rtpj = append(rtpj, &rij)
 	}
 
-	rij.TopList = jsns10
-	rij.SCode = scode
-	rij.Sum = tp.Sumh
-	rij.Rate = tp.Rate
-	var Sums float64
-	Sums, err = strconv.ParseFloat(tp.Sumh, 64)
-	rij.CR = Sums - sSum
-
-	var enddatestr = ""
-	if len(endStr) > 1 {
-		enddatestr = endStr[0 : len(endStr)-1]
-	}
-	rij.EndDate = enddatestr
-	return rij, err
-}
-
-// 获取Top10信息
-func GetTop10Info(tso *finchina.TQ_SK_OTSHOLDER) (*Top10, error) {
-	var jsn Top10
-	if len(tso.SHHOLDERNAME) < 1 {
-		return &jsn, errors.New("obj is nil")
-	}
-
-	return &Top10{
-		//ID:    top10.ID,
-		ISHIS: tso.ISHIS,
-		Name:  tso.SHHOLDERNAME,
-		Ovwet: tso.HOLDERSUMCHG.String,
-		Posi:  tso.HOLDERAMT,
-		Prop:  tso.HOLDERRTO,
-	}, nil
+	return rtpj, err
 }

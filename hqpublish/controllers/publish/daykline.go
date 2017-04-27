@@ -1,7 +1,10 @@
 package publish
 
 import (
+	"ProtocolBuffer/format/redis/pbdef/kline"
+
 	"github.com/gin-gonic/gin"
+	"github.com/golang/protobuf/proto"
 	"haina.com/market/hqpublish/models"
 	redigo "haina.com/share/garyburd/redigo/redis"
 	"haina.com/share/lib"
@@ -15,19 +18,23 @@ func NewDayKLine() *DayKLine {
 	return &DayKLine{}
 }
 
-// 获取日K先历史数据
+// 获取日K线历史数据
 func (this *DayKLine) GET(c *gin.Context) {
 	snid := c.Query(models.CONTEXT_SNID)
-	key := "kline:day:" + snid
+	key := "hq:st:hday:" + snid
+	var kli kline.ReplyDKInfoTable
 	klpbinfo, err := redigo.Bytes(redis.Get(key))
 	if err != nil {
 		// 没找到
 		if err == redigo.ErrNil {
 			logging.Info("没找到数据 %v", err)
-			return
+			kli.Code = 40002
+			v, err := proto.Marshal(&kli)
+			if err != nil {
+				logging.Info("%v", err)
+			}
+			lib.WriteData(c, v)
 		}
-		// 其他错误
-		return
 	}
 
 	lib.WriteData(c, klpbinfo)
