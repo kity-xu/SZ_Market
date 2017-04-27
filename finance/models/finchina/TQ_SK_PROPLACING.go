@@ -56,6 +56,7 @@ func (this *TQ_SK_PROPLACING) GetROListFromFC(scode string) ([]TQ_SK_PROPLACING,
 	}
 	exps := map[string]interface{}{
 		"COMPCODE=?": sc.COMPCODE,
+		"ISVALID=?":  1,
 	}
 	builder := ro.Db.Select("*").From(ro.TableName)
 	num, err := ro.SelectWhere(builder, exps).OrderBy("PUBLISHDATE desc").LoadStructs(&ros)

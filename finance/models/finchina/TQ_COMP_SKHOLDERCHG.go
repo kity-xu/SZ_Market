@@ -56,6 +56,7 @@ func (this *TQ_COMP_SKHOLDERCHG) GetHoldAMTlistFromFC(scode string) ([]HolderCha
 
 	exps := map[string]interface{}{
 		"COMPCODE=?": sc.COMPCODE,
+		"ISVALID=?":  1,
 	}
 	builder := amt.Db.Select("*").From(amt.TableName)
 	num, err := amt.SelectWhere(builder, exps).OrderBy("PUBLISHDATE desc").LoadStructs(&holders)

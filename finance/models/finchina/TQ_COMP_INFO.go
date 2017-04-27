@@ -51,6 +51,7 @@ func (this *TQ_COMP_INFO) GetCompInfoFromFC(scode string) (*TQ_COMP_INFO, error)
 
 	exps := map[string]interface{}{
 		"COMPCODE=?": sc.COMPCODE,
+		"ISVALID=?":  1,
 	}
 	builder := comp.Db.Select("*").From(comp.TableName)
 	err := comp.SelectWhere(builder, exps).Limit(1).LoadStruct(comp)

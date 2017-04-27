@@ -53,6 +53,7 @@ func (this *TQ_SK_DIVIDENTS) GetDivListFromFC(sets uint64, scode string) ([]TQ_S
 		"COMPCODE=?":    sc.COMPCODE,
 		"DATETYPE=?":    "4",
 		"GRAOBJTYPE!=?": "99",
+		"ISVALID=?":     1,
 	}
 	builder := div.Db.Select("*").From(div.TableName)
 	num, err := div.SelectWhere(builder, exps).OrderBy("DIVIYEAR desc").Limit(sets).LoadStructs(&divs)

@@ -51,6 +51,7 @@ func (this *TQ_COMP_MANAGER) GetManagersFromFC(scode string) ([]TQ_COMP_MANAGER,
 	exps := map[string]interface{}{
 		"COMPCODE=?":  sc.COMPCODE,
 		"NOWSTATUS=?": 2,
+		"ISVALID=?":   1,
 	}
 	builder := mg.Db.Select("*").From(mg.TableName)
 	num, err := mg.SelectWhere(builder, exps).OrderBy("UPDATEDATE desc").LoadStructs(&primal)

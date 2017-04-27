@@ -56,6 +56,7 @@ func (this *TQ_SK_PROADDISS) GetSEOListFromFC(scode string) ([]TQ_SK_PROADDISS, 
 
 	exps := map[string]interface{}{
 		"COMPCODE=?": sc.COMPCODE,
+		"ISVALID=?":  1,
 	}
 	builder := seo.Db.Select("*").From(seo.TableName)
 	num, err := seo.SelectWhere(builder, exps).OrderBy("PUBLISHDATE desc").LoadStructs(&seos)
