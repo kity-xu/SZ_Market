@@ -43,13 +43,6 @@
         }
         </config>
     </session>
-    <database>
-        <driverName>mysql</driverName>
-        <dataSource>publisher:Haina$A7Kha@tcp(123.56.30.141:3306)/finchinafcdd?charset=utf8</dataSource>
-    </database>
-    <mongoStore>
-        <source>192.168.18.200:27017/hgs</source>
-    </mongoStore>
     <redisStore>
         <addr>192.168.18.200:6379</addr>
         <auth>8dc40c2c4598ae5a</auth>
