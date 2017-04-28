@@ -29,7 +29,7 @@ func CheckAndNewRequestParam(scode string, stype string, perPage string, spage s
 		itype = 0
 	} else {
 		i, err := strconv.Atoi(stype)
-		if err != nil || i < 1 || 4 < i {
+		if err != nil || i < 0 || 4 < i {
 			return nil
 		}
 		itype = i
