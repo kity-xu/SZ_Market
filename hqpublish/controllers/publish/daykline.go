@@ -22,7 +22,7 @@ func NewDayKLine() *DayKLine {
 func (this *DayKLine) GET(c *gin.Context) {
 	snid := c.Query(models.CONTEXT_SNID)
 	key := "hq:st:hday:" + snid
-	var kli kline.ReplyDKInfoTable
+	var kli kline.ReplyKInfoTable
 	klpbinfo, err := redigo.Bytes(redis.Get(key))
 	if err != nil {
 		// 没找到
