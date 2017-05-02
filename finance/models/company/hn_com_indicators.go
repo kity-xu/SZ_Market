@@ -51,8 +51,8 @@ type IndicatorsJson struct {
 	MEDBRTTM  float64 `json:"MEDBRTTM"`  //管理费用／营业总收入_TTM
 	NPADNRGL  float64 `json:"NPADNRGL"`  //扣除非经常性损益后的净利润
 	NPAPC     float64 `json:"NPAPC"`     //归属母公司净利润
-	NPOR      float64 `json:"NPDBR"`     //净利润／营业总收入
-	NPORTTM   float64 `json:"NPDBRTTM"`  //净利润／营业总收入_TTM
+	NPOR      float64 `json:"NPOR"`      //净利润／营业总收入
+	NPORTTM   float64 `json:"NPORTTM"`   //净利润／营业总收入_TTM
 	NSR       float64 `json:"NSR"`       //销售净利率
 	NSRTTM    float64 `json:"NSRTTM"`    //销售净利率_TTM
 	OCDBR     float64 `json:"OCDBR"`     //营业总成本／营业总收入
