@@ -1,17 +1,23 @@
 package publish
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
+	"io"
 
 	. "haina.com/share/models"
 
 	"ProtocolBuffer/format/redis/pbdef/kline"
 
-	//"github.com/golang/protobuf/proto"
-	//redigo "haina.com/share/garyburd/redigo/redis"
+	redigo "haina.com/share/garyburd/redigo/redis"
 	"haina.com/share/logging"
 	"haina.com/share/store/redis"
 )
+
+var _ = fmt.Println
+var _ = redigo.Bytes
+var _ = logging.Info
 
 type MinKLine struct {
 	Model `db:"-"`
@@ -38,31 +44,34 @@ func (this *MinKLine) GetMinKLine(request *kline.RequestMinK) (*kline.ReplyMinK,
 		return nil, err
 	}
 	if len(ls) == 0 {
-		return nil, REDIS_ERROR_LIST_NULL
+		return nil, ERROR_REDIS_LIST_NULL
 	}
+
+	if request.BeginTime > 150100 {
+		return nil, ERROR_KLINE_BEGIN_TIME
+	}
+
+	for _, v := range ls {
+		k := &kline.KInfo{}
+		buffer := bytes.NewBuffer([]byte(v))
+		if err := binary.Read(buffer, binary.LittleEndian, k); err != nil && err != io.EOF {
+			return nil, err
+		}
+		if k.NTime >= request.BeginTime {
+			//fmt.Printf("%#v\n", k)
+			this.reply.Data.List = append(this.reply.Data.List, k)
+		}
+	}
+
+	/*
+		if this.reply.Data.GetList() == nil {
+			return nil, ERROR_KLINE_DATA_NULL
+		} // */
 
 	this.reply.Code = 200
 	this.reply.Data.SID = request.SID
 	this.reply.Data.BeginTime = request.BeginTime
-	this.reply.Data.Num = int32(len(ls))
-
-	for _, v := range ls {
-		a := &kline.KInfo{
-			NSID:     1,
-			NTime:    1,
-			NPreCPx:  1,
-			NOpenPx:  1,
-			NHighPx:  1,
-			NLowPx:   1,
-			NLastPx:  1,
-			LlVolume: 1,
-			LlValue:  1,
-			NAvgPx:   1,
-		}
-		this.reply.Data.List = append(this.reply.Data.List, a)
-	}
-
-	logging.Info("%v", this.reply)
+	this.reply.Data.Num = int32(len(this.reply.Data.List))
 
 	return &this.reply, nil
 }

@@ -28,6 +28,7 @@ func NewSecurityTable() *SecurityTable {
 func (rds *SecurityTable) GetSecurityTable() (*securitytable.SecurityCodeTable, error) {
 	key := rds.CacheKey
 	bytes, err := redigo.Bytes(redis.Get(key))
+	logging.Info("bytes len %d", len(bytes))
 	if err != nil {
 		// 没找到
 		if err == redigo.ErrNil {
@@ -54,8 +55,8 @@ func (rds *SecurityTable) GetSecurityTableReplyBytes() ([]byte, error) {
 			}
 
 			reply := securitytable.ReplySecurityCodeTable{
-				Code:   200,
-				Stable: sc,
+				Code: 200,
+				Data: sc,
 			}
 			replypb, err := proto.Marshal(&reply)
 			if err != nil {

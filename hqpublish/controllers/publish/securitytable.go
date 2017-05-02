@@ -41,6 +41,7 @@ func (this *SecurityTable) GET(c *gin.Context) {
 func (this *SecurityTable) GetJson(c *gin.Context) {
 	securitytable, err := publish.NewSecurityTable().GetSecurityTable()
 	if err != nil {
+		logging.Error("%v", err)
 		lib.WriteString(c, 40002, nil)
 		return
 	}
@@ -54,6 +55,7 @@ func (this *SecurityTable) GetPB(c *gin.Context) {
 	)
 	replypb, err = publish.NewSecurityTable().GetSecurityTableReplyBytes()
 	if err != nil {
+		logging.Error("%v", err)
 		reply := securitytable.ReplySecurityCodeTable{
 			Code: 40002,
 		}

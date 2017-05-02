@@ -18,7 +18,7 @@ func NewDayKLine() *DayKLine {
 	return &DayKLine{}
 }
 
-// 获取日K线历史数据
+// 获取历史日K线历史数据
 func (this *DayKLine) GET(c *gin.Context) {
 	snid := c.Query(models.CONTEXT_SNID)
 	key := "hq:st:hday:" + snid
