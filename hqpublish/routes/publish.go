@@ -13,4 +13,7 @@ func RegPublish(rg *gin.RouterGroup) {
 	// 日K线历史数据
 	rg.GET("/kline/dayk", publish.NewDayKLine().GET) //默认pb模式
 
+	// 分钟K线
+	rg.POST("/min", publish.NewMinKLine().POST)
+
 }

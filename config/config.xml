@@ -40,6 +40,8 @@
     </emailSetting>
     <cors>
         <allowOrigin>http://127.0.0.1</allowOrigin>        
+        <allowOrigin>http://localhost</allowOrigin>        
+        <allowOrigin>chrome-extension://fhbjgbiflinjbdggehcddcbncdddomop</allowOrigin>
     </cors>
     <logServer>
         <on>0</on>
