@@ -51,11 +51,12 @@ type TQ_SK_SHARESTRUCHG struct {
 	ENDDATE    string  // 截止日期
 	//股本变动
 
-	ENDDATEV    string // 变动日期对应值
-	SHCHGRSNV   string // 变动原因对应值
-	CIRCAAMTV   string // 流通A股数及变化比例对应值
-	RECIRCAAMTV string // 限售A股数及变动比例对应值
-	TOTALSHAREV string // 总股本及变化比例对应值
+	ENDDATEV    string  // 变动日期对应值
+	SHCHGRSNV   string  // 变动原因对应值
+	CIRCAAMTV   float64 // 流通A股数及变化比例对应值
+	RECIRCAAMTV float64 // 限售A股数及变动比例对应值
+	TOTALSHAREV float64 // 总股本及变化比例对应值
+	ASK         float64 // A股股本
 }
 
 func NewTQ_SK_SHARESTRUCHG() *TQ_SK_SHARESTRUCHG {
@@ -133,7 +134,7 @@ func (this *TQ_SK_SHARESTRUCHG) GetChangesStrGroup(enddate string, scode string,
 	if enddate != "" {
 		enddateDx = " and ENDDATE < " + enddate
 	}
-	bulid := this.Db.Select("ENDDATE AS ENDDATEV,SHCHGRSN AS SHCHGRSNV,TOTALSHARE AS TOTALSHAREV,CIRCAAMT AS CIRCAAMTV, RECIRCAAMT AS RECIRCAAMTV").
+	bulid := this.Db.Select("ENDDATE AS ENDDATEV,SHCHGRSN AS SHCHGRSNV,TOTALSHARE AS TOTALSHAREV,CIRCAAMT AS CIRCAAMTV, RECIRCAAMT AS RECIRCAAMTV,ASK").
 		From(this.TableName).
 		Where("COMPCODE=" + sc.COMPCODE.String + enddateDx + " and ISVALID =1").
 		OrderBy("ENDDATE  desc ")

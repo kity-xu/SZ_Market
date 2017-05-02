@@ -33,12 +33,17 @@ type StructureEquity struct {
 
 //股本变动
 type ChangesEquity struct {
-	ID   int64  `json:"-"`    // ID
-	CDCV string `json:"CDCV"` // 变动日期对应值
-	CCCV string `json:"CCCV"` // 变动原因对应值
-	NSCV string `json:"NSCV"` // 流通A股数及变化比例对应值
-	SPCV string `json:"SPCV"` // 限售A股数及变动比例对应值
-	TPCV string `json:"TPCV"` // 总股本及变化比例对应值
+	ID   int64   `json:"-"`    // ID
+	CDCV string  `json:"CDCV"` // 变动日期对应值
+	CCCV string  `json:"CCCV"` // 变动原因对应值
+	NSCV float64 `json:"NSCV"` // 流通A股股数对应值
+	NSC  float64 `json:"NSC"`  // 流通A股股数变化比例
+	SPCV float64 `json:"SPCV"` // 限售A股股数对应值
+	SPC  float64 `json:"SPC"`  // 限售A股股数变化比例
+	TPCV float64 `json:"TPCV"` // 总股本对应值
+	TPC  float64 `json:"TPC"`  // 总股本变化比例
+	ASKV float64 `json:"ASKV"` // A股股本对应值
+	ASK  float64 `json:"ASK"`  // A股股本变化比例
 }
 
 ////////////股本结构
@@ -162,13 +167,14 @@ func GetChangesStrInfo(enddate string, scode string, limit int) (RetShaInfoJson,
 	var rij RetShaInfoJson
 	jsns := []*ChangesEquity{}
 
-	for _, item := range data {
-		jsn, err := GetChaEquInfo(item)
-		if err != nil {
-			return rij, err
+	for index, item := range data {
+		if index < len(data)-1 {
+			jsn, err := GetChaEquInfo(item, data[index+1])
+			if err != nil {
+				return rij, err
+			}
+			jsns = append(jsns, jsn)
 		}
-
-		jsns = append(jsns, jsn)
 	}
 	rij.SCode = scode
 	rij.ShaChaList = jsns
@@ -176,17 +182,35 @@ func GetChangesStrInfo(enddate string, scode string, limit int) (RetShaInfoJson,
 }
 
 // 获取JSON
-func GetChaEquInfo(ce *finchina.TQ_SK_SHARESTRUCHG) (*ChangesEquity, error) {
+func GetChaEquInfo(ce *finchina.TQ_SK_SHARESTRUCHG, last *finchina.TQ_SK_SHARESTRUCHG) (*ChangesEquity, error) {
 	var jsn ChangesEquity
 	if len(ce.ENDDATEV) < 1 {
 		return &jsn, errors.New("obj is nil")
 	}
 
+	var dvc, dvr, dvt, dva = 0.0, 0.0, 0.0, 0.0
+	if last.CIRCAAMTV != 0 {
+		dvc = (ce.CIRCAAMTV - last.CIRCAAMTV) / last.CIRCAAMTV
+	}
+	if last.RECIRCAAMTV != 0 {
+		dvr = (ce.RECIRCAAMTV - last.RECIRCAAMTV) / last.RECIRCAAMTV
+	}
+	if last.TOTALSHAREV != 0 {
+		dvt = (ce.TOTALSHAREV - last.TOTALSHAREV) / last.TOTALSHAREV
+	}
+	if last.ASK != 0 {
+		dva = (ce.ASK - last.ASK) / last.ASK
+	}
 	return &ChangesEquity{
-		CDCV: ce.ENDDATEV,    // 变动日期对应值
-		CCCV: ce.SHCHGRSNV,   // 变动原因对应值
-		NSCV: ce.CIRCAAMTV,   // 流通A股数及变化比例对应值
-		SPCV: ce.RECIRCAAMTV, // 限售A股数及变动比例对应值
-		TPCV: ce.TOTALSHAREV, // 总股本及变化比例对应值
+		CDCV: ce.ENDDATEV,  // 变动日期对应值
+		CCCV: ce.SHCHGRSNV, // 变动原因对应值
+		NSCV: ce.CIRCAAMTV, // 流通A股数对应值
+		NSC:  dvc,
+		SPCV: ce.RECIRCAAMTV, // 限售A股数对应值
+		SPC:  dvr,
+		TPCV: ce.TOTALSHAREV, // 总股本对应值
+		TPC:  dvt,
+		ASKV: ce.ASK,
+		ASK:  dva,
 	}, nil
 }
