@@ -85,6 +85,7 @@ type AppConfig struct {
 	Mns        MnsSetting     `xml:"mns"`
 	Mongo      MongoStore     `xml:"mongoStore"`
 	Redis      RedisStore     `xml:"redisStore"`
+	RedisCache RedisStore     `xml:"redisCache"`
 	Serve      ListenAndServe `xml:"listenAndServe"`
 	Session    SessionSetting `xml:"session"`
 	Settings   AppSettings    `xml:"appSettings"`

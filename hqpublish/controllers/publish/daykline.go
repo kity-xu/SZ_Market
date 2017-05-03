@@ -1,7 +1,7 @@
 package publish
 
 import (
-	"ProtocolBuffer/format/redis/pbdef/kline"
+	"ProtocolBuffer/format/kline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"

@@ -3,7 +3,7 @@ package publish
 import (
 	"haina.com/share/lib"
 
-	"ProtocolBuffer/format/redis/pbdef/securitytable"
+	"ProtocolBuffer/format/securitytable"
 
 	"haina.com/market/hqpublish/models"
 	"haina.com/market/hqpublish/models/publish"

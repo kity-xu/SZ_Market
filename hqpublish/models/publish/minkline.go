@@ -8,7 +8,7 @@ import (
 
 	. "haina.com/share/models"
 
-	"ProtocolBuffer/format/redis/pbdef/kline"
+	"ProtocolBuffer/format/kline"
 
 	redigo "haina.com/share/garyburd/redigo/redis"
 	"haina.com/share/logging"

@@ -1,7 +1,7 @@
 package publish
 
 import (
-	"ProtocolBuffer/format/redis/pbdef/securitytable"
+	"ProtocolBuffer/format/securitytable"
 
 	. "haina.com/share/models"
 

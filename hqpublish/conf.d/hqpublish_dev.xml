@@ -49,4 +49,10 @@
         <db>0</db>
         <timeout>3</timeout> 
     </redisStore>
+    <redisCache>
+        <addr>192.168.18.200:7379</addr>
+        <auth>8dc40c2c4598ae5a</auth>
+        <db>0</db>
+        <timeout>3</timeout> 
+    </redisCache>
 </configuration>
