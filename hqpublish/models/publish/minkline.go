@@ -18,10 +18,12 @@ import (
 var _ = fmt.Println
 var _ = redigo.Bytes
 var _ = logging.Info
+var _ = bytes.NewBuffer
+var _ = binary.Read
+var _ = io.ReadFull
 
 type MinKLine struct {
 	Model `db:"-"`
-	reply kline.ReplyMinK
 }
 
 func NewMinKLine() *MinKLine {
@@ -29,14 +31,11 @@ func NewMinKLine() *MinKLine {
 		Model: Model{
 			CacheKey: REDISKEY_SECURITY_MIN,
 		},
-		reply: kline.ReplyMinK{
-			Data: &kline.MinK{},
-		},
 	}
 }
 
 // 获取分钟K线
-func (this *MinKLine) GetMinKLine(request *kline.RequestMinK) (*kline.ReplyMinK, error) {
+func (this *MinKLine) GetMinKLine(request *kline.RequestMinK) (*kline.MinK, error) {
 	key := fmt.Sprintf(this.CacheKey, request.SID)
 
 	ls, err := redis.LRange(key, 0, -1)
@@ -51,6 +50,7 @@ func (this *MinKLine) GetMinKLine(request *kline.RequestMinK) (*kline.ReplyMinK,
 		return nil, ERROR_KLINE_BEGIN_TIME
 	}
 
+	kls := make([]*kline.KInfo, 0, 241)
 	for _, v := range ls {
 		k := &kline.KInfo{}
 		buffer := bytes.NewBuffer([]byte(v))
@@ -58,20 +58,16 @@ func (this *MinKLine) GetMinKLine(request *kline.RequestMinK) (*kline.ReplyMinK,
 			return nil, err
 		}
 		if k.NTime >= request.BeginTime {
-			//fmt.Printf("%#v\n", k)
-			this.reply.Data.List = append(this.reply.Data.List, k)
+			kls = append(kls, k)
 		}
 	}
 
-	/*
-		if this.reply.Data.GetList() == nil {
-			return nil, ERROR_KLINE_DATA_NULL
-		} // */
+	ret := &kline.MinK{
+		SID:       request.SID,
+		BeginTime: request.BeginTime,
+		Num:       int32(len(kls)),
+		List:      kls,
+	}
 
-	this.reply.Code = 200
-	this.reply.Data.SID = request.SID
-	this.reply.Data.BeginTime = request.BeginTime
-	this.reply.Data.Num = int32(len(this.reply.Data.List))
-
-	return &this.reply, nil
+	return ret, nil
 }

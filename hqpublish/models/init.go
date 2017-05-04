@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-
 	"haina.com/market/hqpublish/config"
 	"haina.com/share/store/redis"
 )
@@ -17,5 +15,4 @@ func init() {
 		cfg.Redis.Db,
 		cfg.Redis.Auth,
 		cfg.Redis.Timeout)
-	fmt.Printf("%v\n", cfg.RedisCache)
 }

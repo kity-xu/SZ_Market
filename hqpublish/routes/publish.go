@@ -13,4 +13,7 @@ func RegPublish(rg *gin.RouterGroup) {
 	// 分钟K线
 	rg.POST("/min", publish.NewMinKLine().POST)
 
+	// 证券快照
+	rg.POST("/snap", publish.NewStockSnapshot().POST)
+
 }

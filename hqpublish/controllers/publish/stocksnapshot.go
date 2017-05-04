@@ -1,3 +1,4 @@
+// 证券快照
 package publish
 
 import (
@@ -12,19 +13,19 @@ import (
 
 	"haina.com/share/logging"
 
-	"ProtocolBuffer/format/kline"
+	"ProtocolBuffer/format/snap"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
 )
 
-type MinKLine struct{}
+type StockSnapshot struct{}
 
-func NewMinKLine() *MinKLine {
-	return &MinKLine{}
+func NewStockSnapshot() *StockSnapshot {
+	return &StockSnapshot{}
 }
 
-func (this *MinKLine) POST(c *gin.Context) {
+func (this *StockSnapshot) POST(c *gin.Context) {
 	replayfmt := c.Query(models.CONTEXT_FORMAT)
 	if len(replayfmt) == 0 {
 		replayfmt = "pb" // 默认
@@ -36,46 +37,35 @@ func (this *MinKLine) POST(c *gin.Context) {
 	case "pb":
 		this.PostPB(c)
 	default:
+		//lib.WriteString(c, 40004, nil)
 		return
 	}
 }
 
-func getRequestData(c *gin.Context) ([]byte, error) {
-	temp := make([]byte, 1024)
-	n, err := c.Request.Body.Read(temp)
-	if err != nil && err != io.EOF {
-		logging.Error("Body Read: %v", err)
-		return nil, err
-	}
-	//logging.Info("\nBody len %d\n%s", n, temp[:n])
-	logging.Info("Body len %d", n)
-	return temp[:n], nil
-
-}
-
-func (this *MinKLine) PostJson(c *gin.Context) {
+func (this *StockSnapshot) PostJson(c *gin.Context) {
 	buf, err := getRequestData(c)
 	if err != nil && err != io.EOF {
 		logging.Error("%v", err)
 		return
 	}
 
-	var request kline.RequestMinK
+	var request snap.RequestSnap
 	if err := json.Unmarshal(buf, &request); err != nil {
 		logging.Error("Json Request Unmarshal: %v", err)
 		return
 	}
 	logging.Info("Request Data: %+v", request)
-	data, err := publish.NewMinKLine().GetMinKLine(&request)
+	data, err := publish.NewStockSnapshot().GetStockSnapshot(&request)
 	if err != nil {
 		logging.Error("%v", err)
-		reply := kline.ReplyMinK{
+		reply := snap.ReplySnap{
 			Code: 40002,
 		}
 		c.JSON(http.StatusOK, reply)
 		return
 	}
-	reply := &kline.ReplyMinK{
+
+	reply := snap.ReplySnap{
 		Code: 200,
 		Data: data,
 	}
@@ -83,11 +73,11 @@ func (this *MinKLine) PostJson(c *gin.Context) {
 	c.JSON(http.StatusOK, reply)
 }
 
-func (this *MinKLine) PostPB(c *gin.Context) {
+func (this *StockSnapshot) PostPB(c *gin.Context) {
 	var (
 		replypb []byte
 		err     error
-		request kline.RequestMinK
+		request snap.RequestSnap
 	)
 
 	buf, err := getRequestData(c)
@@ -100,9 +90,9 @@ func (this *MinKLine) PostPB(c *gin.Context) {
 		return
 	}
 	logging.Info("Request Data: %+v", request)
-	data, err := publish.NewMinKLine().GetMinKLine(&request)
+	reply, err := publish.NewStockSnapshot().GetStockSnapshot(&request)
 	if err != nil {
-		reply := kline.ReplyMinK{
+		reply := snap.ReplySnap{
 			Code: 40002,
 		}
 		replypb, err = proto.Marshal(&reply)
@@ -110,13 +100,9 @@ func (this *MinKLine) PostPB(c *gin.Context) {
 			logging.Error("pb marshal error: %v", err)
 		}
 	}
-	reply := &kline.ReplyMinK{
-		Code: 200,
-		Data: data,
-	}
 	replypb, err = proto.Marshal(reply)
 	if err != nil {
-		reply := kline.ReplyMinK{
+		reply := snap.ReplySnap{
 			Code: 40002,
 		}
 		replypb, err = proto.Marshal(&reply)

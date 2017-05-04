@@ -22,6 +22,11 @@ const (
 	REDISKEY_SECURITY_NAME_CODE    = "hq:st:name:%s"    ///<证券代码(参数：scode) (hq-init写入)
 )
 
+/// 证券快照
+const (
+	REDISKEY_SECURITY_SNAP = "hq:st:snap:%d" ///<证券快照数据(参数：sid) (calc写入)
+)
+
 /// 分钟线
 const (
 	REDISKEY_SECURITY_MIN  = "hq:st:min:%d"  ///<证券分钟线数据(参数：sid) (calc写入)
