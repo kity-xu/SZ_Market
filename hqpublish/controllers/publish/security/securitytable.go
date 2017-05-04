@@ -61,13 +61,9 @@ func (this *SecurityTable) PostJson(c *gin.Context) {
 	}
 
 	reply := &securitytable.ReplyMarketSecurityCodeTable{
-		Data: &securitytable.MarketSecurityCodeTable{},
+		Code: 200,
+		Data: table,
 	}
-	reply.Code = 200
-	reply.Data.TimeStamp = table.TimeStamp
-	reply.Data.Num = table.Num
-	reply.Data.MarketID = table.MarketID
-	reply.Data.List = table.List
 
 	c.JSON(http.StatusOK, reply)
 }
@@ -84,7 +80,7 @@ func (this *SecurityTable) PostPB(c *gin.Context) {
 		return
 	}
 
-	if err := json.Unmarshal(buf, &request); err != nil {
+	if err := proto.Unmarshal(buf, &request); err != nil {
 		logging.Error("Json Request Unmarshal: %v", err)
 		return
 	}
@@ -97,13 +93,9 @@ func (this *SecurityTable) PostPB(c *gin.Context) {
 	}
 
 	reply := &securitytable.ReplyMarketSecurityCodeTable{
-		Data: &securitytable.MarketSecurityCodeTable{},
+		Code: 200,
+		Data: table,
 	}
-	reply.Code = 200
-	reply.Data.TimeStamp = table.TimeStamp
-	reply.Data.Num = table.Num
-	reply.Data.MarketID = table.MarketID
-	reply.Data.List = table.List
 
 	replypb, err = proto.Marshal(reply)
 	if err != nil {

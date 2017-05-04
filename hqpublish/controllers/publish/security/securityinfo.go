@@ -78,7 +78,7 @@ func (this *SecurityInfo) PostPB(c *gin.Context) {
 		return
 	}
 
-	if err := json.Unmarshal(buf, &request); err != nil {
+	if err := proto.Unmarshal(buf, &request); err != nil {
 		logging.Error("Json Request Unmarshal: %v", err)
 		return
 	}
