@@ -90,7 +90,7 @@ func (this *StockSnapshot) PostPB(c *gin.Context) {
 		return
 	}
 	logging.Info("Request Data: %+v", request)
-	reply, err := publish.NewStockSnapshot().GetStockSnapshot(&request)
+	data, err := publish.NewStockSnapshot().GetStockSnapshot(&request)
 	if err != nil {
 		reply := snap.ReplySnap{
 			Code: 40002,
@@ -99,6 +99,10 @@ func (this *StockSnapshot) PostPB(c *gin.Context) {
 		if err != nil {
 			logging.Error("pb marshal error: %v", err)
 		}
+	}
+	reply := &snap.ReplySnap{
+		Code: 200,
+		Data: data,
 	}
 	replypb, err = proto.Marshal(reply)
 	if err != nil {
