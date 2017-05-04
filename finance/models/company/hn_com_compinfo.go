@@ -23,6 +23,10 @@ type CompInfo struct {
 	Short   string `json:"Short"`   //A股证券简称
 	Site    string `json:"Site"`    //首次注册登记地点
 	Tele    string `json:"Tele"`    //联系人电话
+
+	RegCap   float64 `json:"RegCap"`   //注册资本
+	OrgCode  string  `json:"OrgCode"`  //机构组织 代码
+	ListDate string  `json:"ListDate"` //上市日期
 }
 
 func (this *CompInfo) GetCompInfo(scode string) (*CompInfo, error) {
@@ -50,6 +54,18 @@ func (this *CompInfo) GetCompInfo(scode string) (*CompInfo, error) {
 	js.Short = v.COMPSNAME.String
 	js.Site = v.REGADDR.String
 	js.Tele = v.COMPTEL.String
+	js.RegCap = v.REGCAPITAL.Float64
+	js.OrgCode = v.ORGCODE.String
+	js.ListDate = this.getListDate(scode)
 
 	return &js, err
+}
+
+//LISTDATE
+func (this *CompInfo) getListDate(scode string) string {
+	info, err := new(finchina.SecurityInfo).GetSecurityBasicInfo(scode)
+	if err != nil {
+		return ""
+	}
+	return info.LISTDATE.String
 }

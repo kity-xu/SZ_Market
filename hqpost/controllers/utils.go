@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"haina.com/market/hqpost/models/tb_stokcode"
+	"haina.com/market/hqpost/models/tb_security"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
 )
@@ -40,7 +40,7 @@ func CheckFilesName(sh, sz []string, codes []string) bool {
 }
 
 //结构属性转string数组
-func FieldsToArrayString(src []tb_stokcode.Code) []string {
+func FieldsToArrayString(src []tb_security.SecurityCode) []string {
 	var codes []string
 	for _, v := range src {
 		codes = append(codes, strconv.Itoa(int(v.SID)))

@@ -27,6 +27,9 @@ type TQ_COMP_INFO struct {
 	COMPSNAME     dbr.NullString //机构简称
 	REGADDR       dbr.NullString //注册地址
 	COMPTEL       dbr.NullString //公司电话
+
+	REGCAPITAL dbr.NullFloat64 //注册资本
+	ORGCODE    dbr.NullString  //机构组织代码
 }
 
 func (this *TQ_COMP_INFO) newTQ_COMP_INFO() *TQ_COMP_INFO {

@@ -9,6 +9,7 @@ const (
 	TABLE_TQ_SK_PROADDISS     = "TQ_SK_PROADDISS"     //上市公司增发情况表
 	TABLE_TQ_SK_PROPLACING    = "TQ_SK_PROPLACING"    //上市公司配股情况表
 	TABLE_TQ_SK_SHAREHDCHG    = "TQ_SK_SHAREHDCHG"
+	TABLE_TQ_SK_BASICINFO     = "TQ_SK_BASICINFO" //股票基本信息表
 )
 
 // market SCHEMA

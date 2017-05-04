@@ -9,6 +9,7 @@ const (
 )
 
 const (
-	CONTEXT_FORMAT = "format" // 数据格式
-	CONTEXT_SNID   = "snid"   // snid
+	CONTEXT_FORMAT = "format"   // 数据格式
+	CONTEXt_MARKET = "marketID" //市场ID
+	CONTEXT_SNID   = "snid"     // snid
 )
