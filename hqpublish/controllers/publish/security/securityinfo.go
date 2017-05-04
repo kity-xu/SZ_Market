@@ -56,7 +56,12 @@ func (this *SecurityInfo) PostJson(c *gin.Context) {
 		lib.WriteString(c, 200, "Can't find the security information...")
 		return
 	}
-	c.JSON(http.StatusOK, single)
+	reply := &securitytable.ReplySecuritySingle{
+		Code: 200,
+		Data: single,
+	}
+
+	c.JSON(http.StatusOK, reply)
 
 }
 func (this *SecurityInfo) PostPB(c *gin.Context) {
@@ -80,7 +85,7 @@ func (this *SecurityInfo) PostPB(c *gin.Context) {
 	logging.Info("Request Data: %+v", request)
 
 	single, ok := getSingleSecurityBasicInfoFromRedis(request.SID)
-	reply.Single = single
+	reply.Data = single
 	if !ok {
 		reply.Code = 40002
 		replypb, err = proto.Marshal(&reply)
@@ -126,7 +131,7 @@ func getSingleSecurityBasicInfoFromRedis(sid int32) (*securitytable.SecuritySing
 	for _, v := range table.List {
 		if v.NSID == sid {
 			reply.SID = sid
-			reply.Data = v
+			reply.Single = v
 			break
 		}
 		count++
