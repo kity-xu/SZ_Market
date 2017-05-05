@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"haina.com/market/hqpublish/controllers/publish"
+	"haina.com/market/hqpublish/controllers/publish/kline"
 	"haina.com/market/hqpublish/controllers/publish/security"
 )
 
@@ -22,7 +23,5 @@ func RegPublish(rg *gin.RouterGroup) {
 	rg.POST("/sn", security.NewSecurityInfo().POST)     //默认pb模式
 
 	//历史K线
-	rg.POST("/kline/dayline", publish.NewDayLine().POST)   //默认pb模式
-	rg.POST("/kline/weekline", publish.NewWeekLine().POST) //默认pb模式
-
+	rg.POST("/kline", kline.NewKline().POST) //默认pb模式
 }

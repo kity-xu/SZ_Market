@@ -43,7 +43,7 @@ func SZ_SecurityInfoTableFromMG() (*[]TagSecurityInfo, error) {
 	if err != nil {
 		logging.Error("%v", err.Error())
 	}
-	logging.Debug("lenght of security market tables:%v", len(secus))
+	logging.Debug("lenght of security SZ_market tables:%v", len(secus))
 
 	return &secus, err
 }
@@ -60,7 +60,7 @@ func SH_SecurityInfoTableFromMG() (*[]TagSecurityInfo, error) {
 	if err != nil {
 		logging.Error("%v", err.Error())
 	}
-	logging.Debug("lenght of security market tables:%v", len(secus))
+	logging.Debug("lenght of security SH_market tables:%v", len(secus))
 
 	return &secus, err
 }

@@ -31,11 +31,16 @@ func Update(cfg *config.AppConfig) {
 	security := new(kline.Security)
 	//--------------------------------------------------/
 	//日K线
-	security.KDayLine(cfg, codes)
+	security.DayLine(cfg, codes)
 
 	//周K线
-	security.GetAllSecurityDayList()
-	security.KWeekLine()
+	security.WeekLine()
+
+	//月线
+	security.MonthLine()
+
+	//年线
+	security.YearLine()
 	//--------------------------------------------------/
 	end := time.Now()
 	logging.Info("Update Kline historical data successed, and running time:%v", end.Sub(start))

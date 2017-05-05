@@ -116,7 +116,7 @@ func UpdateSecurityInfo() error {
 		single.SzCUR = v.SzCUR
 		single.SzIndusCode = v.SzIndusCode
 
-		sec_sz.List = append(sec_sh.List, &single)
+		sec_sz.List = append(sec_sz.List, &single)
 		count++
 	}
 	sec_sz.MarketID = sec.Market_value["SZ"]
