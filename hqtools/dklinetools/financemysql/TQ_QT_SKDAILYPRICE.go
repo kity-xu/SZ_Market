@@ -36,3 +36,10 @@ func (this *Stock) GetSKTListFC(sess1 *dbr.Session, secode string) ([]Stock, err
 		OrderBy("TRADEDATE").LoadStructs(&stock)
 	return stock, err
 }
+func (this *Stock) GetSKTList5FC(sess *dbr.Session, secode string) ([]Stock, error) {
+	var stock []Stock
+	_, err := sess.Select("*").From("TQ_QT_SKDAILYPRICE").
+		Where("SECODE =" + secode).
+		OrderBy("TRADEDATE").Limit(5).LoadStructs(&stock)
+	return stock, err
+}
