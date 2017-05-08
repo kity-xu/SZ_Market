@@ -33,7 +33,7 @@ func (this *FcSecuNameTab) GetSecuNmList() ([]*FcSecuNameTab, error) {
 
 	var data []*FcSecuNameTab
 	_, err = sess.Select("*").From("TQ_OA_STCODE").
-		Where("EXCHANGE in ('001002','001003') and SETYPE='101' AND LISTSTATUS =1 and ISVALID =1").
+		Where("EXCHANGE in ('001002','001003') and SETYPE in('101','701') AND LISTSTATUS =1 and ISVALID =1").
 		OrderBy("SYMBOL").LoadStructs(&data)
 	return data, err
 }

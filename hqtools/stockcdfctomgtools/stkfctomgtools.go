@@ -17,7 +17,7 @@ const (
 )
 
 type TagSecurityInfo struct {
-	NSID        int32  `bson:"nSID"`        // 证券ID
+	NSID        string `bson:"nSID"`        // 证券ID
 	NMarket     int32  `bson:"nMarket"`     // 市场类型
 	SzSType     string `bson:"szSType"`     // 证券类型
 	SzStatus    string `bson:"szStatus"`    // 证券状态
@@ -56,32 +56,19 @@ func main() {
 
 		switch swi {
 		case "001002":
-			i, err := strconv.Atoi("100" + sym)
-			tsi.NSID = int32(i)
+			tsi.NSID = "100" + sym
 			tsi.SzSCode = sym + ".SH"
-			if err != nil {
-				logging.Info("sting 转 int 32 err %v", err)
-			}
 		case "001003":
-			i, err := strconv.Atoi("200" + sym)
-			tsi.NSID = int32(i)
+			tsi.NSID = "200" + sym
 			tsi.SzSCode = sym + ".SZ"
-			if err != nil {
-				logging.Info("sting 转 int 32 err %v", err)
-			}
 		default:
 			// 沪深以外的证券id
-			i, err := strconv.Atoi("300" + sym)
-			tsi.NSID = int32(i)
+			tsi.NSID = "300" + sym
 			tsi.SzSCode = sym + ".QT"
-
-			if err != nil {
-				logging.Info("sting 转 int 32 err %v", err)
-			}
 		}
 		exh, err := strconv.Atoi(item.EXCHANGE.String)
 		if err != nil {
-			logging.Info("sting 转 int 32 err %v", err)
+			logging.Info("exchange sting 转 int 32 err %v", err)
 		}
 		switch exh {
 		case 1002:
