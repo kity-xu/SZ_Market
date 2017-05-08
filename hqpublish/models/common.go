@@ -1,8 +1,15 @@
-package publish
+package models
 
 import (
 	"ProtocolBuffer/format/kline"
+	"io"
 	"sort"
+	"strconv"
+	"time"
+
+	"haina.com/share/logging"
+
+	"github.com/gin-gonic/gin"
 )
 
 // 自定义的 Reverse 类型
@@ -37,4 +44,25 @@ func GetASCStruct(a *[]*kline.KInfo) {
 //降序
 func GetSECStruct(a *[]*kline.KInfo) {
 	sort.Sort(KTable(*a))
+}
+
+//获取当前时间20170101
+func GetCurrentTime() int {
+	timestamp := time.Now().Unix()
+	tm := time.Unix(timestamp, 0)
+	date, _ := strconv.Atoi(tm.Format("20060102"))
+	return date
+}
+
+func GetRequestData(c *gin.Context) ([]byte, error) {
+	temp := make([]byte, 1024)
+	n, err := c.Request.Body.Read(temp)
+	if err != nil && err != io.EOF {
+		logging.Error("Body Read: %v", err)
+		return nil, err
+	}
+	//logging.Info("\nBody len %d\n%s", n, temp[:n])
+	logging.Info("Body len %d", n)
+	return temp[:n], nil
+
 }

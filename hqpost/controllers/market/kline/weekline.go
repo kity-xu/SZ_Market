@@ -10,8 +10,9 @@ import (
 	"haina.com/share/logging"
 )
 
-func (this *Security) KWeekLine() {
-	securitys := *this.week.Securitys
+func (this *Security) WeekLine() {
+	this.GetAllSecurityDayList()
+	securitys := *this.list.Securitys
 	//logging.Debug("-kw-----%v", securitys[0].SigStock)
 
 	for _, single := range securitys { // 以sid分类的单个股票
@@ -56,7 +57,7 @@ func (this *Security) KWeekLine() {
 			}
 			tmp.LastPx = single.SigStock[week[i]].LastPx //最新价
 			tmp.AvgPx = AvgPxTotal / uint32(i+1)         //平均价
-			//tmps = append(tmps, tmp)
+			tmps = append(tmps, tmp)
 			//logging.Debug("周线是:%v", tmps)
 
 			//入PB
@@ -92,7 +93,7 @@ func (this *Security) KWeekLine() {
 }
 
 func (this *Security) GetAllSecurityDayList() {
-	secs := *this.week.Securitys
+	secs := *this.list.Securitys
 
 	for i, v := range secs {
 		var wday [][]int32

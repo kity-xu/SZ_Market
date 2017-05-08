@@ -18,7 +18,7 @@ import (
 	"haina.com/share/logging"
 )
 
-func (this *Security) KDayLine(cfg *config.AppConfig, codes *[]*tb_security.SecurityCode) {
+func (this *Security) DayLine(cfg *config.AppConfig, codes *[]*tb_security.SecurityCode) {
 	var stock StockSingle
 	var filename string
 	STOCKSIZE := binary.Size(&stock)
@@ -125,6 +125,6 @@ func (this *Security) KDayLine(cfg *config.AppConfig, codes *[]*tb_security.Secu
 		//logging.Debug("The historical data of each stock number:%v", count)
 	}
 
-	this.week.Securitys = &seList
+	this.list.Securitys = &seList
 	/*-----------------------------------------end----------------------------------*/
 }

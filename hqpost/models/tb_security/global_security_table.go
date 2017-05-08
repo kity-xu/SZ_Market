@@ -28,7 +28,7 @@ func GetSecurityCodeTableFromMG() (*[]*SecurityCode, error) {
 	if err != nil {
 		logging.Error("%v", err.Error())
 	}
-	logging.Debug("lenght of security code tables:%v", len(codes))
+	//logging.Debug("lenght of security code tables:%v", len(codes))
 
 	return &codes, err
 }

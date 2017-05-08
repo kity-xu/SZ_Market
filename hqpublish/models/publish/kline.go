@@ -2,7 +2,6 @@
 package publish
 
 import (
-	"errors"
 	"fmt"
 
 	. "haina.com/share/models"
@@ -20,22 +19,22 @@ var _ = fmt.Println
 var _ = redigo.Bytes
 var _ = logging.Info
 
-type DayLine struct {
+type KLine struct {
 	Model `db:"-"`
 }
 
-func NewDayLine() *DayLine {
-	return &DayLine{
+func NewKLine(rediskey string) *KLine {
+	return &KLine{
 		Model: Model{
-			CacheKey: REDISKEY_SECURITY_HDAY,
+			CacheKey: rediskey,
 		},
 	}
 }
 
 // 获取日K线
-func (this *DayLine) GetHisDayLine(sid int32, betime int32) (*[]*kline.KInfo, int, error) {
-	var dlines kline.KInfoTable
-	var array []*kline.KInfo
+func (this *KLine) GetHisKLine(sid int32) (*kline.KInfoTable, int, error) {
+	var lines kline.KInfoTable
+
 	key := fmt.Sprintf(this.CacheKey, sid)
 
 	dls, err := redis.Get(key)
@@ -48,19 +47,11 @@ func (this *DayLine) GetHisDayLine(sid int32, betime int32) (*[]*kline.KInfo, in
 
 	data := []byte(dls)
 
-	if err := proto.Unmarshal(data, &dlines); err != nil {
+	if err := proto.Unmarshal(data, &lines); err != nil {
 		logging.Error("%v", err.Error())
 		return nil, 0, err
 	}
+	logging.Debug("----lines:----%+v", lines)
 
-	for _, v := range dlines.List {
-		if v.NTime >= betime {
-			array = append(array, v)
-		}
-	}
-	if len(array) < 1 {
-		return &array, len(dlines.List), errors.New("To get the data is empty, may start time is wrong...")
-	}
-
-	return &array, len(dlines.List), nil
+	return &lines, len(lines.List), nil
 }

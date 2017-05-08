@@ -46,19 +46,21 @@ type StockSingle struct {
 }
 
 type Security struct {
-	week WeekSecurityList
+	list SecurityList
 }
 
 //单个股票
 type SingleSecurity struct {
-	Sid      int32                 //股票SID
-	Date     []int32               //单个股票的历史日期
-	SigStock map[int32]StockSingle //单个股票的历史数据
-	WeekDays *[][]int32            //单个股票的周天
+	Sid       int32                 //股票SID
+	Date      []int32               //单个股票的历史日期
+	SigStock  map[int32]StockSingle //单个股票的历史数据
+	WeekDays  *[][]int32            //单个股票的周天
+	MonthDays *[][]int32            //单个股票的月天
+	YearDays  *[][]int32            //单个股票的年天
 }
 
 //所有股票
-type WeekSecurityList struct {
+type SecurityList struct {
 	Securitys *[]SingleSecurity
 }
 
@@ -111,4 +113,12 @@ func DateAdd(date int) time.Time {
 	dd, _ := time.ParseDuration(basedate)
 	sat = baseTime.Add(dd) //Saturday（星期六）
 	return sat
+}
+
+func IntToMonth(date int) time.Time {
+	swap := date % 10000
+	year := date / 10000
+	month := swap / 100
+
+	return time.Date(year, time.Month(month), 0, 0, 0, 0, 0, time.UTC)
 }
