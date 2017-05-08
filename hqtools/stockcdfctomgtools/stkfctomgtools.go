@@ -5,6 +5,7 @@ import (
 
 	"strconv"
 
+	"github.com/gocraft/dbr"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	fcm "haina.com/market/hqtools/stockcdfctomgtools/financemysql"
@@ -17,7 +18,7 @@ const (
 )
 
 type TagSecurityInfo struct {
-	NSID        string `bson:"nSID"`        // 证券ID
+	NSID        int32  `bson:"nSID"`        // 证券ID
 	NMarket     int32  `bson:"nMarket"`     // 市场类型
 	SzSType     string `bson:"szSType"`     // 证券类型
 	SzStatus    string `bson:"szStatus"`    // 证券状态
@@ -37,10 +38,27 @@ func main() {
 
 	// 获取沪深股票信息
 	logging.Info("begin==")
-	secNm, err := new(fcm.FcSecuNameTab).GetSecuNmList()
+	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
 	if err != nil {
-		logging.Info("查询finance出错 %v", err)
+		logging.Debug("mysql onn", err)
 	}
+	sess := conn.NewSession(nil)
+	secNm1, err := new(fcm.FcSecuNameTab).GetSecuNmList(sess)
+	if err != nil {
+		logging.Info("个股查询finance出错 %v", err)
+	}
+	// 处理个股
+	TreatingData(secNm1)
+	secNm2, err := new(fcm.FcSecuNameTab).GetExponentList(sess)
+	if err != nil {
+		logging.Info("指数查询finance出错 %v", err)
+	}
+	TreatingData(secNm2)
+	logging.Info("End==")
+}
+
+//  处理数据插入mongoDB
+func TreatingData(secNm []*fcm.FcSecuNameTab) {
 	// monogoDB 插入
 
 	mgo_conn, err := mgo.DialWithTimeout(URL, time.Second*10)
@@ -56,15 +74,27 @@ func main() {
 
 		switch swi {
 		case "001002":
-			tsi.NSID = "100" + sym
+			i, err := strconv.Atoi("100" + sym)
+			tsi.NSID = int32(i)
 			tsi.SzSCode = sym + ".SH"
+			if err != nil {
+				logging.Info("001002 sting 转 int 32 err %v", err)
+			}
 		case "001003":
-			tsi.NSID = "200" + sym
+			i, err := strconv.Atoi("200" + sym)
+			tsi.NSID = int32(i)
 			tsi.SzSCode = sym + ".SZ"
+			if err != nil {
+				logging.Info("001003 sting 转 int 32 err %v", err)
+			}
 		default:
 			// 沪深以外的证券id
-			tsi.NSID = "300" + sym
+			i, err := strconv.Atoi("300" + sym)
+			tsi.NSID = int32(i)
 			tsi.SzSCode = sym + ".QT"
+			if err != nil {
+				logging.Info("qt sting 转 int 32 err %v", err)
+			}
 		}
 		exh, err := strconv.Atoi(item.EXCHANGE.String)
 		if err != nil {
@@ -95,5 +125,4 @@ func main() {
 			logging.Info("insert error %v", err)
 		}
 	}
-	logging.Info("End==")
 }

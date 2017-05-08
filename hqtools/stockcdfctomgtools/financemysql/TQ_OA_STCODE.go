@@ -3,7 +3,6 @@ package financemysql
 import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gocraft/dbr"
-	"haina.com/share/logging"
 )
 
 type FcSecuNameTab struct {
@@ -23,17 +22,22 @@ type FcSecuNameTab struct {
 
 }
 
-// 查询沪深市场证券代码
-func (this *FcSecuNameTab) GetSecuNmList() ([]*FcSecuNameTab, error) {
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
-	if err != nil {
-		logging.Debug("mysql onn", err)
-	}
-	sess := conn.NewSession(nil)
+// 查询沪深市场证券代码 个股
+func (this *FcSecuNameTab) GetSecuNmList(sess *dbr.Session) ([]*FcSecuNameTab, error) {
 
 	var data []*FcSecuNameTab
-	_, err = sess.Select("*").From("TQ_OA_STCODE").
-		Where("EXCHANGE in ('001002','001003') and SETYPE in('101','701') AND LISTSTATUS =1 and ISVALID =1").
+	_, err := sess.Select("*").From("TQ_OA_STCODE").
+		Where("EXCHANGE in ('001002','001003') and SETYPE in('101') AND LISTSTATUS =1 and ISVALID =1").
+		OrderBy("SYMBOL").LoadStructs(&data)
+	return data, err
+}
+
+// 查询沪深市场证券代码 指数
+func (this *FcSecuNameTab) GetExponentList(sess *dbr.Session) ([]*FcSecuNameTab, error) {
+
+	var data []*FcSecuNameTab
+	_, err := sess.Select("*").From("TQ_OA_STCODE").
+		Where("SETYPE ='701' AND (SYMBOL LIKE '399%' OR SYMBOL LIKE '000%') AND LISTSTATUS =1 and ISVALID =1").
 		OrderBy("SYMBOL").LoadStructs(&data)
 	return data, err
 }
