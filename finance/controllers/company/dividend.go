@@ -19,6 +19,11 @@ func NewDividendInfo() *DividendInfo {
 
 func (this *DividendInfo) GetDiv(c *gin.Context) {
 	scode := c.Query(models.CONTEXT_SCODE)
+	market := strings.Split(scode, ".")
+	if len(market) < 2 {
+		return
+	}
+
 	var count uint64
 	sets := c.Query(models.CONTEXT_COUNT)
 	if sets != "" {
@@ -33,7 +38,7 @@ func (this *DividendInfo) GetDiv(c *gin.Context) {
 	}
 
 	fin := new(company.Dividend)
-	div, err := fin.GetDividendList(count, strings.Split(scode, ".")[0])
+	div, err := fin.GetDividendList(count, market[0], market[1])
 	if err != nil {
 		lib.WriteString(c, 40002, err.Error())
 		return
@@ -44,8 +49,13 @@ func (this *DividendInfo) GetDiv(c *gin.Context) {
 
 func (this *DividendInfo) GetSEO(c *gin.Context) {
 	scode := c.Query(models.CONTEXT_SCODE)
+	market := strings.Split(scode, ".")
+	if len(market) < 2 {
+		return
+	}
+
 	fin := new(company.SEO)
-	seo, err := fin.GetSEOList(strings.Split(scode, ".")[0])
+	seo, err := fin.GetSEOList(market[0], market[1])
 	if err != nil {
 		lib.WriteString(c, 40002, err.Error())
 		return
@@ -56,8 +66,12 @@ func (this *DividendInfo) GetSEO(c *gin.Context) {
 }
 func (this *DividendInfo) GetRO(c *gin.Context) {
 	scode := c.Query(models.CONTEXT_SCODE)
+	market := strings.Split(scode, ".")
+	if len(market) < 2 {
+		return
+	}
 	fin := new(company.RO)
-	ro, err := fin.GetROList(strings.Split(scode, ".")[0])
+	ro, err := fin.GetROList(market[0], market[1])
 	if err != nil {
 		lib.WriteString(c, 40002, err.Error())
 	}

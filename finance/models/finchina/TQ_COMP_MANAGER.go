@@ -38,13 +38,13 @@ func (this *TQ_COMP_MANAGER) newTQ_COMP_MANAGER() *TQ_COMP_MANAGER {
 	}
 }
 
-func (this *TQ_COMP_MANAGER) GetManagersFromFC(scode string) ([]TQ_COMP_MANAGER, error) {
+func (this *TQ_COMP_MANAGER) GetManagersFromFC(scode string, market string) ([]TQ_COMP_MANAGER, error) {
 	var primal []TQ_COMP_MANAGER
 	mg := this.newTQ_COMP_MANAGER()
 
 	//根据股票代码获取公司内码
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode); err != nil {
+	if err := sc.getCompcode(scode, market); err != nil {
 		return primal, err
 	}
 

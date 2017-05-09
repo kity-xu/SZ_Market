@@ -13,16 +13,16 @@ type HnManager struct {
 	PublistDate string  `json:"PubDate"` //持股变动公布日期
 }
 
-func (this *HnManager) GetManagerList(scode string) (*[]*HnManager, error) {
+func (this *HnManager) GetManagerList(scode string, market string) (*[]*HnManager, error) {
 	list := make([]*HnManager, 0)
-	primal, err := new(finchina.TQ_COMP_MANAGER).GetManagersFromFC(scode) //公司高管表
+	primal, err := new(finchina.TQ_COMP_MANAGER).GetManagersFromFC(scode, market) //公司高管表
 	if err != nil {
 		return &list, err
 	}
 
 	managers := managersToOnly(primal)
 
-	amts, err := this.getManagersHoldAMT(scode)
+	amts, err := this.getManagersHoldAMT(scode, market)
 	if err != nil {
 		return &list, err
 	}
@@ -43,9 +43,9 @@ func (this *HnManager) GetManagerList(scode string) (*[]*HnManager, error) {
 }
 
 //获取高管持股数
-func (this *HnManager) getManagersHoldAMT(scode string) (map[string]finchina.HolderChange, error) {
+func (this *HnManager) getManagersHoldAMT(scode string, market string) (map[string]finchina.HolderChange, error) {
 	amts := make(map[string]finchina.HolderChange)
-	holders, err := new(finchina.TQ_COMP_SKHOLDERCHG).GetHoldAMTlistFromFC(scode) //高管及关联人持股变动表
+	holders, err := new(finchina.TQ_COMP_SKHOLDERCHG).GetHoldAMTlistFromFC(scode, market) //高管及关联人持股变动表
 
 	for _, v := range hoderChangeToOnly(holders) { //以高管代码（PSCODE）为key与结构体建立一一对应关系
 		amts[v.HOLDNAME.String] = v

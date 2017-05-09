@@ -30,7 +30,7 @@ const (
 
 /*****************************************Structs***************************************/
 
-//个股信息
+//K线定义
 type StockSingle struct {
 	SID    int32  // 证券ID
 	Time   int32  // 时间 unix time

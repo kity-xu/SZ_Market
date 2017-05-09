@@ -47,9 +47,9 @@ func (this *TQ_OA_STCODE) getCompcode(symbol string, market string) error {
 		}
 		switch m {
 		case "SH": // 001002 上海证券交易所
-			err := this.Db.Select("*").From(this.TableName).Where("SYMBOL=? and EXCHANGE='001002'", symbol).Limit(1).LoadStruct(this)
+			err = this.Db.Select("*").From(this.TableName).Where("SYMBOL=? and EXCHANGE='001002'", symbol).Limit(1).LoadStruct(this)
 		case "SZ": // 001003 深圳证券交易所
-			err := this.Db.Select("*").From(this.TableName).Where("SYMBOL=? and EXCHANGE='001003'", symbol).Limit(1).LoadStruct(this)
+			err = this.Db.Select("*").From(this.TableName).Where("SYMBOL=? and EXCHANGE='001003'", symbol).Limit(1).LoadStruct(this)
 		}
 		if err != nil {
 			logging.Error("finchina db: getCompcode: %s", err)

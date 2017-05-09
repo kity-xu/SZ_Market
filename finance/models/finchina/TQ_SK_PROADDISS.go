@@ -44,13 +44,13 @@ func (this *TQ_SK_PROADDISS) newTQ_SK_PROADDISS() *TQ_SK_PROADDISS {
 }
 
 //获取增发SEO数据
-func (this *TQ_SK_PROADDISS) GetSEOListFromFC(scode string) ([]TQ_SK_PROADDISS, error) {
+func (this *TQ_SK_PROADDISS) GetSEOListFromFC(scode string, market string) ([]TQ_SK_PROADDISS, error) {
 	var seos []TQ_SK_PROADDISS
 	seo := this.newTQ_SK_PROADDISS()
 
 	//根据股票代码获取公司内码
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode); err != nil {
+	if err := sc.getCompcode(scode, market); err != nil {
 		return seos, err
 	}
 

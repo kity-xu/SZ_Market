@@ -29,9 +29,9 @@ type DividendJson struct {
 	Tran     float64 `json:"Tran"`     //转股（股）
 }
 
-func (this *Dividend) GetDividendList(sets uint64, scode string) (*Dividend, error) {
+func (this *Dividend) GetDividendList(sets uint64, scode string, market string) (*Dividend, error) {
 	var list Dividend
-	divs, err := new(finchina.TQ_SK_DIVIDENTS).GetDivListFromFC(sets, scode)
+	divs, err := new(finchina.TQ_SK_DIVIDENTS).GetDivListFromFC(sets, scode, market)
 	if err != nil {
 		return &list, err
 	}

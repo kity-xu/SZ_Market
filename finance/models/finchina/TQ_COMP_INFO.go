@@ -43,12 +43,12 @@ func (this *TQ_COMP_INFO) newTQ_COMP_INFO() *TQ_COMP_INFO {
 }
 
 //获取公司信息数据
-func (this *TQ_COMP_INFO) GetCompInfoFromFC(scode string) (*TQ_COMP_INFO, error) {
+func (this *TQ_COMP_INFO) GetCompInfoFromFC(scode string, market string) (*TQ_COMP_INFO, error) {
 	comp := this.newTQ_COMP_INFO()
 
 	//根据股票代码获取公司内码
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode); err != nil {
+	if err := sc.getCompcode(scode, market); err != nil {
 		return comp, err
 	}
 

@@ -46,11 +46,11 @@ func (this *TQ_COMP_SKHOLDERCHG) newTQ_COMP_SKHOLDERCHG() *TQ_COMP_SKHOLDERCHG {
 	}
 }
 
-func (this *TQ_COMP_SKHOLDERCHG) GetHoldAMTlistFromFC(scode string) ([]HolderChange, error) {
+func (this *TQ_COMP_SKHOLDERCHG) GetHoldAMTlistFromFC(scode string, market string) ([]HolderChange, error) {
 	var holders []HolderChange
 	amt := this.newTQ_COMP_SKHOLDERCHG()
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode); err != nil {
+	if err := sc.getCompcode(scode, market); err != nil {
 		return holders, err
 	}
 

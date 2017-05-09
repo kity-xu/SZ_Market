@@ -34,9 +34,9 @@ type SEOJson struct {
 	Vol     float64 `json:"Vol"`     //实际发行数量
 }
 
-func (this *SEO) GetSEOList(scode string) (*SEO, error) {
+func (this *SEO) GetSEOList(scode string, market string) (*SEO, error) {
 	var list SEO
-	seos, err := new(finchina.TQ_SK_PROADDISS).GetSEOListFromFC(scode)
+	seos, err := new(finchina.TQ_SK_PROADDISS).GetSEOListFromFC(scode, market)
 	if err != nil {
 		return &list, err
 	}

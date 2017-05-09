@@ -1,7 +1,7 @@
 all:build
 	
 build:
-	gox -osarch="linux/amd64" -output ./bin/market_hqpost
+	gox -osarch="linux/amd64" -output ./bin/hqpost
 clean:
 	@rm -rf bin
 	 

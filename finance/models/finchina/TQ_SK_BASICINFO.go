@@ -22,12 +22,12 @@ func newSecurityInfo() *SecurityInfo {
 	}
 }
 
-func (this *SecurityInfo) GetSecurityBasicInfo(scode string) (*SecurityInfo, error) {
+func (this *SecurityInfo) GetSecurityBasicInfo(scode string, market string) (*SecurityInfo, error) {
 	info := newSecurityInfo()
 
 	//根据股票代码获取公司内码
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode); err != nil {
+	if err := sc.getCompcode(scode, market); err != nil {
 		return info, err
 	}
 

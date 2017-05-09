@@ -29,9 +29,9 @@ type CompInfo struct {
 	ListDate string  `json:"ListDate"` //上市日期
 }
 
-func (this *CompInfo) GetCompInfo(scode string) (*CompInfo, error) {
+func (this *CompInfo) GetCompInfo(scode string, market string) (*CompInfo, error) {
 	var js CompInfo
-	v, err := new(finchina.TQ_COMP_INFO).GetCompInfoFromFC(scode)
+	v, err := new(finchina.TQ_COMP_INFO).GetCompInfoFromFC(scode, market)
 	if err != nil {
 		return &js, err
 	}
@@ -56,14 +56,14 @@ func (this *CompInfo) GetCompInfo(scode string) (*CompInfo, error) {
 	js.Tele = v.COMPTEL.String
 	js.RegCap = v.REGCAPITAL.Float64
 	js.OrgCode = v.ORGCODE.String
-	js.ListDate = this.getListDate(scode)
+	js.ListDate = this.getListDate(scode, market)
 
 	return &js, err
 }
 
 //LISTDATE
-func (this *CompInfo) getListDate(scode string) string {
-	info, err := new(finchina.SecurityInfo).GetSecurityBasicInfo(scode)
+func (this *CompInfo) getListDate(scode string, market string) string {
+	info, err := new(finchina.SecurityInfo).GetSecurityBasicInfo(scode, market)
 	if err != nil {
 		return ""
 	}

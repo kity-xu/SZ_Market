@@ -39,13 +39,13 @@ func (this *TQ_SK_DIVIDENTS) newTQ_SK_DIVIDENTS() *TQ_SK_DIVIDENTS {
 }
 
 //获取Div数据
-func (this *TQ_SK_DIVIDENTS) GetDivListFromFC(sets uint64, scode string) ([]TQ_SK_DIVIDENTS, error) {
+func (this *TQ_SK_DIVIDENTS) GetDivListFromFC(sets uint64, scode string, market string) ([]TQ_SK_DIVIDENTS, error) {
 	var divs []TQ_SK_DIVIDENTS
 	div := this.newTQ_SK_DIVIDENTS()
 
 	//根据股票代码获取公司内码
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode); err != nil {
+	if err := sc.getCompcode(scode, market); err != nil {
 		return divs, err
 	}
 

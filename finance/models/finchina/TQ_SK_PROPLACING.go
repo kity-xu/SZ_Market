@@ -45,13 +45,13 @@ func (this *TQ_SK_PROPLACING) newTQ_SK_PROPLACING() *TQ_SK_PROPLACING {
 }
 
 //获取配股RO数据
-func (this *TQ_SK_PROPLACING) GetROListFromFC(scode string) ([]TQ_SK_PROPLACING, error) {
+func (this *TQ_SK_PROPLACING) GetROListFromFC(scode string, market string) ([]TQ_SK_PROPLACING, error) {
 	var ros []TQ_SK_PROPLACING
 	ro := this.newTQ_SK_PROPLACING()
 
 	//根据股票代码获取公司内码
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode); err != nil {
+	if err := sc.getCompcode(scode, market); err != nil {
 		return ros, err
 	}
 	exps := map[string]interface{}{

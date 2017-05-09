@@ -1,4 +1,4 @@
-//日K线
+//K线
 package publish
 
 import (
@@ -51,7 +51,6 @@ func (this *KLine) GetHisKLine(sid int32) (*kline.KInfoTable, int, error) {
 		logging.Error("%v", err.Error())
 		return nil, 0, err
 	}
-	logging.Debug("----lines:----%+v", lines)
 
 	return &lines, len(lines.List), nil
 }

@@ -33,9 +33,9 @@ type ROJson struct {
 	Vol     float64 `json:"Vol"`     //实际配股数量
 }
 
-func (this *RO) GetROList(scode string) (*RO, error) {
+func (this *RO) GetROList(scode string, market string) (*RO, error) {
 	var list RO
-	ros, err := new(finchina.TQ_SK_PROPLACING).GetROListFromFC(scode)
+	ros, err := new(finchina.TQ_SK_PROPLACING).GetROListFromFC(scode, market)
 	if err != nil {
 		return &list, err
 	}

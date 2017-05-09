@@ -22,7 +22,10 @@
 			<appId>market_finance</appId>
 			<configFile>finance.xml</configFile>	    
         </projects>
-		
+		<projects>
+			<appId>hqinit</appId>
+			<configFile>hqinit.xml</configFile>     
+		</projects>	
 		<projects>
 			<appId>hqpost</appId>
 			<configFile>hqpost.xml</configFile>     

@@ -66,3 +66,75 @@ func CloseFile(file *os.File) {
 func ReadFiles(file *os.File, des []byte) (int, error) {
 	return file.Read(des)
 }
+
+//24
+func StringToByte_SECURITY_CODE_LEN(str string) [SECURITY_CODE_LEN]byte {
+	var ss [SECURITY_CODE_LEN]byte
+	for i, v := range []byte(str) {
+		if i == INDUSTRY_CODE_LEN {
+			break
+		}
+		ss[i] = v
+	}
+	return ss
+}
+
+//40
+func StringToByte_SECURITY_NAME_LEN(str string) [SECURITY_NAME_LEN]byte {
+	var ss [SECURITY_NAME_LEN]byte
+	for i, v := range []byte(str) {
+		if i == INDUSTRY_CODE_LEN {
+			break
+		}
+		ss[i] = v
+	}
+	return ss
+}
+
+//8
+func StringToByte_SECURITY_DESC_LEN(str string) [SECURITY_DESC_LEN]byte {
+	var ss [SECURITY_DESC_LEN]byte
+	for i, v := range []byte(str) {
+		if i == INDUSTRY_CODE_LEN {
+			break
+		}
+		ss[i] = v
+	}
+	return ss
+}
+
+//8
+func StringToByte_INDUSTRY_CODE_LEN(str string) [INDUSTRY_CODE_LEN]byte {
+	var ss [INDUSTRY_CODE_LEN]byte
+	for i, v := range []byte(str) {
+		if i == INDUSTRY_CODE_LEN {
+			break
+		}
+		ss[i] = v
+	}
+	return ss
+}
+
+//16
+func StringToByte_SECURITY_ISIN_LEN(str string) [SECURITY_ISIN_LEN]byte {
+	var ss [SECURITY_ISIN_LEN]byte
+	for i, v := range []byte(str) {
+		if i == INDUSTRY_CODE_LEN {
+			break
+		}
+		ss[i] = v
+	}
+	return ss
+}
+
+//4
+func StringToByte_4(str string) [4]byte {
+	var ss [4]byte
+	for i, v := range []byte(str) {
+		if i == INDUSTRY_CODE_LEN {
+			break
+		}
+		ss[i] = v
+	}
+	return ss
+}

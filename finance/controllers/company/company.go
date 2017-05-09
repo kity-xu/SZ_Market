@@ -23,8 +23,12 @@ type Share struct {
 
 func (this *Company) GetInfo(c *gin.Context) {
 	scode := c.Query(models.CONTEXT_SCODE)
+	market := strings.Split(scode, ".")
+	if len(market) < 2 {
+		return
+	}
 
-	cominfo, err := new(company.CompInfo).GetCompInfo(strings.Split(scode, ".")[0])
+	cominfo, err := new(company.CompInfo).GetCompInfo(market[0], market[1])
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 	}
@@ -38,8 +42,12 @@ func (this *Company) GetInfo(c *gin.Context) {
 // 获取高管信息
 func (this *Company) GetManagreInfo(c *gin.Context) {
 	secode := c.Query(models.CONTEXT_SCODE)
+	market := strings.Split(secode, ".")
+	if len(market) < 2 {
+		return
+	}
 
-	list, err := new(company.HnManager).GetManagerList(strings.Split(secode, ".")[0])
+	list, err := new(company.HnManager).GetManagerList(market[0], market[1])
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 		return
