@@ -26,6 +26,11 @@ func (this *EquityInfo) GetShareholderJson(c *gin.Context) {
 	enddate := c.Query(models.CONTEXT_END_DATE)
 	count := c.Query(models.CONTEXT_COUNT)
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
+	exchange := ReturnExc(c.Query(models.CONTEXT_SCODE))
+	if exchange == "error" {
+		lib.WriteString(c, 40004, "")
+		return
+	}
 	var value_int = 0
 	var err error
 	if count != "" {
@@ -40,8 +45,7 @@ func (this *EquityInfo) GetShareholderJson(c *gin.Context) {
 	if enddate != "" {
 		strDate = " and ENDDATE<'" + enddate + "'"
 	}
-	data, err := company.GetShareholderGroup(scode, value_int, strDate)
-
+	data, err := company.GetShareholderGroup(scode, value_int, strDate, exchange)
 	lib.WriteString(c, 200, data)
 }
 
@@ -53,6 +57,11 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 	enddate := c.Query(models.CONTEXT_END_DATE)
 	count := c.Query(models.CONTEXT_COUNT)
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
+	exchange := ReturnExc(c.Query(models.CONTEXT_SCODE))
+	if exchange == "error" {
+		lib.WriteString(c, 40004, "")
+		return
+	}
 	var value_int = 0
 	var err error
 	if count == "" {
@@ -66,7 +75,7 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 		lib.WriteString(c, 88888, nil)
 	}
 
-	data, err := company.GetTop10Group(enddate, scode, value_int)
+	data, err := company.GetTop10Group(enddate, scode, value_int, exchange)
 
 	lib.WriteString(c, 200, data)
 }
@@ -76,11 +85,36 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 */
 func (this *EquityInfo) GetOrganizationJson(c *gin.Context) {
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
-
-	data, err := company.GetCompGroup(scode)
+	exchange := ReturnExc(c.Query(models.CONTEXT_SCODE))
+	if exchange == "error" {
+		lib.WriteString(c, 40004, "")
+		return
+	}
+	data, err := company.GetCompGroup(scode, exchange)
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 		return
 	}
 	lib.WriteString(c, 200, data)
+}
+
+// 判断市场类型
+func ReturnExc(np string) string {
+	ind := strings.Index(np, ".")
+	if ind < 1 {
+		return "error"
+	}
+	ntype := strings.Split(np, ".")[1]
+	var exchange = ""
+	if len(ntype) > 1 {
+		switch strings.ToUpper(ntype) {
+		case "SH":
+			exchange = "SH"
+		case "SZ":
+			exchange = "SZ"
+		default:
+			logging.Info("其他市场股票，或SCODE有误！")
+		}
+	}
+	return exchange
 }

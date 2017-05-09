@@ -95,8 +95,8 @@ type RetShaInfoJson struct {
 //	rtj.TrucList = jsnse
 //	return rtj, err
 //}
-func GetStructure(scode string, selwhe string, limit int) ([]*StructureEquity, error) {
-	data, err := finchina.NewTQ_SK_SHARESTRUCHG().GetSingleBySCode(scode, selwhe, limit)
+func GetStructure(scode string, selwhe string, limit int, exchang string) ([]*StructureEquity, error) {
+	data, err := finchina.NewTQ_SK_SHARESTRUCHG().GetSingleBySCode(scode, selwhe, limit, exchang)
 
 	//var rtj RetTrucInfoJson
 	jsnse := []*StructureEquity{}
@@ -162,8 +162,8 @@ func GetAInfo(st *finchina.TQ_SK_SHARESTRUCHG) (*StructureEquity, error) {
 /**
   获取股本变动信息
 */
-func GetChangesStrInfo(enddate string, scode string, limit int) (RetShaInfoJson, error) {
-	data, err := finchina.NewTQ_SK_SHARESTRUCHG().GetChangesStrGroup(enddate, scode, limit)
+func GetChangesStrInfo(enddate string, scode string, limit int, exchange string) (RetShaInfoJson, error) {
+	data, err := finchina.NewTQ_SK_SHARESTRUCHG().GetChangesStrGroup(enddate, scode, limit, exchange)
 	var rij RetShaInfoJson
 	jsns := []*ChangesEquity{}
 

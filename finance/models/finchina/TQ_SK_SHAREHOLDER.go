@@ -43,10 +43,10 @@ func NewTQ_SK_SHAREHOLDERTx(tx *dbr.Tx) *TQ_SK_SHAREHOLDER {
 	}
 }
 
-func (this *TQ_SK_SHAREHOLDER) GetSingleByScode(scode string) (*TQ_SK_SHAREHOLDER, string, error) {
+func (this *TQ_SK_SHAREHOLDER) GetSingleByScode(scode string, exchange string) (*TQ_SK_SHAREHOLDER, string, error) {
 	//根据证券代码获取公司内码
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode); err != nil {
+	if err := sc.getCompcode(scode, exchange); err != nil {
 		return this, "", err
 
 	}

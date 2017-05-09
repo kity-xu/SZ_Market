@@ -24,7 +24,11 @@ func NewCapitalizationInfo() *CapitalizationInfo {
 func (this *CapitalizationInfo) GetStructureJson(c *gin.Context) {
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
 	count := c.Query(models.CONTEXT_COUNT)
-
+	exchange := ReturnExchang(c.Query(models.CONTEXT_SCODE))
+	if exchange == "error" {
+		lib.WriteString(c, 40004, "")
+		return
+	}
 	var value_int = 0
 	var err error
 	if count != "" {
@@ -55,7 +59,7 @@ func (this *CapitalizationInfo) GetStructureJson(c *gin.Context) {
 		selwhe = " and ENDDATE LIKE '%1230' "
 	}
 
-	data, err := company.GetStructure(scode, selwhe, value_int)
+	data, err := company.GetStructure(scode, selwhe, value_int, exchange)
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 		return
@@ -76,6 +80,11 @@ func (this *CapitalizationInfo) GetChangesJson(c *gin.Context) {
 	enddate := c.Query(models.CONTEXT_END_DATE)
 	count := c.Query(models.CONTEXT_COUNT)
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
+	exchange := ReturnExchang(c.Query(models.CONTEXT_SCODE))
+	if exchange == "error" {
+		lib.WriteString(c, 40004, "")
+		return
+	}
 	var value_int = 0
 	var err error
 	if count == "" {
@@ -87,10 +96,31 @@ func (this *CapitalizationInfo) GetChangesJson(c *gin.Context) {
 		logging.Debug("%v", err)
 		lib.WriteString(c, 88888, nil)
 	}
-	data, err := company.GetChangesStrInfo(enddate, scode, value_int)
+	data, err := company.GetChangesStrInfo(enddate, scode, value_int, exchange)
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 		return
 	}
 	lib.WriteString(c, 200, data)
+}
+
+// 判断市场类型
+func ReturnExchang(np string) string {
+	ind := strings.Index(np, ".")
+	if ind < 1 {
+		return "error"
+	}
+	ntype := strings.Split(np, ".")[1]
+	var exchange = ""
+	if len(ntype) > 1 {
+		switch strings.ToUpper(ntype) {
+		case "SH":
+			exchange = "SH"
+		case "SZ":
+			exchange = "SZ"
+		default:
+			logging.Info("其他市场股票，或SCODE有误！")
+		}
+	}
+	return exchange
 }
