@@ -58,7 +58,7 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 	count := c.Query(models.CONTEXT_COUNT)
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
 	market := ReturnExc(c.Query(models.CONTEXT_SCODE))
-	if exchange == "error" {
+	if market == "error" {
 		lib.WriteString(c, 40004, "")
 		return
 	}
@@ -86,7 +86,7 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 func (this *EquityInfo) GetOrganizationJson(c *gin.Context) {
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
 	market := ReturnExc(c.Query(models.CONTEXT_SCODE))
-	if exchange == "error" {
+	if market == "error" {
 		lib.WriteString(c, 40004, "")
 		return
 	}
@@ -109,9 +109,9 @@ func ReturnExc(np string) string {
 	if len(ntype) > 1 {
 		switch strings.ToUpper(ntype) {
 		case "SH":
-			exchange = "SH"
+			market = "SH"
 		case "SZ":
-			exchange = "SZ"
+			market = "SZ"
 		default:
 			logging.Info("其他市场股票，或SCODE有误！")
 		}

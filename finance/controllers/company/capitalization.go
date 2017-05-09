@@ -25,7 +25,7 @@ func (this *CapitalizationInfo) GetStructureJson(c *gin.Context) {
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
 	count := c.Query(models.CONTEXT_COUNT)
 	market := ReturnExchang(c.Query(models.CONTEXT_SCODE))
-	if exchange == "error" {
+	if market == "error" {
 		lib.WriteString(c, 40004, "")
 		return
 	}
@@ -81,7 +81,7 @@ func (this *CapitalizationInfo) GetChangesJson(c *gin.Context) {
 	count := c.Query(models.CONTEXT_COUNT)
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
 	market := ReturnExchang(c.Query(models.CONTEXT_SCODE))
-	if exchange == "error" {
+	if market == "error" {
 		lib.WriteString(c, 40004, "")
 		return
 	}
