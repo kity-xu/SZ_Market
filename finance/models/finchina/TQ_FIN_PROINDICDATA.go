@@ -143,9 +143,9 @@ func (this *TQ_FIN_PROINDICDATA) getListByCompcode(compcode string, report_type 
 	}
 	return sli_db, nil
 }
-func (this *TQ_FIN_PROINDICDATA) GetListByEnddates(scode string, report_type int, per_page int, page int, date DateList) ([]TQ_FIN_PROINDICDATA, error) {
+func (this *TQ_FIN_PROINDICDATA) GetListByEnddates(scode string, market string, report_type int, per_page int, page int, date DateList) ([]TQ_FIN_PROINDICDATA, error) {
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode); err != nil {
+	if err := sc.getCompcode(scode, market); err != nil {
 		logging.Error("%T GetListByEnddates error: %s", *this, err)
 		return nil, err
 	}

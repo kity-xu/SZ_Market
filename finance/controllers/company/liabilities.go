@@ -44,7 +44,7 @@ func (this *Liabilities) GET(c *gin.Context) {
 
 func (this *Liabilities) getJson(req *RequestParam) (*company.RespFinAnaJson, error) {
 	sli := make([]company.LiabilitiesJson, 0, req.PerPage)
-	ls, err := company.NewLiabilities().GetList(req.SCode, req.Type, req.PerPage, req.Page)
+	ls, err := company.NewLiabilities().GetList(req.SCode, req.Market, req.Type, req.PerPage, req.Page)
 	if err != nil {
 		return nil, err
 	}

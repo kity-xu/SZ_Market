@@ -188,8 +188,8 @@ func NewIndicators() *Indicators {
 }
 
 // 获取数据列表
-func (this *Indicators) GetList(scode string, report_type int, per_page int, page int) ([]Indicators, error) {
-	return NewFinChinaIndicators().getIndicatorsList(scode, report_type, per_page, page)
+func (this *Indicators) GetList(scode string, market string, report_type int, per_page int, page int) ([]Indicators, error) {
+	return NewFinChinaIndicators().getIndicatorsList(scode, market, report_type, per_page, page)
 }
 
 //------------------------------------------------------------------------------
@@ -205,7 +205,7 @@ func NewFinChinaIndicators() *FinChinaIndicators {
 	return &FinChinaIndicators{}
 }
 
-func (this *FinChinaIndicators) getIndicatorsList(scode string, report_type int, per_page int, page int) ([]Indicators, error) {
+func (this *FinChinaIndicators) getIndicatorsList(scode string, market string, report_type int, per_page int, page int) ([]Indicators, error) {
 	var (
 		slidb_TQ_FIN_PROFINMAININDEX  []finchina.TQ_FIN_PROFINMAININDEX
 		slidb_TQ_FIN_PROINDICDATA     []finchina.TQ_FIN_PROINDICDATA
@@ -218,7 +218,7 @@ func (this *FinChinaIndicators) getIndicatorsList(scode string, report_type int,
 	sli := make([]Indicators, 0, per_page)
 
 	// 从 TQ_FIN_PROFINMAININDEX  主要财务指标（产品表）    取数据
-	slidb_TQ_FIN_PROFINMAININDEX, err = finchina.NewTQ_FIN_PROFINMAININDEX().GetList(scode, report_type, per_page, page)
+	slidb_TQ_FIN_PROFINMAININDEX, err = finchina.NewTQ_FIN_PROFINMAININDEX().GetList(scode, market, report_type, per_page, page)
 	if err != nil {
 		return nil, err
 	}
@@ -234,7 +234,7 @@ func (this *FinChinaIndicators) getIndicatorsList(scode string, report_type int,
 	}
 
 	// 从 TQ_FIN_PROINDICDATA     衍生财务指标（产品表）    取数据
-	slidb_TQ_FIN_PROINDICDATA, err = finchina.NewTQ_FIN_PROINDICDATA().GetListByEnddates(scode, report_type, per_page, page, dates)
+	slidb_TQ_FIN_PROINDICDATA, err = finchina.NewTQ_FIN_PROINDICDATA().GetListByEnddates(scode, market, report_type, per_page, page, dates)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +244,7 @@ func (this *FinChinaIndicators) getIndicatorsList(scode string, report_type int,
 	}
 
 	// 从 TQ_FIN_PROTTMINDIC      财务数据_TTM指标（产品表）取数据
-	slidb_TQ_FIN_PROTTMINDIC, err = finchina.NewTQ_FIN_PROTTMINDIC().GetListByEnddates(scode, report_type, per_page, page, dates)
+	slidb_TQ_FIN_PROTTMINDIC, err = finchina.NewTQ_FIN_PROTTMINDIC().GetListByEnddates(scode, market, report_type, per_page, page, dates)
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +255,7 @@ func (this *FinChinaIndicators) getIndicatorsList(scode string, report_type int,
 	}
 
 	// 从 TQ_FIN_PROCFSTTMSUBJECT TTM现金科目产品表        取数据
-	slidb_TQ_FIN_PROCFSTTMSUBJECT, err = finchina.NewTQ_FIN_PROCFSTTMSUBJECT().GetListByEnddates(scode, report_type, per_page, page, dates)
+	slidb_TQ_FIN_PROCFSTTMSUBJECT, err = finchina.NewTQ_FIN_PROCFSTTMSUBJECT().GetListByEnddates(scode, market, report_type, per_page, page, dates)
 	if err != nil {
 		return nil, err
 	}

@@ -4,6 +4,7 @@ package finchina
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	. "haina.com/share/models"
 
@@ -29,14 +30,27 @@ func NewTQ_OA_STCODE() *TQ_OA_STCODE {
 	}
 }
 
-func (this *TQ_OA_STCODE) getCompcode(symbol string) error {
-	key := fmt.Sprintf(REDIS_SYMBOL_COMPCODE, symbol)
+func (this *TQ_OA_STCODE) getCompcode(symbol string, market string) error {
+	m := strings.ToUpper(market)
+	switch m {
+	case "SH", "SZ":
+		fmt.Println("pass market", m)
+	default:
+		return ErrMarket
+	}
+	seg := fmt.Sprintf("%s.%s", symbol, m)
+	key := fmt.Sprintf(REDIS_SYMBOL_COMPCODE, seg)
 	v, err := redis.Get(key)
 	if err != nil {
 		if err != redigo.ErrNil {
 			logging.Error("Redis get %s: %s", key, err)
 		}
-		err := this.Db.Select("*").From(this.TableName).Where("SYMBOL=?", symbol).Limit(1).LoadStruct(this)
+		switch m {
+		case "SH": // 001002 上海证券交易所
+			err := this.Db.Select("*").From(this.TableName).Where("SYMBOL=? and EXCHANGE='001002'", symbol).Limit(1).LoadStruct(this)
+		case "SZ": // 001003 深圳证券交易所
+			err := this.Db.Select("*").From(this.TableName).Where("SYMBOL=? and EXCHANGE='001003'", symbol).Limit(1).LoadStruct(this)
+		}
 		if err != nil {
 			logging.Error("finchina db: getCompcode: %s", err)
 			return err
@@ -62,6 +76,6 @@ func (this *TQ_OA_STCODE) getCompcode(symbol string) error {
 
 	return nil
 }
-func (this *TQ_OA_STCODE) GetCompcode(symbol string) error {
-	return this.getCompcode(symbol)
+func (this *TQ_OA_STCODE) GetCompcode(symbol string, market string) error {
+	return this.getCompcode(symbol, market)
 }

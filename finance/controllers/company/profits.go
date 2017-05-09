@@ -43,7 +43,7 @@ func (this *Profits) GET(c *gin.Context) {
 
 func (this *Profits) getJson(req *RequestParam) (*company.RespFinAnaJson, error) {
 	sli := make([]company.ProfitsJson, 0, req.PerPage)
-	ls, err := company.NewProfits().GetList(req.SCode, req.Type, req.PerPage, req.Page)
+	ls, err := company.NewProfits().GetList(req.SCode, req.Market, req.Type, req.PerPage, req.Page)
 	if err != nil {
 		return nil, err
 	}

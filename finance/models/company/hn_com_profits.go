@@ -53,8 +53,8 @@ func NewProfits() *Profits {
 	return &Profits{}
 }
 
-func (this *Profits) GetList(scode string, report_type int, per_page int, page int) ([]Profits, error) {
-	return NewFinChinaProfits().getProfitsList(scode, report_type, per_page, page)
+func (this *Profits) GetList(scode string, market string, report_type int, per_page int, page int) ([]Profits, error) {
+	return NewFinChinaProfits().getProfitsList(scode, market, report_type, per_page, page)
 }
 
 //------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ func NewFinChinaProfits() *FinChinaProfits {
 	return &FinChinaProfits{}
 }
 
-func (this *FinChinaProfits) getProfitsList(scode string, report_type int, per_page int, page int) ([]Profits, error) {
+func (this *FinChinaProfits) getProfitsList(scode string, market string, report_type int, per_page int, page int) ([]Profits, error) {
 	var (
 		slidb []finchina.TQ_FIN_PROINCSTATEMENTNEW
 		len1  int
@@ -74,7 +74,7 @@ func (this *FinChinaProfits) getProfitsList(scode string, report_type int, per_p
 	)
 	sli := make([]Profits, 0, per_page)
 
-	slidb, err = finchina.NewTQ_FIN_PROINCSTATEMENTNEW().GetList(scode, report_type, per_page, page)
+	slidb, err = finchina.NewTQ_FIN_PROINCSTATEMENTNEW().GetList(scode, market, report_type, per_page, page)
 	if err != nil {
 		return nil, err
 	}
@@ -93,5 +93,3 @@ func (this *FinChinaProfits) getProfitsList(scode string, report_type int, per_p
 
 	return sli, nil
 }
-
-//ls, err := finchina.NewTQ_FIN_PROINCSTATEMENTNEW().GetList(scode, report_type, per_page, page)

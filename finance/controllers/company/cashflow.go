@@ -43,7 +43,7 @@ func (this *Cashflow) GET(c *gin.Context) {
 
 func (this *Cashflow) getJson(req *RequestParam) (*company.RespFinAnaJson, error) {
 	sli := make([]company.CashflowJson, 0, req.PerPage)
-	ls, err := company.NewCashflow().GetList(req.SCode, req.Type, req.PerPage, req.Page)
+	ls, err := company.NewCashflow().GetList(req.SCode, req.Market, req.Type, req.PerPage, req.Page)
 	if err != nil {
 		return nil, err
 	}
