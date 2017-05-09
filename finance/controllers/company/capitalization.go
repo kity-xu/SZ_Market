@@ -24,7 +24,7 @@ func NewCapitalizationInfo() *CapitalizationInfo {
 func (this *CapitalizationInfo) GetStructureJson(c *gin.Context) {
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
 	count := c.Query(models.CONTEXT_COUNT)
-	exchange := ReturnExchang(c.Query(models.CONTEXT_SCODE))
+	market := ReturnExchang(c.Query(models.CONTEXT_SCODE))
 	if exchange == "error" {
 		lib.WriteString(c, 40004, "")
 		return
@@ -59,7 +59,7 @@ func (this *CapitalizationInfo) GetStructureJson(c *gin.Context) {
 		selwhe = " and ENDDATE LIKE '%1230' "
 	}
 
-	data, err := company.GetStructure(scode, selwhe, value_int, exchange)
+	data, err := company.GetStructure(scode, selwhe, value_int, market)
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 		return
@@ -80,7 +80,7 @@ func (this *CapitalizationInfo) GetChangesJson(c *gin.Context) {
 	enddate := c.Query(models.CONTEXT_END_DATE)
 	count := c.Query(models.CONTEXT_COUNT)
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
-	exchange := ReturnExchang(c.Query(models.CONTEXT_SCODE))
+	market := ReturnExchang(c.Query(models.CONTEXT_SCODE))
 	if exchange == "error" {
 		lib.WriteString(c, 40004, "")
 		return
@@ -96,7 +96,7 @@ func (this *CapitalizationInfo) GetChangesJson(c *gin.Context) {
 		logging.Debug("%v", err)
 		lib.WriteString(c, 88888, nil)
 	}
-	data, err := company.GetChangesStrInfo(enddate, scode, value_int, exchange)
+	data, err := company.GetChangesStrInfo(enddate, scode, value_int, market)
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 		return

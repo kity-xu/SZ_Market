@@ -30,14 +30,14 @@ type RetTopInfoJson struct {
 /**
   获取十大流通股东信息
 */
-func GetTop10Group(enddate string, scode string, limit int, exchang string) ([]*RetTopInfoJson, error) {
+func GetTop10Group(enddate string, scode string, limit int, market string) ([]*RetTopInfoJson, error) {
 
 	// 根据证券代码 开始时间 查询条数 查询日期
 	var selwhe = " "
 	if enddate != "" {
 		selwhe = " and ENDDATE < '" + enddate + "' "
 	}
-	dataEnd, err := finchina.NewTQ_SK_OTSHOLDER().GetEndDate(scode, selwhe, limit+1, exchang)
+	dataEnd, err := finchina.NewTQ_SK_OTSHOLDER().GetEndDate(scode, selwhe, limit+1, market)
 
 	var whel = ""
 	for _, item := range dataEnd {
@@ -48,7 +48,7 @@ func GetTop10Group(enddate string, scode string, limit int, exchang string) ([]*
 	}
 
 	// 查询9组十大流通股东
-	data, err := finchina.NewTQ_SK_OTSHOLDER().GetTop10Group(whel, scode, exchang)
+	data, err := finchina.NewTQ_SK_OTSHOLDER().GetTop10Group(whel, scode, market)
 	// 外循环9个日期 内循环9组十大流通股东数据
 	rtpj := []*RetTopInfoJson{}
 	for index, itm := range dataEnd {

@@ -57,7 +57,7 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 	enddate := c.Query(models.CONTEXT_END_DATE)
 	count := c.Query(models.CONTEXT_COUNT)
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
-	exchange := ReturnExc(c.Query(models.CONTEXT_SCODE))
+	market := ReturnExc(c.Query(models.CONTEXT_SCODE))
 	if exchange == "error" {
 		lib.WriteString(c, 40004, "")
 		return
@@ -75,7 +75,7 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 		lib.WriteString(c, 88888, nil)
 	}
 
-	data, err := company.GetTop10Group(enddate, scode, value_int, exchange)
+	data, err := company.GetTop10Group(enddate, scode, value_int, market)
 
 	lib.WriteString(c, 200, data)
 }
@@ -85,12 +85,12 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 */
 func (this *EquityInfo) GetOrganizationJson(c *gin.Context) {
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
-	exchange := ReturnExc(c.Query(models.CONTEXT_SCODE))
+	market := ReturnExc(c.Query(models.CONTEXT_SCODE))
 	if exchange == "error" {
 		lib.WriteString(c, 40004, "")
 		return
 	}
-	data, err := company.GetCompGroup(scode, exchange)
+	data, err := company.GetCompGroup(scode, market)
 	if err != nil {
 		lib.WriteString(c, 300, err.Error())
 		return
@@ -105,7 +105,7 @@ func ReturnExc(np string) string {
 		return "error"
 	}
 	ntype := strings.Split(np, ".")[1]
-	var exchange = ""
+	var market = ""
 	if len(ntype) > 1 {
 		switch strings.ToUpper(ntype) {
 		case "SH":
@@ -116,5 +116,5 @@ func ReturnExc(np string) string {
 			logging.Info("其他市场股票，或SCODE有误！")
 		}
 	}
-	return exchange
+	return market
 }

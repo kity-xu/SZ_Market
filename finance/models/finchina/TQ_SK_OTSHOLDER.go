@@ -65,11 +65,11 @@ type Calculate struct {
 /**
   获取结算时间列表
 */
-func (this *TQ_SK_OTSHOLDER) GetEndDate(sCode string, edata string, limit int, exchange string) ([]*TQ_SK_OTSHOLDER, error) {
+func (this *TQ_SK_OTSHOLDER) GetEndDate(sCode string, edata string, limit int, market string) ([]*TQ_SK_OTSHOLDER, error) {
 	var dataTop10 []*TQ_SK_OTSHOLDER
 	//根据证券代码获取公司内码
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(sCode, exchange); err != nil {
+	if err := sc.getCompcode(sCode, market); err != nil {
 		return dataTop10, err
 
 	}
@@ -90,10 +90,10 @@ func (this *TQ_SK_OTSHOLDER) GetEndDate(sCode string, edata string, limit int, e
 }
 
 // 获单条数据
-func (this *Calculate) GetSingleCalculate(enddate string, scode string, exchange string) *Calculate {
+func (this *Calculate) GetSingleCalculate(enddate string, scode string, market string) *Calculate {
 	//根据证券代码获取公司内码
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode, exchange); err != nil {
+	if err := sc.getCompcode(scode, market); err != nil {
 		return this
 
 	}
@@ -111,11 +111,11 @@ func (this *Calculate) GetSingleCalculate(enddate string, scode string, exchange
 }
 
 // 获取十大流通股东信息
-func (this *TQ_SK_OTSHOLDER) GetTop10Group(enddate string, scode string, exchange string) ([]*TQ_SK_OTSHOLDER, error) {
+func (this *TQ_SK_OTSHOLDER) GetTop10Group(enddate string, scode string, market string) ([]*TQ_SK_OTSHOLDER, error) {
 	var data []*TQ_SK_OTSHOLDER
 	//根据证券代码获取公司内码
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode, exchange); err != nil {
+	if err := sc.getCompcode(scode, market); err != nil {
 		return data, err
 
 	}
