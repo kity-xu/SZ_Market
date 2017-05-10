@@ -2,6 +2,8 @@
 package security
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 
 	sec "ProtocolBuffer/format/securitytable"
@@ -21,7 +23,11 @@ func UpdateIndexTable() {
 		return
 	}
 
+	buffer := new(bytes.Buffer)
+
 	for _, v := range *stocks {
+		buf := TagSecurityName{}
+
 		stock := sec.SecurityInfo{}
 		stock.NMarket = v.NMarket
 		stock.NSID = v.NSID
@@ -37,6 +43,25 @@ func UpdateIndexTable() {
 		stock.SzSType = v.SzSType
 		stock.SzSymbol = v.SzSymbol
 
+		buf.NSID = v.NSID
+		buf.NMarket = v.NMarket
+
+		buf.SzSType = StringToByte_4(v.SzSType)
+		buf.SzStatus = StringToByte_4(v.SzStatus)
+		buf.SzSCode = StringToByte_SECURITY_CODE_LEN(v.SzSCode)
+		buf.SzSymbol = StringToByte_SECURITY_CODE_LEN(v.SzSymbol)
+		buf.SzISIN = StringToByte_SECURITY_ISIN_LEN(v.SzISIN)
+		buf.SzSName = StringToByte_SECURITY_NAME_LEN(v.SzSName)
+		buf.SzSCName = StringToByte_SECURITY_NAME_LEN(v.SzSCName)
+		buf.SzDESC = StringToByte_SECURITY_DESC_LEN(v.SzDESC)
+		buf.SzPhonetic = StringToByte_SECURITY_CODE_LEN(v.SzPhonetic)
+		buf.SzCUR = StringToByte_4(v.SzCUR)
+		buf.SzIndusCode = StringToByte_INDUSTRY_CODE_LEN(v.SzIndusCode)
+
+		if err := binary.Write(buffer, binary.LittleEndian, buf); err != nil {
+			logging.Fatal(err)
+		}
+
 		//转PB
 		data, err := proto.Marshal(&stock)
 		if err != nil {
@@ -50,5 +75,19 @@ func UpdateIndexTable() {
 		}
 
 	}
+
+	file, err := OpenFile("E:/security/index.dat")
+	if err != nil {
+		return
+	}
+	//logging.Debug("Write buffer:%v ", buffer.Bytes())
+
+	n, err1 := file.Write(buffer.Bytes())
+	if err1 != nil {
+		logging.Error("Write file error...")
+	}
+	logging.Debug("Write count:%d ", n)
+
+	defer file.Close()
 
 }

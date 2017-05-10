@@ -16,3 +16,8 @@ hqpost/hqpost
 hqpost/hqpost.exe
 hqpost/bin/market_hqpost
 hqpost/hqpost_linux_amd64
+
+hqpost/hqinit
+hqpost/hqinit.exe
+hqpost/bin/market_hqinit
+hqpost/hqinit_linux_amd64

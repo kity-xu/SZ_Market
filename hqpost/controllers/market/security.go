@@ -3,12 +3,11 @@ package market
 import (
 	"time"
 
-	//	"haina.com/market/hqpost/controllers/market/kline"
+	"haina.com/market/hqpost/controllers/market/sidcode"
+
+	"haina.com/market/hqpost/controllers/market/kline"
 
 	"haina.com/market/hqpost/config"
-
-	"haina.com/market/hqpost/controllers/market/security"
-	"haina.com/market/hqpost/controllers/market/sidcode"
 	"haina.com/share/logging"
 )
 
@@ -17,31 +16,25 @@ func Update(cfg *config.AppConfig) {
 	start := time.Now()
 
 	//股票代码表
-	_, err := sidcode.GetSecurityTable()
+	codes, err := sidcode.GetSecurityTable()
 	if err != nil {
 		logging.Error("%v", err.Error())
 		return
 	}
 
-	//市场代码表
-	security.UpdateSecurityTable()
+	security := new(kline.Security)
+	//--------------------------------------------------/
+	//日K线
+	security.DayLine(cfg, codes)
 
-	//指数基本数据
-	security.UpdateIndexTable()
+	//周K线
+	security.WeekLine()
 
-	//	security := new(kline.Security)
-	//	//--------------------------------------------------/
-	//	//日K线
-	//	security.DayLine(cfg, codes)
+	//月线
+	security.MonthLine()
 
-	//	//周K线
-	//	security.WeekLine()
-
-	//	//月线
-	//	security.MonthLine()
-
-	//	//年线
-	//	security.YearLine()
+	//年线
+	security.YearLine()
 	//--------------------------------------------------/
 	end := time.Now()
 	logging.Info("Update Kline historical data successed, and running time:%v", end.Sub(start))
