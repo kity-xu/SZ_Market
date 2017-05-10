@@ -16,3 +16,5 @@ hqpost/hqpost
 hqpost/hqpost.exe
 hqpost/bin/market_hqpost
 hqpost/hqpost_linux_amd64
+*.exe
+hqtools/test/main.go

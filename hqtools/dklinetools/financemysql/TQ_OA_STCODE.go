@@ -21,3 +21,12 @@ func (this *ComCode) GetComCodeList(sess *dbr.Session) ([]ComCode, error) {
 		OrderBy("SECODE").LoadStructs(&code)
 	return code, err
 }
+
+// 查询指数信息
+func (this *ComCode) GetIndexInfoList(sess *dbr.Session) ([]ComCode, error) {
+	var code []ComCode
+	_, err := sess.Select("*").From("TQ_OA_STCODE").
+		Where("SETYPE ='701' AND (SYMBOL LIKE '399%' OR SYMBOL LIKE '000%') AND LISTSTATUS =1 and ISVALID =1").
+		OrderBy("SYMBOL").LoadStructs(&code)
+	return code, err
+}
