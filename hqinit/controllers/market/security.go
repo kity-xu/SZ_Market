@@ -15,14 +15,15 @@ func Update(cfg *config.AppConfig) {
 
 	//股票代码表
 	security.UpdateSecurityCodeTable()
-	end := time.Now()
-	logging.Info("Update Kline historical data successed, and running time:%v", end.Sub(start))
 
 	//市场代码表及证券基本数据
 	security.UpdateSecurityTable()
 
 	//指数基本数据
 	security.UpdateIndexTable()
+
+	end := time.Now()
+	logging.Info("Update Kline historical data successed, and running time:%v", end.Sub(start))
 
 	/*********************结束时间***********************/
 

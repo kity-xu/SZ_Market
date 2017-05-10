@@ -129,13 +129,11 @@ func UpdateSecurityTable() {
 	if err != nil {
 		return
 	}
-	//logging.Debug("Write buffer:%v ", buffer.Bytes())
 
-	n, err1 := file.Write(buffer.Bytes())
+	_, err1 := file.Write(buffer.Bytes())
 	if err1 != nil {
 		logging.Error("Write file error...")
 	}
-	logging.Debug("Write count:%d ", n)
 
 	defer file.Close()
 	/*************************OVER******************************/
@@ -154,6 +152,7 @@ func UpdateSecurityTable() {
 		logging.Error("Encode protocbuf of week Line error...%v", err.Error())
 		return
 	}
+	logging.Info("Lengh of SH security table:%v", len(sec_sh.List))
 
 	key_sh := fmt.Sprintf(REDISKEY_MARKET_SECURITY_TABLE, sec_sh.MarketID)
 	if err := redis.Set(key_sh, data_sh); err != nil {
@@ -166,6 +165,7 @@ func UpdateSecurityTable() {
 		logging.Error("Encode protocbuf of week Line error...%v", err.Error())
 		return
 	}
+	logging.Info("Lengh of SZ security table:%v", len(sec_sz.List))
 
 	key_sz := fmt.Sprintf(REDISKEY_MARKET_SECURITY_TABLE, sec_sz.MarketID)
 	if err := redis.Set(key_sz, data_sz); err != nil {

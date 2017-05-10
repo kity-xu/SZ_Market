@@ -96,6 +96,12 @@ func (this *Security) GetAllSecurityDayList() {
 	secs := *this.list.Securitys
 
 	for i, v := range secs {
+		defer func() {
+			if err := recover(); err != nil {
+				logging.Error("date:%v------nsid:%v", v.Date, v.Sid)
+			}
+
+		}()
 		var wday [][]int32
 		sat := DateAdd(int(v.Date[0])) //该股票第一个交易日所在周的周六
 

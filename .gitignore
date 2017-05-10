@@ -1,6 +1,7 @@
 *.swp
 *~
 *.log
+*.exe
 
 finance/finance
 finance/finance.exe
@@ -16,5 +17,8 @@ hqpost/hqpost
 hqpost/hqpost.exe
 hqpost/bin/market_hqpost
 hqpost/hqpost_linux_amd64
-*.exe
-hqtools/test/main.go
+
+hqpost/hqinit
+hqpost/hqinit.exe
+hqpost/bin/market_hqinit
+hqpost/hqinit_linux_amd64

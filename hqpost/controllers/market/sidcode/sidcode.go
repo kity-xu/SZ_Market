@@ -1,4 +1,3 @@
-//股票代码表
 package sidcode
 
 import (

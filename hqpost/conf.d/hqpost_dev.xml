@@ -62,6 +62,7 @@
 	<fileStore>
 		<path>E:/hqpost/hqdata</path>
 		<dkName>dk.dat</dkName>
+		<indexName>indexdk.dat</indexName>
 	</fileStore>
 
 </configuration>

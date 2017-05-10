@@ -2,7 +2,6 @@ package company
 
 import (
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"haina.com/market/finance/models"
@@ -18,14 +17,15 @@ func NewDividendInfo() *DividendInfo {
 }
 
 func (this *DividendInfo) GetDiv(c *gin.Context) {
+	var count uint64
 	scode := c.Query(models.CONTEXT_SCODE)
-	market := strings.Split(scode, ".")
-	if len(market) < 2 {
-		return
+	sets := c.Query(models.CONTEXT_COUNT)
+
+	scodePrefix, market, err := ParseSCode(scode)
+	if err != nil {
+		lib.WriteString(c, 40004, err.Error())
 	}
 
-	var count uint64
-	sets := c.Query(models.CONTEXT_COUNT)
 	if sets != "" {
 		n, err := strconv.Atoi(sets)
 		count = uint64(n)
@@ -37,8 +37,7 @@ func (this *DividendInfo) GetDiv(c *gin.Context) {
 		count = models.CONTEXT_RETNUM
 	}
 
-	fin := new(company.Dividend)
-	div, err := fin.GetDividendList(count, market[0], market[1])
+	div, err := new(company.Dividend).GetDividendList(count, scodePrefix, market)
 	if err != nil {
 		lib.WriteString(c, 40002, err.Error())
 		return
@@ -49,29 +48,28 @@ func (this *DividendInfo) GetDiv(c *gin.Context) {
 
 func (this *DividendInfo) GetSEO(c *gin.Context) {
 	scode := c.Query(models.CONTEXT_SCODE)
-	market := strings.Split(scode, ".")
-	if len(market) < 2 {
-		return
+	scodePrefix, market, err := ParseSCode(scode)
+	if err != nil {
+		lib.WriteString(c, 40004, err.Error())
 	}
 
-	fin := new(company.SEO)
-	seo, err := fin.GetSEOList(market[0], market[1])
+	seo, err := new(company.SEO).GetSEOList(scodePrefix, market)
 	if err != nil {
 		lib.WriteString(c, 40002, err.Error())
 		return
 	}
-	seo.Scode = scode
 
+	seo.Scode = scode
 	lib.WriteString(c, 200, seo)
 }
 func (this *DividendInfo) GetRO(c *gin.Context) {
 	scode := c.Query(models.CONTEXT_SCODE)
-	market := strings.Split(scode, ".")
-	if len(market) < 2 {
-		return
+	scodePrefix, market, err := ParseSCode(scode)
+	if err != nil {
+		lib.WriteString(c, 40004, err.Error())
 	}
-	fin := new(company.RO)
-	ro, err := fin.GetROList(market[0], market[1])
+
+	ro, err := new(company.RO).GetROList(scodePrefix, market)
 	if err != nil {
 		lib.WriteString(c, 40002, err.Error())
 	}
