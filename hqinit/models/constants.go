@@ -11,6 +11,6 @@ const (
 // global_table
 //---------------------------------------------------------------------------------
 const (
-	MOGON_SECURITY_TABLE = "global_security_table"
+	MOGON_SECURITY_TABLE = "basic_securityinfo_table"
 	MOGON_MARKET_TABLE   = "basic_securityinfo_table"
 )

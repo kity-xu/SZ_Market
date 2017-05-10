@@ -46,11 +46,15 @@ func (this *Security) DayLine(cfg *config.AppConfig, codes *[]*tb_security.Secur
 			logging.Error("%s", "Invalid file name...")
 			return
 		}
-		filename = fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, v.SID, cfg.File.DKName)
+		filename = fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, v.SID, cfg.File.DKName) //K线数据文件路径
 
 		if !lib.IsFileExist(filename) {
-			logging.Debug("File does not exist...%s", filename)
-			continue
+			filename = fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, v.SID, cfg.File.IndexName) //指数文件路径
+
+			if !lib.IsFileExist(filename) {
+				logging.Debug("Without the historical data...%v", v.SID)
+				continue
+			}
 		}
 
 		file, err := tool.OpenFile(filename)

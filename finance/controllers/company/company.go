@@ -1,8 +1,6 @@
 package company
 
 import (
-	"strings"
-
 	"github.com/gin-gonic/gin"
 	"haina.com/market/finance/models"
 	"haina.com/market/finance/models/company"
@@ -23,14 +21,14 @@ type Share struct {
 
 func (this *Company) GetInfo(c *gin.Context) {
 	scode := c.Query(models.CONTEXT_SCODE)
-	market := strings.Split(scode, ".")
-	if len(market) < 2 {
-		return
+	scodePrefix, market, err := ParseSCode(scode)
+	if err != nil {
+		lib.WriteString(c, 40004, err.Error())
 	}
 
-	cominfo, err := new(company.CompInfo).GetCompInfo(market[0], market[1])
+	cominfo, err := new(company.CompInfo).GetCompInfo(scodePrefix, market)
 	if err != nil {
-		lib.WriteString(c, 300, err.Error())
+		lib.WriteString(c, 40002, err.Error())
 	}
 	var data Share
 	data.Scode = scode
@@ -41,19 +39,19 @@ func (this *Company) GetInfo(c *gin.Context) {
 
 // 获取高管信息
 func (this *Company) GetManagreInfo(c *gin.Context) {
-	secode := c.Query(models.CONTEXT_SCODE)
-	market := strings.Split(secode, ".")
-	if len(market) < 2 {
-		return
+	scode := c.Query(models.CONTEXT_SCODE)
+	scodePrefix, market, err := ParseSCode(scode)
+	if err != nil {
+		lib.WriteString(c, 40004, err.Error())
 	}
 
-	list, err := new(company.HnManager).GetManagerList(market[0], market[1])
+	list, err := new(company.HnManager).GetManagerList(scodePrefix, market)
 	if err != nil {
-		lib.WriteString(c, 300, err.Error())
+		lib.WriteString(c, 40002, err.Error())
 		return
 	}
 	var data Share
-	data.Scode = secode
+	data.Scode = scode
 	data.List = list
 
 	lib.WriteString(c, 200, data)

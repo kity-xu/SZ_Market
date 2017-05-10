@@ -80,13 +80,10 @@ func UpdateIndexTable() {
 	if err != nil {
 		return
 	}
-	//logging.Debug("Write buffer:%v ", buffer.Bytes())
-
-	n, err1 := file.Write(buffer.Bytes())
+	_, err1 := file.Write(buffer.Bytes())
 	if err1 != nil {
 		logging.Error("Write file error...")
 	}
-	logging.Debug("Write count:%d ", n)
 
 	defer file.Close()
 
