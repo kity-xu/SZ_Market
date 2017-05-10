@@ -62,9 +62,9 @@ type RetOrganInfoJson struct {
 
 /**获取机构持股信息
  */
-func GetCompGroup(scode string, exchange string) (RetOrganInfoJson, error) {
+func GetCompGroup(scode string, market string) (RetOrganInfoJson, error) {
 	// 根据证券代码查询公司内码跟公告截止日期
-	org, compcode, err := finchina.NewTQ_SK_SHAREHOLDER().GetSingleByScode(scode, exchange)
+	org, compcode, err := finchina.NewTQ_SK_SHAREHOLDER().GetSingleByScode(scode, market)
 
 	exps := map[string]interface{}{
 		"ENDDATE=?":  org.ENDDATE,

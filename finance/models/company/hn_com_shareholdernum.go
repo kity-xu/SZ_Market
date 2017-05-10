@@ -24,9 +24,9 @@ type RetInfoJson struct {
 /**
   获取股东人数信息
 */
-func GetShareholderGroup(scode string, limit int, strdate string, exchange string) (RetInfoJson, error) {
+func GetShareholderGroup(scode string, limit int, strdate string, market string) (RetInfoJson, error) {
 
-	data, err := finchina.NewTQ_SK_SHAREHOLDERNUM().GetListByExps(scode, limit, strdate, exchange)
+	data, err := finchina.NewTQ_SK_SHAREHOLDERNUM().GetListByExps(scode, limit, strdate, market)
 	var js RetInfoJson
 	jsns := []*ShareHolder{}
 

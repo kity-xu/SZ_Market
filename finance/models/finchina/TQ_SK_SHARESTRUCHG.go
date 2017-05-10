@@ -79,12 +79,12 @@ func NewTQ_SK_SHARESTRUCHGTx(tx *dbr.Tx) *TQ_SK_SHARESTRUCHG {
 }
 
 //获取股本结构信息
-func (this *TQ_SK_SHARESTRUCHG) GetSingleBySCode(scode string, selwhe string, limit int, exchange string) ([]*TQ_SK_SHARESTRUCHG, error) {
+func (this *TQ_SK_SHARESTRUCHG) GetSingleBySCode(scode string, selwhe string, limit int, market string) ([]*TQ_SK_SHARESTRUCHG, error) {
 	var sharinfo []*TQ_SK_SHARESTRUCHG
 
 	//根据证券代码获取公司内码
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode, exchange); err != nil {
+	if err := sc.getCompcode(scode, market); err != nil {
 		return sharinfo, err
 	}
 	// ------------------------------------------------------------------原接口
@@ -124,11 +124,11 @@ func (this *TQ_SK_SHARESTRUCHG) GetSingleBySCode(scode string, selwhe string, li
 
 /////////////////////////股本变动
 
-func (this *TQ_SK_SHARESTRUCHG) GetChangesStrGroup(enddate string, scode string, limit int, exchange string) ([]*TQ_SK_SHARESTRUCHG, error) {
+func (this *TQ_SK_SHARESTRUCHG) GetChangesStrGroup(enddate string, scode string, limit int, market string) ([]*TQ_SK_SHARESTRUCHG, error) {
 	var data []*TQ_SK_SHARESTRUCHG
 	//根据证卷代码获取公司内码
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode, exchange); err != nil {
+	if err := sc.getCompcode(scode, market); err != nil {
 		return data, err
 	}
 

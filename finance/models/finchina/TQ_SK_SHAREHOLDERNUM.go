@@ -41,11 +41,11 @@ func NewTQ_SK_SHAREHOLDERNUMTx(tx *dbr.Tx) *TQ_SK_SHAREHOLDERNUM {
 }
 
 // 获取多条股东人数信息
-func (this *TQ_SK_SHAREHOLDERNUM) GetListByExps(scode string, limit int, strdate string, exchange string) ([]*TQ_SK_SHAREHOLDERNUM, error) {
+func (this *TQ_SK_SHAREHOLDERNUM) GetListByExps(scode string, limit int, strdate string, market string) ([]*TQ_SK_SHAREHOLDERNUM, error) {
 	var data []*TQ_SK_SHAREHOLDERNUM
 	//根据证券代码获取公司内码
 	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode, exchange); err != nil {
+	if err := sc.getCompcode(scode, market); err != nil {
 		return data, err
 	}
 	bulid := this.Db.Select("*").

@@ -26,8 +26,9 @@ func (this *EquityInfo) GetShareholderJson(c *gin.Context) {
 	enddate := c.Query(models.CONTEXT_END_DATE)
 	count := c.Query(models.CONTEXT_COUNT)
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
-	exchange := ReturnExc(c.Query(models.CONTEXT_SCODE))
-	if exchange == "error" {
+	scodePrefix, market, err := ParseSCode(c.Query(models.CONTEXT_SCODE))
+
+	if err != nil {
 		lib.WriteString(c, 40004, "")
 		return
 	}
@@ -45,7 +46,7 @@ func (this *EquityInfo) GetShareholderJson(c *gin.Context) {
 	if enddate != "" {
 		strDate = " and ENDDATE<'" + enddate + "'"
 	}
-	data, err := company.GetShareholderGroup(scode, value_int, strDate, exchange)
+	data, err := company.GetShareholderGroup(scode, value_int, strDate, market)
 	lib.WriteString(c, 200, data)
 }
 
@@ -57,8 +58,9 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 	enddate := c.Query(models.CONTEXT_END_DATE)
 	count := c.Query(models.CONTEXT_COUNT)
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
-	market := ReturnExc(c.Query(models.CONTEXT_SCODE))
-	if market == "error" {
+	scodePrefix, market, err := ParseSCode(c.Query(models.CONTEXT_SCODE))
+
+	if err != nil {
 		lib.WriteString(c, 40004, "")
 		return
 	}
@@ -85,8 +87,9 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 */
 func (this *EquityInfo) GetOrganizationJson(c *gin.Context) {
 	scode := strings.Split(c.Query(models.CONTEXT_SCODE), ".")[0]
-	market := ReturnExc(c.Query(models.CONTEXT_SCODE))
-	if market == "error" {
+	scodePrefix, market, err := ParseSCode(c.Query(models.CONTEXT_SCODE))
+
+	if err != nil {
 		lib.WriteString(c, 40004, "")
 		return
 	}
@@ -96,25 +99,4 @@ func (this *EquityInfo) GetOrganizationJson(c *gin.Context) {
 		return
 	}
 	lib.WriteString(c, 200, data)
-}
-
-// 判断市场类型
-func ReturnExc(np string) string {
-	ind := strings.Index(np, ".")
-	if ind < 1 {
-		return "error"
-	}
-	ntype := strings.Split(np, ".")[1]
-	var market = ""
-	if len(ntype) > 1 {
-		switch strings.ToUpper(ntype) {
-		case "SH":
-			market = "SH"
-		case "SZ":
-			market = "SZ"
-		default:
-			logging.Info("其他市场股票，或SCODE有误！")
-		}
-	}
-	return market
 }
