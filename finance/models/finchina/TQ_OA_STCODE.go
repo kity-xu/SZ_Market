@@ -34,7 +34,6 @@ func (this *TQ_OA_STCODE) getCompcode(symbol string, market string) error {
 	m := strings.ToUpper(market)
 	switch m {
 	case "SH", "SZ":
-		fmt.Println("pass market", m)
 	default:
 		return ErrMarket
 	}
