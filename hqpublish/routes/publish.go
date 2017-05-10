@@ -9,7 +9,7 @@ import (
 
 func RegPublish(rg *gin.RouterGroup) {
 
-	// 股票代码表
+	// 股票代码表 作废 待移除
 	rg.GET("/securitytable", publish.NewSecurityTable().GET) //默认pb模式
 
 	// 分钟K线

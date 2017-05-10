@@ -32,7 +32,6 @@ func (this *Kline) POST(c *gin.Context) {
 	case "pb":
 		this.PostPB(c)
 	default:
-		//lib.WriteString(c, 40004, nil)
 		return
 	}
 }

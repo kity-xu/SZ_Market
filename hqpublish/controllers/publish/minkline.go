@@ -109,7 +109,10 @@ func (this *MinKLine) PostPB(c *gin.Context) {
 		if err != nil {
 			logging.Error("pb marshal error: %v", err)
 		}
+		lib.WriteData(c, replypb)
+		return
 	}
+
 	reply := &kline.ReplyMinK{
 		Code: 200,
 		Data: data,
