@@ -37,24 +37,24 @@ func (this *StockSnapshot) POST(c *gin.Context) {
 	case "pb":
 		this.PostPB(c)
 	default:
-		//lib.WriteString(c, 40004, nil)
 		return
 	}
 }
 
 func (this *StockSnapshot) PostJson(c *gin.Context) {
+	var request snap.RequestSnap
+
 	buf, err := getRequestData(c)
 	if err != nil && err != io.EOF {
 		logging.Error("%v", err)
 		return
 	}
-
-	var request snap.RequestSnap
 	if err := json.Unmarshal(buf, &request); err != nil {
 		logging.Error("Json Request Unmarshal: %v", err)
 		return
 	}
 	logging.Info("Request Data: %+v", request)
+
 	data, err := publish.NewStockSnapshot().GetStockSnapshot(&request)
 	if err != nil {
 		logging.Error("%v", err)
@@ -90,6 +90,7 @@ func (this *StockSnapshot) PostPB(c *gin.Context) {
 		return
 	}
 	logging.Info("Request Data: %+v", request)
+
 	data, err := publish.NewStockSnapshot().GetStockSnapshot(&request)
 	if err != nil {
 		reply := snap.ReplySnap{
@@ -99,12 +100,15 @@ func (this *StockSnapshot) PostPB(c *gin.Context) {
 		if err != nil {
 			logging.Error("pb marshal error: %v", err)
 		}
+		lib.WriteData(c, replypb)
+		return
 	}
-	reply := &snap.ReplySnap{
+
+	reply := snap.ReplySnap{
 		Code: 200,
 		Data: data,
 	}
-	replypb, err = proto.Marshal(reply)
+	replypb, err = proto.Marshal(&reply)
 	if err != nil {
 		reply := snap.ReplySnap{
 			Code: 40002,
@@ -113,7 +117,6 @@ func (this *StockSnapshot) PostPB(c *gin.Context) {
 		if err != nil {
 			logging.Error("pb marshal error: %v", err)
 		}
-
 	}
 	lib.WriteData(c, replypb)
 }

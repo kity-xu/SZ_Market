@@ -33,7 +33,6 @@ func (this *SecurityTable) GET(c *gin.Context) {
 	case "pb":
 		this.GetPB(c)
 	default:
-		lib.WriteString(c, 40004, nil)
 		return
 	}
 }
