@@ -28,7 +28,8 @@ func (this *EquityInfo) GetShareholderJson(c *gin.Context) {
 	scodePrefix, market, err := ParseSCode(c.Query(models.CONTEXT_SCODE))
 
 	if err != nil {
-		lib.WriteString(c, 40004, "")
+		logging.Debug("%v", err)
+		lib.WriteString(c, 40004, nil)
 		return
 	}
 	var value_int = 0
@@ -59,7 +60,8 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 	scodePrefix, market, err := ParseSCode(c.Query(models.CONTEXT_SCODE))
 
 	if err != nil {
-		lib.WriteString(c, 40004, "")
+		logging.Debug("%v", err)
+		lib.WriteString(c, 40004, nil)
 		return
 	}
 	var value_int = 0
@@ -88,12 +90,14 @@ func (this *EquityInfo) GetOrganizationJson(c *gin.Context) {
 	scodePrefix, market, err := ParseSCode(c.Query(models.CONTEXT_SCODE))
 
 	if err != nil {
-		lib.WriteString(c, 40004, "")
+		logging.Debug("%v", err)
+		lib.WriteString(c, 40004, nil)
 		return
 	}
 	data, err := company.GetCompGroup(scodePrefix, market)
 	if err != nil {
-		lib.WriteString(c, 40002, err.Error())
+		logging.Debug("%v", err)
+		lib.WriteString(c, 40002, nil)
 		return
 	}
 	lib.WriteString(c, 200, data)

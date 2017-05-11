@@ -5,6 +5,7 @@ import (
 	"haina.com/market/finance/models"
 	"haina.com/market/finance/models/company"
 	"haina.com/share/lib"
+	"haina.com/share/logging"
 )
 
 type Company struct {
@@ -23,13 +24,15 @@ func (this *Company) GetInfo(c *gin.Context) {
 	scode := c.Query(models.CONTEXT_SCODE)
 	scodePrefix, market, err := ParseSCode(scode)
 	if err != nil {
-		lib.WriteString(c, 40004, err.Error())
+		logging.Error("%v", err)
+		lib.WriteString(c, 40004, nil)
 		return
 	}
 
 	cominfo, err := new(company.CompInfo).GetCompInfo(scodePrefix, market)
 	if err != nil {
-		lib.WriteString(c, 40002, err.Error())
+		logging.Error("%v", err)
+		lib.WriteString(c, 40002, nil)
 		return
 	}
 	var data Share
@@ -44,13 +47,15 @@ func (this *Company) GetManagreInfo(c *gin.Context) {
 	scode := c.Query(models.CONTEXT_SCODE)
 	scodePrefix, market, err := ParseSCode(scode)
 	if err != nil {
-		lib.WriteString(c, 40004, err.Error())
+		logging.Error("%v", err)
+		lib.WriteString(c, 40004, nil)
 		return
 	}
 
 	list, err := new(company.HnManager).GetManagerList(scodePrefix, market)
 	if err != nil {
-		lib.WriteString(c, 40002, err.Error())
+		logging.Error("%v", err)
+		lib.WriteString(c, 40002, nil)
 		return
 	}
 	var data Share

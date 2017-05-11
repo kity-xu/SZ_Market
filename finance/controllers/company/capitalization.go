@@ -25,7 +25,8 @@ func (this *CapitalizationInfo) GetStructureJson(c *gin.Context) {
 	scodePrefix, market, err := ParseSCode(c.Query(models.CONTEXT_SCODE))
 
 	if err != nil {
-		lib.WriteString(c, 40004, "")
+		logging.Error("%v", err)
+		lib.WriteString(c, 40004, nil)
 		return
 	}
 	var value_int = 0
@@ -60,7 +61,8 @@ func (this *CapitalizationInfo) GetStructureJson(c *gin.Context) {
 
 	data, err := company.GetStructure(scodePrefix, selwhe, value_int, market)
 	if err != nil {
-		lib.WriteString(c, 40002, err.Error())
+		logging.Error("%v", err)
+		lib.WriteString(c, 40002, nil)
 		return
 	}
 
@@ -83,7 +85,7 @@ func (this *CapitalizationInfo) GetChangesJson(c *gin.Context) {
 
 	if err != nil {
 		logging.Error("%v", err)
-		lib.WriteString(c, 40004, "")
+		lib.WriteString(c, 40004, nil)
 		return
 	}
 	var value_int = 0
@@ -101,7 +103,7 @@ func (this *CapitalizationInfo) GetChangesJson(c *gin.Context) {
 	data, err := company.GetChangesStrInfo(enddate, scodePrefix, value_int, market)
 	if err != nil {
 		logging.Error("%v", err)
-		lib.WriteString(c, 40002, err.Error())
+		lib.WriteString(c, 40002, nil)
 		return
 	}
 	lib.WriteString(c, 200, data)
