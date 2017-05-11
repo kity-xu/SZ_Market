@@ -24,6 +24,7 @@ func (this *DividendInfo) GetDiv(c *gin.Context) {
 	scodePrefix, market, err := ParseSCode(scode)
 	if err != nil {
 		lib.WriteString(c, 40004, err.Error())
+		return
 	}
 
 	if sets != "" {
@@ -51,6 +52,7 @@ func (this *DividendInfo) GetSEO(c *gin.Context) {
 	scodePrefix, market, err := ParseSCode(scode)
 	if err != nil {
 		lib.WriteString(c, 40004, err.Error())
+		return
 	}
 
 	seo, err := new(company.SEO).GetSEOList(scodePrefix, market)
@@ -67,6 +69,7 @@ func (this *DividendInfo) GetRO(c *gin.Context) {
 	scodePrefix, market, err := ParseSCode(scode)
 	if err != nil {
 		lib.WriteString(c, 40004, err.Error())
+		return
 	}
 
 	ro, err := new(company.RO).GetROList(scodePrefix, market)

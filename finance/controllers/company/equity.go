@@ -71,8 +71,9 @@ func (this *EquityInfo) GetTop10Json(c *gin.Context) {
 	}
 
 	if erre != nil {
-		logging.Debug("%v", err)
-		lib.WriteString(c, 88888, nil)
+		logging.Debug("%v", erre)
+		lib.WriteString(c, 40004, nil)
+		return
 	}
 
 	data, err := company.GetTop10Group(enddate, scodePrefix, value_int, market)
@@ -92,7 +93,7 @@ func (this *EquityInfo) GetOrganizationJson(c *gin.Context) {
 	}
 	data, err := company.GetCompGroup(scodePrefix, market)
 	if err != nil {
-		lib.WriteString(c, 300, err.Error())
+		lib.WriteString(c, 40002, err.Error())
 		return
 	}
 	lib.WriteString(c, 200, data)

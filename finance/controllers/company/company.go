@@ -24,11 +24,13 @@ func (this *Company) GetInfo(c *gin.Context) {
 	scodePrefix, market, err := ParseSCode(scode)
 	if err != nil {
 		lib.WriteString(c, 40004, err.Error())
+		return
 	}
 
 	cominfo, err := new(company.CompInfo).GetCompInfo(scodePrefix, market)
 	if err != nil {
 		lib.WriteString(c, 40002, err.Error())
+		return
 	}
 	var data Share
 	data.Scode = scode
@@ -43,6 +45,7 @@ func (this *Company) GetManagreInfo(c *gin.Context) {
 	scodePrefix, market, err := ParseSCode(scode)
 	if err != nil {
 		lib.WriteString(c, 40004, err.Error())
+		return
 	}
 
 	list, err := new(company.HnManager).GetManagerList(scodePrefix, market)

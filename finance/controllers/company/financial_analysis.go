@@ -114,7 +114,6 @@ func ParseSCode(scode string) (string, string, error) {
 	market := strings.ToUpper(sli[1])
 	switch market {
 	case "SH", "SZ":
-		fmt.Println("pass market", market)
 	default:
 		logging.Error("Unknown Stock Market %s", market)
 		return "", "", ERR_URL_PARAM_FORMAT
