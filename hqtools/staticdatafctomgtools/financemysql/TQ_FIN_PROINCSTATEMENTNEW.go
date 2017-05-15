@@ -19,6 +19,9 @@ func (this *TQ_FIN_PROINCSTATEMENTNEW) GetSingleInfo(sess *dbr.Session, comc str
 	var tsp TQ_FIN_PROINCSTATEMENTNEW
 
 	err := sess.Select("*").From("TQ_FIN_PROINCSTATEMENTNEW").
-		Where("COMPCODE=" + comc + " and  ISVALID=1").OrderBy("ENDDATE DESC ").Limit(1).LoadStruct(&tsp)
+		Where("COMPCODE=" + comc + " and  ISVALID=1").
+		OrderBy("ENDDATE DESC ").
+		Limit(1).
+		LoadStruct(&tsp)
 	return tsp, err
 }

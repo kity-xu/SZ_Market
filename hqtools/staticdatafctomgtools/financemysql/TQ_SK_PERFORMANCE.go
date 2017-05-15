@@ -16,6 +16,9 @@ func (this *TQ_SK_PERFORMANCE) GetSingleInfo(sess *dbr.Session, comc string) (TQ
 	var tsp TQ_SK_PERFORMANCE
 
 	err := sess.Select("*").From("TQ_FIN_PROBALSHEETNEW").
-		Where("COMPCODE=" + comc + " and  ISVALID=1").OrderBy("PUBLISHDATE  DESC ").Limit(1).LoadStruct(&tsp)
+		Where("COMPCODE=" + comc + " and  ISVALID=1").
+		OrderBy("PUBLISHDATE  DESC ").
+		Limit(1).
+		LoadStruct(&tsp)
 	return tsp, err
 }

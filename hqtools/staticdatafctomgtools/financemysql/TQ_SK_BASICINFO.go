@@ -19,6 +19,8 @@ type TQ_SK_BASICINFO struct {
 func (this *TQ_SK_BASICINFO) GetBasicinfoList(sess *dbr.Session, symb string) (TQ_SK_BASICINFO, error) {
 	var tsb TQ_SK_BASICINFO
 	err := sess.Select("*").From("TQ_SK_BASICINFO").
-		Where("SYMBOL='" + symb + "' and  ISVALID=1").Limit(1).LoadStruct(&tsb)
+		Where("SYMBOL='" + symb + "' and  ISVALID=1").
+		Limit(1).
+		LoadStruct(&tsb)
 	return tsb, err
 }

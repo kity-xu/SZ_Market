@@ -98,12 +98,10 @@ func WriteFileInfo(add string, sto []financemysql.Stock, snid string) {
 		sj.LlVolume = v.VOL.Int64
 		sj.LlValue = int64(v.AMOUNT.Float64 * 10000)
 		sj.NAvgPx = uint32(v.AVGPRICE.Float64 * 10000)
-
-		logging.Info("====================%v", sj)
 		binary.Write(buf, binary.LittleEndian, sj)
 	}
 
-	_, err := file.Write(buf.Bytes())
+	_, err = file.Write(buf.Bytes())
 	if err != nil {
 		logging.Info("write file %v", err)
 	}

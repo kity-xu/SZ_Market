@@ -53,6 +53,7 @@ func main() {
 	if err != nil {
 		logging.Info("指数查询finance出错 %v", err)
 	}
+	// 指数处理
 	TreatingData(secNm2)
 	logging.Info("End==")
 }

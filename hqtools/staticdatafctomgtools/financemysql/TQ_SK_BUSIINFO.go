@@ -15,6 +15,9 @@ type TQ_SK_BUSIINFO struct {
 func (this *TQ_SK_BUSIINFO) GetSingleInfo(sess *dbr.Session, comc string) (TQ_SK_BUSIINFO, error) {
 	var tss TQ_SK_BUSIINFO
 	err := sess.Select("*").From("TQ_SK_BUSIINFO").
-		Where("COMPCODE='" + comc + "' and  ISVALID=1").OrderBy("PUBLISHDATE DESC").Limit(1).LoadStruct(&tss)
+		Where("COMPCODE='" + comc + "' and  ISVALID=1").
+		OrderBy("PUBLISHDATE DESC").
+		Limit(1).
+		LoadStruct(&tss)
 	return tss, err
 }
