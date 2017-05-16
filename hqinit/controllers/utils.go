@@ -71,7 +71,7 @@ func ReadFiles(file *os.File, des []byte) (int, error) {
 func StringToByte_SECURITY_CODE_LEN(str string) [SECURITY_CODE_LEN]byte {
 	var ss [SECURITY_CODE_LEN]byte
 	for i, v := range []byte(str) {
-		if i == INDUSTRY_CODE_LEN {
+		if i == SECURITY_CODE_LEN {
 			break
 		}
 		ss[i] = v
@@ -83,7 +83,7 @@ func StringToByte_SECURITY_CODE_LEN(str string) [SECURITY_CODE_LEN]byte {
 func StringToByte_SECURITY_NAME_LEN(str string) [SECURITY_NAME_LEN]byte {
 	var ss [SECURITY_NAME_LEN]byte
 	for i, v := range []byte(str) {
-		if i == INDUSTRY_CODE_LEN {
+		if i == SECURITY_NAME_LEN {
 			break
 		}
 		ss[i] = v
@@ -95,7 +95,7 @@ func StringToByte_SECURITY_NAME_LEN(str string) [SECURITY_NAME_LEN]byte {
 func StringToByte_SECURITY_DESC_LEN(str string) [SECURITY_DESC_LEN]byte {
 	var ss [SECURITY_DESC_LEN]byte
 	for i, v := range []byte(str) {
-		if i == INDUSTRY_CODE_LEN {
+		if i == SECURITY_DESC_LEN {
 			break
 		}
 		ss[i] = v
@@ -119,7 +119,7 @@ func StringToByte_INDUSTRY_CODE_LEN(str string) [INDUSTRY_CODE_LEN]byte {
 func StringToByte_SECURITY_ISIN_LEN(str string) [SECURITY_ISIN_LEN]byte {
 	var ss [SECURITY_ISIN_LEN]byte
 	for i, v := range []byte(str) {
-		if i == INDUSTRY_CODE_LEN {
+		if i == SECURITY_ISIN_LEN {
 			break
 		}
 		ss[i] = v
@@ -131,7 +131,7 @@ func StringToByte_SECURITY_ISIN_LEN(str string) [SECURITY_ISIN_LEN]byte {
 func StringToByte_4(str string) [4]byte {
 	var ss [4]byte
 	for i, v := range []byte(str) {
-		if i == INDUSTRY_CODE_LEN {
+		if i == 4 {
 			break
 		}
 		ss[i] = v

@@ -60,8 +60,9 @@
         <timeout>3</timeout> 
     </redisStore>
 	<fileStore>
-		<path>E:/hqpost/hqdata</path>
-		<dkName>dk.dat</dkName>
+		<path>E:/security/</path>
+		<stockName>stock.dat</stockName>
+		<indexName>index.dat</indexName>
 	</fileStore>
 
 </configuration>

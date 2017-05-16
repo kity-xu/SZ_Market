@@ -126,12 +126,6 @@ func (this *Kline) ReplyKLine(c *gin.Context, redisKey string, request *kline.Re
 					palinalSwap = append(palinalSwap, v)
 				}
 			}
-			if len(palinalSwap) == 0 {
-				return &kline.ReplyHisK{
-					Code: 200,
-					Data: &kline.HisK{},
-				}
-			}
 
 			if request.Direct == 0 { //向前 frontedSwap
 				size := len(frontedSwap)
@@ -143,6 +137,29 @@ func (this *Kline) ReplyKLine(c *gin.Context, redisKey string, request *kline.Re
 					}
 				}
 			} else if request.Direct == 1 { //向后 palinalSwap
+				if len(palinalSwap) == 0 { //不加此判断 最新日期向后取，会越界panic
+					var table []*kline.KInfo
+
+					lindex := len(dlines.List)
+					for i := lindex - int(request.Num); i < lindex; i++ {
+						table = append(table, dlines.List[i])
+					}
+
+					var sig []*kline.KInfo
+					sig = append(sig, table[len(table)-1])
+					return &kline.ReplyHisK{
+						Code: 200,
+						Data: &kline.HisK{
+							SID:   request.SID,
+							Type:  request.Type,
+							Total: int32(len(dlines.List)),
+							Begin: table[len(table)-1].NTime,
+							Num:   1,
+							List:  sig,
+						},
+					}
+				}
+
 				if int(request.Num) > len(palinalSwap) {
 					for i := 0; i < len(palinalSwap); i++ {
 						databuf = append(databuf, palinalSwap[i])

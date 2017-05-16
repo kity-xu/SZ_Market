@@ -1,0 +1,43 @@
+一.综述
+minline目录下是当天各类分钟线的生成
+1.数据来源于快照生成的实时分钟线
+
+
+二.结构
+
+//K线、指数定义
+type StockSingle struct {
+	SID    int32  // 证券ID
+	Time   int32  // 时间 unix time
+	PreCPx int32  // 昨收价 * 10000
+	OpenPx int32  // 开盘价 * 10000
+	HighPx int32  // 最高价 * 10000
+	LowPx  int32  // 最低价 * 10000
+	LastPx int32  // 最新价 * 10000
+	Volume int64  // 成交量
+	Value  int64  // 成交额 * 10000
+	AvgPx  uint32 // 平均价 * 10000
+}
+
+type MinKline struct {
+	list AllMinLine
+}
+
+//个股
+type SingleMin struct {
+	Sid     int32                 //股票SID
+	Time    []int32               //单个股票的历史日期
+	Min     map[int32]kline.KInfo //单个股票的当天分钟数据
+	Time_5  *[][]int32
+	Time_15 *[][]int32
+	Time_30 *[][]int32
+	Time_60 *[][]int32
+}
+
+//所有股
+type AllMinLine struct {
+	All *[]*SingleMin
+}
+
+MinKline为主结构，同样后续方法的成功执行依赖于HMinLine_1()方法
+dayline.go中用以生成当天的日线

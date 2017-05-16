@@ -1,10 +1,11 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
-	"os"
+	"ProtocolBuffer/format/kline"
+	"io/ioutil"
 	"strconv"
+
+	"github.com/golang/protobuf/proto"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gocraft/dbr"
@@ -13,20 +14,6 @@ import (
 	"haina.com/share/lib"
 	"haina.com/share/logging"
 )
-
-type IndexDKLine struct {
-	NSID     int32  // 证券ID
-	NTime    int32  // 时间 unix time
-	NPreCPx  int32  // 昨收价 * 10000
-	NOpenPx  int32  // 开盘价 * 10000
-	NHighPx  int32  // 最高价 * 10000
-	NLowPx   int32  // 最低价 * 10000
-	NLastPx  int32  // 最新价 * 10000
-	LlVolume int64  // 成交量
-	LlValue  int64  // 成交额 * 10000
-	NAvgPx   uint32 // 平均价 * 10000
-
-}
 
 func main() {
 	logging.SetLogModel(true, false)
@@ -74,20 +61,17 @@ func WriteFileInfo(add string, sto []ilt.TQ_QT_INDEX, snid string) {
 		logging.Info("%v这支证券数据为空", snid)
 		return
 	}
-	var adds = add + "//indexdk.dat"
-	// linux 下路径  var adds = add +"/indexdk.dat"
-	file, err := os.OpenFile(adds, os.O_CREATE|os.O_RDWR, 0664)
-	if err != nil {
-		panic(err)
-	}
-	buf := new(bytes.Buffer)
+	var adds = add + "//index.dat"
+	// linux 下路径  var adds = add +"/index.dat"
 
 	i, err := strconv.Atoi(snid)
 	if err != nil {
 		logging.Info("类型转换出错 %v", snid)
 	}
+
+	var klist kline.KInfoTable
 	for _, v := range sto {
-		var sj IndexDKLine
+		var sj kline.KInfo
 		sj.NSID = int32(i) // 证券ID
 		sj.NTime = int32(v.TRADEDATE.Float64)
 		sj.NPreCPx = int32(v.LCLOSE.Float64 * 10000)
@@ -99,12 +83,18 @@ func WriteFileInfo(add string, sto []ilt.TQ_QT_INDEX, snid string) {
 		sj.LlValue = int64(v.AMOUNT.Float64 * 10000)
 		//sj.NAvgPx = uint32(v.AVGPRICE.Float64 * 10000)  指数表中没有平均价格
 
-		binary.Write(buf, binary.LittleEndian, sj)
+		klist.List = append(klist.List, &sj)
 	}
 
-	_, errs := file.Write(buf.Bytes())
-	if errs != nil {
-		logging.Info("write file %v", errs)
+	data, err := proto.Marshal(&klist)
+	if err != nil {
+		logging.Error("%v", err.Error())
+		return
+	}
+
+	if err = ioutil.WriteFile(adds, data, 0644); err != nil {
+		logging.Error("%v", err.Error())
+		return
 	}
 
 }
