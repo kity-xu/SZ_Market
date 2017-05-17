@@ -78,7 +78,7 @@ func WriteFileInfo(add string, sto []ilt.TQ_QT_INDEX, snid string) {
 		sj.NOpenPx = int32(v.TOPEN.Float64 * 10000)
 		sj.NHighPx = int32(v.THIGH.Float64 * 10000)
 		sj.NLowPx = int32(v.TLOW.Float64 * 10000)
-		sj.NLastPx = int32(v.LCLOSE.Float64 * 10000)
+		sj.NLastPx = int32(v.TCLOSE.Float64 * 10000)
 		sj.LlVolume = int64(v.VOL.Float64)
 		sj.LlValue = int64(v.AMOUNT.Float64 * 10000)
 		//sj.NAvgPx = uint32(v.AVGPRICE.Float64 * 10000)  指数表中没有平均价格
