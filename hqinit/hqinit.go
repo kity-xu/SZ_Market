@@ -29,8 +29,9 @@ func main() {
 	// 监控性能
 	ginpprof.Wrapper(r)
 
-	//	//行情数据更新
+	//行情数据更新
 	market.Update(cfg)
 
-	logging.Error("%s", r.Run(cfg.Serve.Port))
+	logging.Info("Run succeed, and return 0...")
+	//logging.Error("%s", r.Run(cfg.Serve.Port))
 }

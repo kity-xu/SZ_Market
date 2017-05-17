@@ -104,14 +104,10 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 		buf.SzCUR = StringToByte_4(v.SzCUR)
 		buf.SzIndusCode = StringToByte_INDUSTRY_CODE_LEN(v.SzIndusCode)
 
-		//logging.Debug("stype:%v----status:%v", stype, status)
-		//logging.Debug("buf size:%v", binary.Size(&buf))
 		//入文件
 		if err := binary.Write(buffer, binary.LittleEndian, buf); err != nil {
 			logging.Fatal(err)
 		}
-
-		//logging.Debug("buffer:%v", buffer)
 
 		/*********************证券基本信息************************/
 		//转PB
@@ -129,9 +125,9 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 
 		/*************************OVER******************************/
 
-		if v.NMarket == sec.Market_value["SH"] {
+		if v.NMarket == sec.HAINA_PUBLISH_MARKET_value["SH"] {
 			sec_sh.List = append(sec_sh.List, &single)
-		} else if v.NMarket == sec.Market_value["SZ"] {
+		} else if v.NMarket == sec.HAINA_PUBLISH_MARKET_value["SZ"] {
 			sec_sz.List = append(sec_sz.List, &single)
 		} else {
 			logging.Error("security info nMarket ID error ...")
@@ -152,11 +148,11 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 	defer file.Close()
 	/*************************OVER******************************/
 
-	sec_sh.MarketID = sec.Market_value["SH"]
+	sec_sh.MarketID = sec.HAINA_PUBLISH_MARKET_value["SH"]
 	sec_sh.Num = int32(len(sec_sh.List))
 	sec_sh.TimeStamp = int32(time.Now().Unix())
 
-	sec_sz.MarketID = sec.Market_value["SZ"]
+	sec_sz.MarketID = sec.HAINA_PUBLISH_MARKET_value["SZ"]
 	sec_sz.Num = int32(len(sec_sz.List))
 	sec_sz.TimeStamp = int32(time.Now().Unix())
 

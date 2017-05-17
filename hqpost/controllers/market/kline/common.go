@@ -1,12 +1,16 @@
 package kline
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"haina.com/share/lib"
 
 	pbk "ProtocolBuffer/format/kline"
 	"errors"
@@ -37,8 +41,9 @@ const (
 
 //K线、指数定义
 type Security struct {
-	sids *[]int32
-	list SecurityList
+	sids  *[]int32
+	list  SecurityList
+	today *pbk.KInfo
 }
 
 //单个股票
@@ -100,7 +105,7 @@ func DateAdd(sid int32, date int) (time.Time, error) {
 		basedate = fmt.Sprintf("%d%s", 24*1, "h")
 
 	} else {
-		logging.Error("SID:%v------Invalid trade date...%v", sid, date)
+		//logging.Error("SID:%v------Invalid trade date...%v", sid, date)
 		return sat, errors.New("周日有交易..")
 	}
 
@@ -118,7 +123,7 @@ func IntToMonth(date int) time.Time {
 	return time.Date(year, time.Month(month), 0, 0, 0, 0, 0, time.UTC)
 }
 
-//K线数据写入相应文件的操作
+//日K线数据写入相应文件的操作(整出整入)
 func KlineWriteFile(sid int32, name string, data *[]byte) error {
 	var filename string
 	market := sid / 1000000
@@ -140,6 +145,52 @@ func KlineWriteFile(sid int32, name string, data *[]byte) error {
 	if err != nil {
 		logging.Error("%v", err.Error())
 		return err
+	}
+	return nil
+}
+
+//日K线数据追加相应文件的操作
+func AppendFile(sid int32, name string, today *pbk.KInfo, his *pbk.KInfoTable) error {
+	var filename string
+	buffer := new(bytes.Buffer)
+
+	market := sid / 1000000
+	if market == 100 {
+		filename = fmt.Sprintf("%s/sh/%d/", cfg.File.Path, sid)
+	} else if market == 200 {
+		filename = fmt.Sprintf("%s/sz/%d/", cfg.File.Path, sid)
+	} else {
+		logging.Error("Monthline write file error...Invalid file path")
+		return errors.New("Invalid file path")
+	}
+
+	if !lib.IsFileExist(filename) { //文件不存在，做第一次写入
+		err := os.MkdirAll(filename, 0777)
+		if err != nil {
+			fmt.Printf("%s", err)
+		}
+
+		for _, v := range his.List {
+			//缓冲二进制数据
+			if err := binary.Write(buffer, binary.LittleEndian, &v); err != nil {
+				logging.Fatal(err)
+			}
+		}
+	} else { //文件存在，做追加
+		//缓冲二进制数据
+		if err := binary.Write(buffer, binary.LittleEndian, today); err != nil {
+			logging.Fatal(err)
+		}
+	}
+
+	file, err := os.OpenFile(filename+name, os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if _, err1 := file.Write(buffer.Bytes()); err1 != nil {
+		logging.Fatal(err)
 	}
 	return nil
 }

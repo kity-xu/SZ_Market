@@ -13,4 +13,5 @@ const (
 const (
 	MOGON_SECURITY_TABLE = "basic_securityinfo_table"
 	MOGON_MARKET_TABLE   = "basic_securityinfo_table"
+	MOGON_STATIC_TABLE   = "basic_staticdata_table"
 )

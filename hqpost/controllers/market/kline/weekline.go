@@ -16,8 +16,6 @@ func (this *Security) WeekLine() {
 	//logging.Debug("-kw-----%v", securitys[0].SigStock)
 
 	for _, single := range securitys { // 以sid分类的单个股票
-		//logging.Debug("%s:date:", single.Sid, *single.WeekDays)	//得到了该支股票的所有历史周天
-		//logging.Debug("SID:%v", single.Sid)
 		var tmps []pbk.KInfo
 
 		//PB
@@ -97,7 +95,7 @@ func (this *Security) GetAllSecurityDayList() {
 
 		}()
 		var wday [][]int32
-		sat, e := DateAdd(v.Sid, int(v.Date[0])) //该股票第一个交易日所在周的周日（周六可能会有交易）
+		sat, _ := DateAdd(v.Sid, int(v.Date[0])) //该股票第一个交易日所在周的周日（周六可能会有交易）
 
 		var dates []int32
 		for _, date := range v.Date {
@@ -107,13 +105,7 @@ func (this *Security) GetAllSecurityDayList() {
 				//logging.Debug("------一周的日期是：%v------", dates) //it's here
 				wday = append(wday, dates)
 
-				if e != nil {
-					logging.Debug("------一周的日期完成-%v-----", wday)
-				}
-
-				//				logging.Debug("------一周的日期完成------")
-				//				logging.Debug("----------当前日期----%v---", date)
-				sat, e = DateAdd(v.Sid, int(date))
+				sat, _ = DateAdd(v.Sid, int(date))
 				dates = nil
 				dates = append(dates, date)
 			}
@@ -123,8 +115,6 @@ func (this *Security) GetAllSecurityDayList() {
 		secs[i].WeekDays = &wday
 
 	}
-
 	//logging.Debug("-----单个股票，所有周天：%v------", (*this.week.Securitys)[0].WeekDays)
 	//logging.Debug("-----单个股票，secs[0].date：%v------", (*this.week.Securitys)[0].Date)
-
 }

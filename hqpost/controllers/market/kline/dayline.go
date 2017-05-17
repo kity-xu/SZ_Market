@@ -41,7 +41,7 @@ func (this *Security) DayLine() {
 		//History of Single-Security
 		var sigList SingleSecurity
 		var date []int32
-		week := make(map[int32]pbk.KInfo)
+		dmap := make(map[int32]pbk.KInfo)
 
 		if sid/100000000 == 1 { //ascii 字符
 			exchange = SH
@@ -74,7 +74,9 @@ func (this *Security) DayLine() {
 				srcindex := fmt.Sprintf("%s%s%d/%s", cfg.File.Finpath, exchange, sid, cfg.File.Findex)
 				if !lib.IsFileExist(srcindex) {
 					logging.Error("Cannot find file(haina filestore && finchina filestore)...")
+					logging.Error("SID:%v源文件不存在", sid)
 					filename = ""
+					continue
 				} else {
 					filename = srcindex
 				}
@@ -82,6 +84,7 @@ func (this *Security) DayLine() {
 				filename = srcfile
 			}
 		}
+
 		/**********************************************filename*******************************************************/
 
 		//读文件
@@ -96,20 +99,21 @@ func (this *Security) DayLine() {
 			return
 		}
 
-		//map初始化
+		//map SingleSecurity结构
 		for _, v := range klist.List {
-			week[v.NTime] = *v
+			date = append(date, v.NTime)
+			dmap[v.NTime] = *v
 		}
 
 		//得到今天的k线
 		tm := getDateToday()
 
 		//昨收价 lastPx
-		models.GetSECStruct(&klist.List) //按时间降序排序
-		today, e := GetTodayDayLine(sid, klist.List[0].NLastPx)
+		models.GetASCStruct(&klist.List) //按时间升序排序
+		today, e := GetTodayDayLine(sid, klist.List[len(klist.List)-1].NLastPx)
 		if e == nil && today != nil {
 			klist.List = append(klist.List, today) //追加
-			week[tm] = *today
+			dmap[tm] = *today
 		}
 
 		//转PB
@@ -134,7 +138,7 @@ func (this *Security) DayLine() {
 
 		sigList.Sid = sid
 		sigList.Date = date
-		sigList.SigStock = week
+		sigList.SigStock = dmap
 
 		seList = append(seList, sigList)
 
@@ -161,6 +165,7 @@ func GetTodayDayLine(sid int32, lastPx int32) (*pbk.KInfo, error) {
 		AvgPxTotal uint32
 	)
 
+	models.GetASCStruct(min) //按时间升序排序
 	for _, v := range *min {
 		if tmp.NHighPx < v.NHighPx || tmp.NHighPx == 0 { //最高价
 			tmp.NHighPx = v.NHighPx

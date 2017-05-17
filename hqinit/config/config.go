@@ -45,9 +45,10 @@ type MongoStore struct {
 
 // fileSystem
 type FileStore struct {
-	Path      string `xml:"path"`
-	StockName string `xml:"stockName"`
-	IndexName string `xml:"indexName"`
+	Path       string `xml:"path"`
+	StockName  string `xml:"stockName"`
+	StaticName string `xml:"staticName"`
+	IndexName  string `xml:"indexName"`
 }
 
 type CorsSetting struct {

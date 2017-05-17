@@ -23,8 +23,6 @@ func NewMinKline(sids *[]int32, cg *config.AppConfig) *MinKline {
 //所有股票当天的分钟线数据
 func (this *MinKline) HMinLine_1() {
 	this.initBasicMinData()
-	sec1 := (*this.list.All)[2600]
-	//logging.Debug("股票%v的 基本信息是：%v", sec1.Sid, sec1.Min)
 }
 
 //初始化分钟线基本数据
@@ -59,14 +57,11 @@ func (this *MinKline) getBasicMinDataToday(sid int32) (*SingleMin, error) {
 	}
 	dmin, err := redis_minline.NewMinKLine(REDISKEY_SECURITY_MIN).GetMinKLineToday(sid)
 	if err != nil {
-		//logging.Error("%v----%v", err.Error(), sid)
 		return nil, err
 	}
 
-	//daymin := make(map[int32]kline.KInfo)
 	for _, v := range *dmin {
 		//logging.Debug("sid:%v---v.Time:%v", sid, v.NTime)
-
 		day.Min[v.NTime] = *v
 		day.Time = append(day.Time, v.NTime)
 

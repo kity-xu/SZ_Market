@@ -63,6 +63,7 @@
 		<path>E:/security/</path>
 		<stockName>stock.dat</stockName>
 		<indexName>index.dat</indexName>
+		<staticName>static.dat</staticName>
 	</fileStore>
 
 </configuration>
