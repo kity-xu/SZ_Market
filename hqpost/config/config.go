@@ -45,9 +45,21 @@ type MongoStore struct {
 
 // fileSystem
 type FileStore struct {
-	Path      string `xml:"path"`
-	DKName    string `xml:"dkName"`
-	IndexName string `xml:"indexName"`
+	Finpath string `xml:"finpath"`
+	Finday  string `xml:"finday"`
+	Findex  string `xml:"findex"`
+
+	Path  string `xml:"path"`
+	Day   string `xml:"day"`
+	Index string `xml:"index"`
+	Week  string `xml:"week"`
+	Month string `xml:"month"`
+	Year  string `xml:"year"`
+	Min   string `xml:"hmin"`
+	Min5  string `xml:"hmin5"`
+	Min15 string `xml:"hmin15"`
+	Min30 string `xml:"hmin30"`
+	Min60 string `xml:"hmin60"`
 }
 
 type CorsSetting struct {

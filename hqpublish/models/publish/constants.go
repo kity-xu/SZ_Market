@@ -35,8 +35,7 @@ const (
 
 /// 分钟线
 const (
-	REDISKEY_SECURITY_MIN  = "hq:st:min:%d"  ///<证券分钟线数据(参数：sid) (calc写入)
-	REDISKEY_SECURITY_HMIN = "hq:st:hmin:%d" ///<证券历史分钟线数据(参数：sid) (hq-post写入)
+	REDISKEY_SECURITY_MIN = "hq:st:min:%d" ///<证券分钟线数据(参数：sid) (calc写入)
 )
 
 const (

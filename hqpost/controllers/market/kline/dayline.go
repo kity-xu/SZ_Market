@@ -2,33 +2,38 @@ package kline
 
 import (
 	pbk "ProtocolBuffer/format/kline"
-	"bytes"
-	"encoding/binary"
 	"fmt"
-	"io"
+	"io/ioutil"
+	"strings"
+
+	"haina.com/market/hqpost/models"
 
 	"haina.com/market/hqpost/config"
+	"haina.com/market/hqpost/models/redis_minline"
 
-	tool "haina.com/market/hqpost/controllers"
 	"haina.com/share/lib"
 	"haina.com/share/store/redis"
 
 	"github.com/golang/protobuf/proto"
-	"haina.com/market/hqpost/models/tb_security"
 	"haina.com/share/logging"
 )
 
-func (this *Security) DayLine(cfg *config.AppConfig, codes *[]*tb_security.SecurityCode) {
-	var stock StockSingle
-	var filename string
-	STOCKSIZE := binary.Size(&stock)
+func NewSecurityKLine(sids *[]int32, cg *config.AppConfig) *Security {
+	cfg = cg
+	return &Security{
+		sids: sids,
+	}
+}
 
+func (this *Security) DayLine() {
 	var seList []SingleSecurity
 
 	/******************************沪深所有股票*************************************/
-	for _, v := range *codes {
-		var count int = 0   //股票计数器
+	for _, sid := range *this.sids {
+		var filename string //文件名
 		var exchange string //股票交易所
+
+		var issrc bool = false //判断是否需要去读源文件
 
 		//PB
 		var klist pbk.KInfoTable
@@ -36,91 +41,104 @@ func (this *Security) DayLine(cfg *config.AppConfig, codes *[]*tb_security.Secur
 		//History of Single-Security
 		var sigList SingleSecurity
 		var date []int32
-		week := make(map[int32]StockSingle)
+		dmap := make(map[int32]pbk.KInfo)
 
-		if v.SID/100000000 == 1 { //ascii 字符
+		if sid/100000000 == 1 { //ascii 字符
 			exchange = SH
-		} else if v.SID/100000000 == 2 {
+		} else if sid/100000000 == 2 {
 			exchange = SZ
 		} else {
 			logging.Error("%s", "Invalid file name...")
 			return
 		}
-		filename = fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, v.SID, cfg.File.DKName) //K线数据文件路径
 
-		if !lib.IsFileExist(filename) {
-			filename = fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, v.SID, cfg.File.IndexName) //指数文件路径
+		/**********************************************filename*******************************************************/
+		//这里要做一个逻辑判断
+		// 1. 先判断haina历史文件是否存在，不存在去读源文件做第一次生成
+		hnfile := fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Day) //haina文件store路劲
+		if !lib.IsFileExist(hnfile) {                                                  //haina store dk.dat不存在
+			hnindex := fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Index)
+			if !lib.IsFileExist(hnindex) { //haina store index.dat不存在
+				issrc = true //说明需要去读源文件
+			} else {
+				filename = hnindex
+			}
 
-			if !lib.IsFileExist(filename) {
-				logging.Debug("Without the historical data...%v", v.SID)
-				continue
+		} else {
+			filename = hnfile
+		}
+
+		if issrc { //读源文件的逻辑操作
+			srcfile := fmt.Sprintf("%s%s%d/%s", cfg.File.Finpath, exchange, sid, cfg.File.Finday) //src文件store路劲
+			if !lib.IsFileExist(srcfile) {
+				srcindex := fmt.Sprintf("%s%s%d/%s", cfg.File.Finpath, exchange, sid, cfg.File.Findex)
+				if !lib.IsFileExist(srcindex) {
+					logging.Error("Cannot find file(haina filestore && finchina filestore)...")
+					logging.Error("SID:%v源文件不存在", sid)
+					filename = ""
+					continue
+				} else {
+					filename = srcindex
+				}
+			} else {
+				filename = srcfile
 			}
 		}
 
-		file, err := tool.OpenFile(filename)
+		/**********************************************filename*******************************************************/
+
+		//读文件
+		fd, err := ioutil.ReadFile(filename)
 		if err != nil {
+			logging.Error("%v", err.Error())
+			return
+		}
+		//解PB
+		if err = proto.Unmarshal(fd, &klist); err != nil {
+			logging.Error("%v", err.Error())
 			return
 		}
 
-		/*************************每只股票的历史信息（日K线）*****************************/
-		for {
-			var kdata pbk.KInfo //pb类型
-
-			des := make([]byte, STOCKSIZE)
-			num, err := tool.ReadFiles(file, des)
-
-			if err != nil {
-				if err == io.EOF { //读到了文件末尾
-					break
-				}
-				logging.Error("Read file error...%v", err.Error())
-				return
-			}
-
-			if num < STOCKSIZE && 0 < num {
-				logging.Error("StockSingle struct size error... or hqtools write file error")
-				return
-			}
-
-			//todoing		des
-			buffer := bytes.NewBuffer(des)
-			binary.Read(buffer, binary.LittleEndian, &stock)
-
-			//stock 转pb格式
-			kdata.NSID = stock.SID
-			kdata.NTime = stock.Time
-			kdata.NPreCPx = stock.PreCPx
-			kdata.NOpenPx = stock.OpenPx
-			kdata.NHighPx = stock.HighPx
-			kdata.NLowPx = stock.LowPx
-			kdata.NLastPx = stock.LastPx
-			kdata.LlVolume = stock.Volume
-			kdata.LlValue = stock.Value
-			kdata.NAvgPx = stock.AvgPx
-			//logging.Debug("------------stock:%v-----------", stock)
-			date = append(date, stock.Time)
-			week[stock.Time] = stock
-
-			klist.List = append(klist.List, &kdata)
-			count++
+		//map SingleSecurity结构
+		for _, v := range klist.List {
+			date = append(date, v.NTime)
+			dmap[v.NTime] = *v
 		}
-		file.Close()
 
-		//入PB
+		//得到今天的k线
+		tm := getDateToday()
+
+		//昨收价 lastPx
+		models.GetASCStruct(&klist.List) //按时间升序排序
+		today, e := GetTodayDayLine(sid, klist.List[len(klist.List)-1].NLastPx)
+		if e == nil && today != nil {
+			klist.List = append(klist.List, today) //追加
+			dmap[tm] = *today
+		}
+
+		//转PB
 		data, err := proto.Marshal(&klist)
 		if err != nil {
 			logging.Error("Encode protocbuf of day Line error...%v", err.Error())
 			return
 		}
 
-		key := fmt.Sprintf(REDISKEY_SECURITY_HDAY, v.SID)
+		/*******************入文件******************************/
+		ss := strings.Split(filename, "/")
+		if e := KlineWriteFile(sid, ss[len(ss)-1], &data); e != nil {
+			logging.Error("%v", err.Error())
+			return
+		}
+
+		//入redis
+		key := fmt.Sprintf(REDISKEY_SECURITY_HDAY, sid)
 		if err := redis.Set(key, data); err != nil {
 			logging.Fatal("%v", err)
 		}
 
-		sigList.Sid = v.SID
+		sigList.Sid = sid
 		sigList.Date = date
-		sigList.SigStock = week
+		sigList.SigStock = dmap
 
 		seList = append(seList, sigList)
 
@@ -131,4 +149,43 @@ func (this *Security) DayLine(cfg *config.AppConfig, codes *[]*tb_security.Secur
 
 	this.list.Securitys = &seList
 	/*-----------------------------------------end----------------------------------*/
+}
+
+//获取今天分钟线生成的日线
+func GetTodayDayLine(sid int32, lastPx int32) (*pbk.KInfo, error) {
+	min, err := redis_minline.NewMinKLine(REDISKEY_SECURITY_MIN).GetMinKLineToday(sid)
+	if min == nil || err != nil {
+		//logging.Error("%v", err.Error())
+		return nil, err
+	}
+	var tmp pbk.KInfo //pb类型
+
+	var (
+		i          int = 0
+		AvgPxTotal uint32
+	)
+
+	models.GetASCStruct(min) //按时间升序排序
+	for _, v := range *min {
+		if tmp.NHighPx < v.NHighPx || tmp.NHighPx == 0 { //最高价
+			tmp.NHighPx = v.NHighPx
+		}
+		if tmp.NLowPx > v.NLowPx || tmp.NLowPx == 0 { //最低价
+			tmp.NLowPx = v.NLowPx
+		}
+		tmp.LlVolume += v.LlVolume //成交量
+		tmp.LlValue += v.LlValue   //成交额
+		AvgPxTotal += v.NAvgPx
+
+		i++
+	}
+	tmp.NSID = sid
+	tmp.NTime = getDateToday()      //时间
+	tmp.NOpenPx = (*min)[0].NOpenPx //开盘价
+	tmp.NPreCPx = lastPx            //昨收价
+
+	tmp.NLastPx = (*min)[len(*min)-1].NLastPx //最新价
+	tmp.NAvgPx = AvgPxTotal / uint32(i+1)     //平均价
+
+	return &tmp, nil
 }

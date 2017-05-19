@@ -5,6 +5,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"strconv"
+
+	"haina.com/market/hqinit/config"
 
 	sec "ProtocolBuffer/format/securitytable"
 
@@ -16,7 +19,9 @@ import (
 	"haina.com/share/store/redis"
 )
 
-func UpdateIndexTable() {
+func UpdateIndexTable(cfg *config.AppConfig) {
+	var stype, status string
+
 	stocks, err := tb_security.GetStockIndexTableFromMG()
 	if err != nil {
 		logging.Error("%v", err.Error())
@@ -26,6 +31,15 @@ func UpdateIndexTable() {
 	buffer := new(bytes.Buffer)
 
 	for _, v := range *stocks {
+		stype, err = HainaSecurityType(strconv.Itoa(int(v.NSID)), v.SzSType)
+		if err != nil {
+			logging.Error("%v", err.Error())
+		}
+		status, err = HainaSecurityStatus(v.SzStatus)
+		if err != nil {
+			logging.Error("%v", err.Error())
+		}
+
 		buf := TagSecurityName{}
 
 		stock := sec.SecurityInfo{}
@@ -39,15 +53,15 @@ func UpdateIndexTable() {
 		stock.SzSCName = v.SzSCName
 		stock.SzSCode = v.SzSCode
 		stock.SzSName = v.SzSName
-		stock.SzStatus = v.SzStatus
-		stock.SzSType = v.SzSType
+		stock.SzStatus = status
+		stock.SzSType = stype
 		stock.SzSymbol = v.SzSymbol
 
 		buf.NSID = v.NSID
 		buf.NMarket = v.NMarket
 
-		buf.SzSType = StringToByte_4(v.SzSType)
-		buf.SzStatus = StringToByte_4(v.SzStatus)
+		buf.SzSType = StringToByte_4(stype)
+		buf.SzStatus = StringToByte_4(status)
 		buf.SzSCode = StringToByte_SECURITY_CODE_LEN(v.SzSCode)
 		buf.SzSymbol = StringToByte_SECURITY_CODE_LEN(v.SzSymbol)
 		buf.SzISIN = StringToByte_SECURITY_ISIN_LEN(v.SzISIN)
@@ -57,6 +71,8 @@ func UpdateIndexTable() {
 		buf.SzPhonetic = StringToByte_SECURITY_CODE_LEN(v.SzPhonetic)
 		buf.SzCUR = StringToByte_4(v.SzCUR)
 		buf.SzIndusCode = StringToByte_INDUSTRY_CODE_LEN(v.SzIndusCode)
+
+		//logging.Debug("stype:%v----status:%v", stype, status)
 
 		if err := binary.Write(buffer, binary.LittleEndian, buf); err != nil {
 			logging.Fatal(err)
@@ -76,7 +92,7 @@ func UpdateIndexTable() {
 
 	}
 
-	file, err := OpenFile("E:/security/index.dat")
+	file, err := OpenFile(cfg.File.Path + cfg.File.IndexName)
 	if err != nil {
 		return
 	}

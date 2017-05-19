@@ -16,17 +16,14 @@ func (this *Security) WeekLine() {
 	//logging.Debug("-kw-----%v", securitys[0].SigStock)
 
 	for _, single := range securitys { // 以sid分类的单个股票
-		//logging.Debug("%s:date:", single.Sid, *single.WeekDays)	//得到了该支股票的所有历史周天
-		//logging.Debug("SID:%v", single.Sid)
-		var tmps []StockSingle
+		var tmps []pbk.KInfo
 
 		//PB
 		var klist pbk.KInfoTable
 
 		for _, week := range *single.WeekDays { //每一周
 			//logging.Debug("Week:%v", week)
-			tmp := StockSingle{}
-			var mdata pbk.KInfo //pb类型
+			tmp := pbk.KInfo{}
 
 			var (
 				i          int
@@ -36,53 +33,48 @@ func (this *Security) WeekLine() {
 			for i, day = range week { //每一天
 				//logging.Debug("day:%v---single.SigStock[day]:%v", day, single.SigStock[day])
 				stockday := single.SigStock[day]
-				if tmp.HighPx < stockday.HighPx || tmp.HighPx == 0 { //最高价
-					tmp.HighPx = stockday.HighPx
+				if tmp.NHighPx < stockday.NHighPx || tmp.NHighPx == 0 { //最高价
+					tmp.NHighPx = stockday.NHighPx
 				}
-				if tmp.LowPx > stockday.LowPx || tmp.LowPx == 0 { //最低价
-					tmp.LowPx = stockday.LowPx
+				if tmp.NLowPx > stockday.NLowPx || tmp.NLowPx == 0 { //最低价
+					tmp.NLowPx = stockday.NLowPx
 				}
-				tmp.Volume += stockday.Volume //成交量
-				tmp.Value += stockday.Value   //成交额
-				AvgPxTotal += stockday.AvgPx
+				tmp.LlVolume += stockday.LlVolume //成交量
+				tmp.LlValue += stockday.LlValue   //成交额
+				AvgPxTotal += stockday.NAvgPx
 			}
 
-			tmp.SID = single.Sid
-			tmp.Time = single.SigStock[week[0]].Time     //时间（取每周第一天）
-			tmp.OpenPx = single.SigStock[week[0]].OpenPx //开盘价（每周第一天的开盘价）
+			tmp.NSID = single.Sid
+			tmp.NTime = single.SigStock[week[0]].NTime     //时间（取每周第一天）
+			tmp.NOpenPx = single.SigStock[week[0]].NOpenPx //开盘价（每周第一天的开盘价）
 			if len(tmps) > 0 {
-				tmp.PreCPx = tmps[len(tmps)-1].LastPx //昨收价(上周的最新价)
+				tmp.NPreCPx = tmps[len(tmps)-1].NLastPx //昨收价(上周的最新价)
 			} else {
-				tmp.PreCPx = 0
+				tmp.NPreCPx = 0
 			}
-			tmp.LastPx = single.SigStock[week[i]].LastPx //最新价
-			tmp.AvgPx = AvgPxTotal / uint32(i+1)         //平均价
+			tmp.NLastPx = single.SigStock[week[i]].NLastPx //最新价
+			tmp.NAvgPx = AvgPxTotal / uint32(i+1)          //平均价
 			tmps = append(tmps, tmp)
 			//logging.Debug("周线是:%v", tmps)
 
 			//入PB
-			mdata.NSID = tmp.SID
-			mdata.NTime = tmp.Time
-			mdata.NPreCPx = tmp.PreCPx
-			mdata.NOpenPx = tmp.OpenPx
-			mdata.NHighPx = tmp.HighPx
-			mdata.NLowPx = tmp.LowPx
-			mdata.NLastPx = tmp.LastPx
-			mdata.LlVolume = tmp.Volume
-			mdata.LlValue = tmp.Value
-			mdata.NAvgPx = tmp.AvgPx
-
-			klist.List = append(klist.List, &mdata)
+			klist.List = append(klist.List, &tmp)
 
 		}
 
-		//入PB 入redis
+		//PB
 		data, err := proto.Marshal(&klist)
 		if err != nil {
 			logging.Error("Encode protocbuf of week Line error...%v", err.Error())
 			return
 		}
 
+		//入文件
+		if e := KlineWriteFile(single.Sid, cfg.File.Week, &data); e != nil {
+			return
+		}
+
+		//入redis
 		key := fmt.Sprintf(REDISKEY_SECURITY_HWEEK, single.Sid)
 		if err := redis.Set(key, data); err != nil {
 			logging.Fatal("%v", err)
@@ -103,7 +95,7 @@ func (this *Security) GetAllSecurityDayList() {
 
 		}()
 		var wday [][]int32
-		sat := DateAdd(int(v.Date[0])) //该股票第一个交易日所在周的周六
+		sat, _ := DateAdd(v.Sid, int(v.Date[0])) //该股票第一个交易日所在周的周日（周六可能会有交易）
 
 		var dates []int32
 		for _, date := range v.Date {
@@ -113,20 +105,16 @@ func (this *Security) GetAllSecurityDayList() {
 				//logging.Debug("------一周的日期是：%v------", dates) //it's here
 				wday = append(wday, dates)
 
-				//				logging.Debug("------一周的日期完成------")
-				//				logging.Debug("----------当前日期----%v---", date)
-				sat = DateAdd(int(date))
+				sat, _ = DateAdd(v.Sid, int(date))
 				dates = nil
 				dates = append(dates, date)
 			}
 		}
-		//logging.Debug("------一周的日期完成-%v-----", wday)
+
 		wday = append(wday, dates)
 		secs[i].WeekDays = &wday
 
 	}
-
 	//logging.Debug("-----单个股票，所有周天：%v------", (*this.week.Securitys)[0].WeekDays)
 	//logging.Debug("-----单个股票，secs[0].date：%v------", (*this.week.Securitys)[0].Date)
-
 }

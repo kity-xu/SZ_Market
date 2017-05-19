@@ -1,7 +1,7 @@
 all:build
 	
 build:
-	gox -osarch="linux/amd64" -output ./bin/hqinit
+	gox -osarch="linux/amd64" -output ./bin/market_hqinit
 clean:
 	@rm -rf bin
 	 

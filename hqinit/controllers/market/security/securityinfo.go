@@ -6,7 +6,10 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"strconv"
 	"time"
+
+	"haina.com/market/hqinit/config"
 
 	. "haina.com/market/hqinit/controllers"
 	"haina.com/share/logging"
@@ -44,8 +47,9 @@ func MarketTable() (*[]tb_security.TagSecurityInfo, error) {
 }
 
 //证券基本信息和单市场的证券代码表的实现
-func UpdateSecurityTable() {
+func UpdateSecurityTable(cfg *config.AppConfig) {
 	var (
+		stype, status  string
 		sec_sh, sec_sz sec.MarketSecurityCodeTable
 	)
 
@@ -59,13 +63,22 @@ func UpdateSecurityTable() {
 	buffer := new(bytes.Buffer)
 
 	for _, v := range *table {
+		stype, err = HainaSecurityType(strconv.Itoa(int(v.NSID)), v.SzSType)
+		if err != nil {
+			logging.Error("%v", err.Error())
+		}
+		status, err = HainaSecurityStatus(v.SzStatus)
+		if err != nil {
+			logging.Error("%v", err.Error())
+		}
+
 		buf := TagSecurityName{}
 
 		single := sec.SecurityInfo{}
 		single.NMarket = int32(v.NMarket)
 		single.NSID = int32(v.NSID)
-		single.SzSType = v.SzSType
-		single.SzStatus = v.SzStatus
+		single.SzSType = stype
+		single.SzStatus = status
 		single.SzSCode = v.SzSCode
 		single.SzSymbol = v.SzSymbol
 		single.SzISIN = v.SzISIN
@@ -79,8 +92,8 @@ func UpdateSecurityTable() {
 		buf.NSID = v.NSID
 		buf.NMarket = v.NMarket
 
-		buf.SzSType = StringToByte_4(v.SzSType)
-		buf.SzStatus = StringToByte_4(v.SzStatus)
+		buf.SzSType = StringToByte_4(stype)
+		buf.SzStatus = StringToByte_4(status)
 		buf.SzSCode = StringToByte_SECURITY_CODE_LEN(v.SzSCode)
 		buf.SzSymbol = StringToByte_SECURITY_CODE_LEN(v.SzSymbol)
 		buf.SzISIN = StringToByte_SECURITY_ISIN_LEN(v.SzISIN)
@@ -91,13 +104,10 @@ func UpdateSecurityTable() {
 		buf.SzCUR = StringToByte_4(v.SzCUR)
 		buf.SzIndusCode = StringToByte_INDUSTRY_CODE_LEN(v.SzIndusCode)
 
-		//logging.Debug("buf size:%v", binary.Size(&buf))
 		//入文件
 		if err := binary.Write(buffer, binary.LittleEndian, buf); err != nil {
 			logging.Fatal(err)
 		}
-
-		//logging.Debug("buffer:%v", buffer)
 
 		/*********************证券基本信息************************/
 		//转PB
@@ -115,9 +125,9 @@ func UpdateSecurityTable() {
 
 		/*************************OVER******************************/
 
-		if v.NMarket == sec.Market_value["SH"] {
+		if v.NMarket == sec.HAINA_PUBLISH_MARKET_value["SH"] {
 			sec_sh.List = append(sec_sh.List, &single)
-		} else if v.NMarket == sec.Market_value["SZ"] {
+		} else if v.NMarket == sec.HAINA_PUBLISH_MARKET_value["SZ"] {
 			sec_sz.List = append(sec_sz.List, &single)
 		} else {
 			logging.Error("security info nMarket ID error ...")
@@ -125,7 +135,7 @@ func UpdateSecurityTable() {
 		}
 	}
 	/*************************START******************************/
-	file, err := OpenFile("E:/security/binary.dat")
+	file, err := OpenFile(cfg.File.Path + cfg.File.StockName)
 	if err != nil {
 		return
 	}
@@ -138,11 +148,11 @@ func UpdateSecurityTable() {
 	defer file.Close()
 	/*************************OVER******************************/
 
-	sec_sh.MarketID = sec.Market_value["SH"]
+	sec_sh.MarketID = sec.HAINA_PUBLISH_MARKET_value["SH"]
 	sec_sh.Num = int32(len(sec_sh.List))
 	sec_sh.TimeStamp = int32(time.Now().Unix())
 
-	sec_sz.MarketID = sec.Market_value["SZ"]
+	sec_sz.MarketID = sec.HAINA_PUBLISH_MARKET_value["SZ"]
 	sec_sz.Num = int32(len(sec_sz.List))
 	sec_sz.TimeStamp = int32(time.Now().Unix())
 

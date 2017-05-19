@@ -4,7 +4,7 @@ import (
 	"github.com/gocraft/dbr"
 )
 
-// 数据对象名称：TQ_SK_BASICINFO    中文名称：股票基本信息表
+// 数据对象名称：TQ_SK_SHAREHOLDERNUM    中文名称：股东户数统计
 
 type TQ_SK_SHAREHOLDERNUM struct {
 	CIRCSKAAMT dbr.NullString `db:"CIRCSKAAMT"` // 无限售流通A股股本

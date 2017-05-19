@@ -1,5 +1,7 @@
 package models
 
+import "errors"
+
 // App Setting
 //---------------------------------------------------------------------------------
 const (
@@ -13,4 +15,8 @@ const (
 const (
 	MOGON_SECURITY_TABLE = "basic_securityinfo_table"
 	MOGON_MARKET_TABLE   = "basic_securityinfo_table"
+)
+
+var (
+	ERROR_REDIS_LIST_NULL = errors.New("redis list is null")
 )

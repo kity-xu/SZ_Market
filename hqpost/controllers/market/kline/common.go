@@ -1,12 +1,25 @@
 package kline
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
+	"haina.com/share/lib"
+
+	pbk "ProtocolBuffer/format/kline"
+	"errors"
+
+	"haina.com/market/hqpost/config"
 	"haina.com/share/logging"
 )
+
+var cfg *config.AppConfig
 
 /*****************************************Const***************************************/
 //Exchange 交易所
@@ -17,46 +30,30 @@ const (
 
 //// K线历史部分
 const (
+	REDISKEY_SECURITY_MIN    = "hq:st:min:%d"    ///<证券分钟线数据(参数：sid) (calc写入)
 	REDISKEY_SECURITY_HDAY   = "hq:st:hday:%d"   ///<证券历史日K线数据(参数：sid) (hq-post写入)
 	REDISKEY_SECURITY_HWEEK  = "hq:st:hweek:%d"  ///<证券周K线(参数：sid)
 	REDISKEY_SECURITY_HMONTH = "hq:st:hmonth:%d" ///<证券月K线(参数：sid)
 	REDISKEY_SECURITY_HYEAR  = "hq:st:hyear:%d"  ///<证券年K线(参数：sid)
-	REDISKEY_SECURITY_HMIN   = "hq:st:hmin:%d"   ///<<证券历史分钟线数据(参数：sid) (hq-post写入)
-	REDISKEY_SECURITY_HMIN5  = "hq:st:hmin5:%d"  ///<证券5分钟K线(参数：sid)
-	REDISKEY_SECURITY_HMIN15 = "hq:st:hmin15:%d" ///<证券15分钟K线(参数：sid)
-	REDISKEY_SECURITY_HMIN30 = "hq:st:hmin30:%d" ///<证券30分钟K线(参数：sid)
-	REDISKEY_SECURITY_HMIN60 = "hq:st:hmin60:%d" ///<证券60分钟K线(参数：sid)
 )
 
 /*****************************************Structs***************************************/
 
 //K线、指数定义
-type StockSingle struct {
-	SID    int32  // 证券ID
-	Time   int32  // 时间 unix time
-	PreCPx int32  // 昨收价 * 10000
-	OpenPx int32  // 开盘价 * 10000
-	HighPx int32  // 最高价 * 10000
-	LowPx  int32  // 最低价 * 10000
-	LastPx int32  // 最新价 * 10000
-	Volume int64  // 成交量
-	Value  int64  // 成交额 * 10000
-	AvgPx  uint32 // 平均价 * 10000
-
-}
-
 type Security struct {
-	list SecurityList
+	sids  *[]int32
+	list  SecurityList
+	today *pbk.KInfo
 }
 
 //单个股票
 type SingleSecurity struct {
-	Sid       int32                 //股票SID
-	Date      []int32               //单个股票的历史日期
-	SigStock  map[int32]StockSingle //单个股票的历史数据
-	WeekDays  *[][]int32            //单个股票的周天
-	MonthDays *[][]int32            //单个股票的月天
-	YearDays  *[][]int32            //单个股票的年天
+	Sid       int32               //股票SID
+	Date      []int32             //单个股票的历史日期
+	SigStock  map[int32]pbk.KInfo //单个股票的历史数据
+	WeekDays  *[][]int32          //单个股票的周天
+	MonthDays *[][]int32          //单个股票的月天
+	YearDays  *[][]int32          //单个股票的年天
 }
 
 //所有股票
@@ -65,10 +62,8 @@ type SecurityList struct {
 }
 
 /*****************************************Functions***************************************/
-func NewSecurity() *Security {
-	return &Security{}
-}
 
+//int型时间转Time类型（最小单位 天）
 func IntToTime(date int) time.Time {
 	swap := date % 10000
 	year := date / 10000
@@ -77,7 +72,8 @@ func IntToTime(date int) time.Time {
 	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 }
 
-func DateAdd(date int) time.Time {
+//查询某一日期所在周的周日
+func DateAdd(sid int32, date int) (time.Time, error) {
 	var sat time.Time
 	swap := date % 10000
 	year := date / 10000
@@ -91,34 +87,117 @@ func DateAdd(date int) time.Time {
 
 	var basedate string
 	if strings.EqualFold(weekday, "Monday") {
-		basedate = fmt.Sprintf("%d%s", 24*5, "h")
+		basedate = fmt.Sprintf("%d%s", 24*6, "h")
 
 	} else if strings.EqualFold(weekday, "Tuesday") {
-		basedate = fmt.Sprintf("%d%s", 24*4, "h")
+		basedate = fmt.Sprintf("%d%s", 24*5, "h")
 
 	} else if strings.EqualFold(weekday, "Wednesday") {
-		basedate = fmt.Sprintf("%d%s", 24*3, "h")
+		basedate = fmt.Sprintf("%d%s", 24*4, "h")
 
 	} else if strings.EqualFold(weekday, "Thursday") {
-		basedate = fmt.Sprintf("%d%s", 24*2, "h")
+		basedate = fmt.Sprintf("%d%s", 24*3, "h")
 
 	} else if strings.EqualFold(weekday, "Friday") {
+		basedate = fmt.Sprintf("%d%s", 24*2, "h")
+
+	} else if strings.EqualFold(weekday, "Saturday") {
 		basedate = fmt.Sprintf("%d%s", 24*1, "h")
 
 	} else {
-		logging.Error("Invalid trade date...")
-		return sat
+		//logging.Error("SID:%v------Invalid trade date...%v", sid, date)
+		return sat, errors.New("周日有交易..")
 	}
 
 	dd, _ := time.ParseDuration(basedate)
-	sat = baseTime.Add(dd) //Saturday（星期六）
-	return sat
+	sat = baseTime.Add(dd) //Saturday（星期日）
+	return sat, nil
 }
 
+//int型时间转Time类型（最小单位 月份）
 func IntToMonth(date int) time.Time {
 	swap := date % 10000
 	year := date / 10000
 	month := swap / 100
 
 	return time.Date(year, time.Month(month), 0, 0, 0, 0, 0, time.UTC)
+}
+
+//日K线数据写入相应文件的操作(整出整入)
+func KlineWriteFile(sid int32, name string, data *[]byte) error {
+	var filename string
+	market := sid / 1000000
+	if market == 100 {
+		filename = fmt.Sprintf("%s/sh/%d/", cfg.File.Path, sid)
+	} else if market == 200 {
+		filename = fmt.Sprintf("%s/sz/%d/", cfg.File.Path, sid)
+	} else {
+		logging.Error("Monthline write file error...Invalid file path")
+		return errors.New("Invalid file path")
+	}
+
+	err := os.MkdirAll(filename, 0777)
+	if err != nil {
+		fmt.Printf("%s", err)
+	}
+
+	err = ioutil.WriteFile(filename+name, *data, 0664)
+	if err != nil {
+		logging.Error("%v", err.Error())
+		return err
+	}
+	return nil
+}
+
+//日K线数据追加相应文件的操作
+func AppendFile(sid int32, name string, today *pbk.KInfo, his *pbk.KInfoTable) error {
+	var filename string
+	buffer := new(bytes.Buffer)
+
+	market := sid / 1000000
+	if market == 100 {
+		filename = fmt.Sprintf("%s/sh/%d/", cfg.File.Path, sid)
+	} else if market == 200 {
+		filename = fmt.Sprintf("%s/sz/%d/", cfg.File.Path, sid)
+	} else {
+		logging.Error("Monthline write file error...Invalid file path")
+		return errors.New("Invalid file path")
+	}
+
+	if !lib.IsFileExist(filename) { //文件不存在，做第一次写入
+		err := os.MkdirAll(filename, 0777)
+		if err != nil {
+			fmt.Printf("%s", err)
+		}
+
+		for _, v := range his.List {
+			//缓冲二进制数据
+			if err := binary.Write(buffer, binary.LittleEndian, &v); err != nil {
+				logging.Fatal(err)
+			}
+		}
+	} else { //文件存在，做追加
+		//缓冲二进制数据
+		if err := binary.Write(buffer, binary.LittleEndian, today); err != nil {
+			logging.Fatal(err)
+		}
+	}
+
+	file, err := os.OpenFile(filename+name, os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if _, err1 := file.Write(buffer.Bytes()); err1 != nil {
+		logging.Fatal(err)
+	}
+	return nil
+}
+
+func getDateToday() int32 {
+	timestamp := time.Now().Unix()
+	tm := time.Unix(timestamp, 0)
+	date, _ := strconv.Atoi(tm.Format("20060102"))
+	return int32(date)
 }

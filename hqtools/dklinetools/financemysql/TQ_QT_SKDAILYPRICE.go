@@ -39,7 +39,7 @@ func (this *Stock) GetSKTListFC(sess1 *dbr.Session, secode string) ([]Stock, err
 }
 func (this *Stock) GetSKTList5FC(sess *dbr.Session, secode string) ([]Stock, error) {
 	var stock []Stock
-	_, err := sess.Select("*").From("TQ_QT_SKDAILYPRICE").
+	_, err := sess.Select(" TRADEDATE,VOL").From("TQ_QT_SKDAILYPRICE").
 		Where("SECODE =" + secode).
 		Where("ISVALID=1").
 		OrderBy("TRADEDATE").Limit(5).LoadStructs(&stock)
