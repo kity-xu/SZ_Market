@@ -2,6 +2,7 @@
 *~
 *.log
 *.exe
+.idea/
 
 finance/finance
 finance/finance.exe

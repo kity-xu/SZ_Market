@@ -12,6 +12,9 @@ func RegPublish(rg *gin.RouterGroup) {
 	// 股票代码表 作废 待移除
 	rg.GET("/securitytable", publish.NewSecurityTable().GET) //默认pb模式
 
+	// 市场状态
+	rg.POST("/market", publish.NewMarketStatus().POST) //默认pb模式
+
 	// 分钟K线
 	rg.POST("/min", publish.NewMinKLine().POST)
 

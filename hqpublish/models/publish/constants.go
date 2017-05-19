@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	ERROR_REQUEST_PARAM    = errors.New("request param error")
 	ERROR_REDIS_LIST_NULL  = errors.New("redis list is null")
 	ERROR_KLINE_BEGIN_TIME = errors.New("error's kline begin time")
 	ERROR_KLINE_DATA_NULL  = errors.New("kline data is null")
@@ -16,6 +17,11 @@ const ( // 上游定义已修改 作废
 	REDISKEY_SECURITY_INFO_ID   = "hgs:global:securityinfo:%d" ///<证券代码(参数：sid)
 	REDISKEY_SECURITY_INFO_CODE = "hgs:global:securityinfo:%s" ///<证券代码(参数：scode)
 )
+
+const (
+	REDISKEY_MARKET_STATUS = "hq:market:%d" ///<证券市场状态(参数：MarketID) (calc写入)
+)
+
 const (
 	REDISKEY_MARKET_SECURITY_TABLE = "hq:market:sts:%d" ///<证券市场代码表(参数：MarketID)  (hq-init写入)
 	REDISKEY_SECURITY_NAME_ID      = "hq:st:name:%d"    ///<证券代码(参数：sid) (hq-init写入)
@@ -35,6 +41,9 @@ const (
 
 const (
 	REDISKEY_SECURITY_CODETABLE_REPLY_TTL = 300
+)
+const (
+	TTL_REDISKEY_MARKETSTATUS = 300
 )
 
 //历史K线
