@@ -74,7 +74,7 @@ func (this MarketStatus) Decode(bin []byte) (*protocol.MarketStatus, error) {
 }
 
 //------------------------------------------------------------------------------
-// 由于有多个市场，请求的参数不同，返回的组合内容也不同，因此如果缓存应答的内容也具有不确定性
+// 由于有多个市场，请求的参数不同，返回的内容组合也不同，如果将应答缓存应答,其内容具有不确定性
 // 所以，最佳做法是将数据Redis里的每个原始市场状态信息缓存下来，使用时就近组合，达到灵活加速目的
 func (this MarketStatus) GetSingle(mid int32) (*protocol.MarketStatus, error) {
 	key := fmt.Sprintf(this.CacheKey, mid)
@@ -86,8 +86,10 @@ func (this MarketStatus) GetSingle(mid int32) (*protocol.MarketStatus, error) {
 	bin, err = GetStore(key)
 
 	// 如果请求者提供非法的市场ID，那么数据Redis里一定查不到该ID的数据
-	// 如果将没找到也当成错误返回，那么已查到的市场状态数据也将会被丢弃, 如 if err != nil { return nil, err }
-	// 如果不将其没找到当成错误处理，那么客户端会得到能查询到的那部分市场状态信息
+	// 如果将没找到也当成错误返回，那么已查到的市场状态数据也将会被丢弃  如
+	//   if err != nil { return nil, err }
+	// 如果不将其没找到当成错误处理，那么客户端会得到能查询到的那部分市场状态信息 如
+	//   if err != nil && err != hsgrr.ErrNil {return nil, err }
 	if err != nil && err != hsgrr.ErrNil {
 		return nil, err
 	}

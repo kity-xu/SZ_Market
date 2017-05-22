@@ -8,6 +8,7 @@ import (
 
 	"haina.com/share/lib"
 
+	. "haina.com/market/hqpublish/controllers"
 	"haina.com/market/hqpublish/models"
 	"haina.com/market/hqpublish/models/publish"
 
@@ -44,7 +45,7 @@ func (this *StockSnapshot) POST(c *gin.Context) {
 func (this *StockSnapshot) PostJson(c *gin.Context) {
 	var request snap.RequestSnap
 
-	buf, err := getRequestData(c)
+	buf, err := GetRequestData(c, 1024)
 	if err != nil && err != io.EOF {
 		logging.Error("%v", err)
 		return
@@ -80,7 +81,7 @@ func (this *StockSnapshot) PostPB(c *gin.Context) {
 		request snap.RequestSnap
 	)
 
-	buf, err := getRequestData(c)
+	buf, err := GetRequestData(c, 1024)
 	if err != nil && err != io.EOF {
 		logging.Error("%v", err)
 		return

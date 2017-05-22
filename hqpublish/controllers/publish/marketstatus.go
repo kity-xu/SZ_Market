@@ -22,10 +22,12 @@ import (
 var _ = fmt.Print
 var _ = lib.WriteString
 var _ = logging.Error
-var _ = proto.Marshal
 var _ = protocol.MarketStatus{}
 var _ = publish.MarketStatus{}
 var _ = strings.ToLower
+var _ = proto.Marshal
+var _ = json.Marshal
+var _ = io.ReadFull
 
 type MarketStatus struct{}
 
@@ -44,101 +46,67 @@ func (this *MarketStatus) POST(c *gin.Context) {
 
 	switch replayfmt {
 	case "json":
-		this.GetJson(c)
+		this.PostJson(c)
 	case "pb":
-		this.GetPB(c)
+		this.PostPB(c)
 	default:
 		return
 	}
 }
 
-func (this *MarketStatus) RecvAndCheckJson(c *gin.Context) (*protocol.RequestMarketStatus, int, error) {
-	buf, err := getRequestData(c)
-	if err != nil && err != io.EOF {
-		return nil, 40004, err
+func (this *MarketStatus) PostJson(c *gin.Context) {
+	var req protocol.RequestMarketStatus
+	code, err := RecvAndUnmarshalJson(c, 1024, &req)
+	if err != nil {
+		logging.Error("post json %v", err)
+		WriteJson(c, code, nil)
+		return
+	}
+	if int(req.Num) != len(req.MarketIDList) {
+		logging.Error("Num %d, List len %d", req.Num, len(req.MarketIDList))
+		WriteJson(c, 40002, nil)
+		return
+	}
+	res, err := publish.NewMarketStatus().GetPayloadObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		WriteJson(c, 40002, nil)
+		return
 	}
 
+	WriteJson(c, 200, res)
+}
+
+func (this *MarketStatus) PostPB(c *gin.Context) {
 	var req protocol.RequestMarketStatus
-	if err := json.Unmarshal(buf, &req); err != nil {
-		return nil, 40004, err
+	code, err := RecvAndUnmarshalPB(c, 1024, &req)
+	if err != nil {
+		logging.Error("post pb %v", err)
+		WriteDataErrCode(c, code)
+		return
 	}
-	logging.Info("Request Data: %+v", req)
 
 	if int(req.Num) != len(req.MarketIDList) {
 		logging.Error("Num %d, List len %d", req.Num, len(req.MarketIDList))
-		return nil, 40002, ERROR_REQUEST_PARAM
-	}
-	return &req, 0, nil
-}
-func (this *MarketStatus) RecvAndCheckPB(c *gin.Context) (*protocol.RequestMarketStatus, int, error) {
-	buf, err := getRequestData(c)
-	if err != nil && err != io.EOF {
-		return nil, 40004, err
-	}
-
-	var req protocol.RequestMarketStatus
-	if err := proto.Unmarshal(buf, &req); err != nil {
-		return nil, 40004, err
-	}
-	logging.Info("Request Data: %+v", req)
-
-	if int(req.Num) != len(req.MarketIDList) {
-		logging.Error("Num %d, List len %d", req.Num, len(req.MarketIDList))
-		return nil, 40002, ERROR_REQUEST_PARAM
-	}
-	return &req, 0, nil
-}
-
-func (this *MarketStatus) GetJson(c *gin.Context) {
-	req, code, err := this.RecvAndCheckJson(c)
-	if err != nil {
-		logging.Error("GetJson %v", err)
-		lib.WriteString(c, code, nil)
+		WriteDataErrCode(c, 40002)
 		return
 	}
-	res, err := publish.NewMarketStatus().GetPayloadObj(req)
+
+	res, err := publish.NewMarketStatus().GetPayloadPB(&req)
 	if err != nil {
 		logging.Error("%v", err)
-		lib.WriteString(c, 40002, nil)
+		WriteDataErrCode(c, 40002)
 		return
 	}
 
-	lib.WriteString(c, 200, res)
-}
-
-func (this *MarketStatus) GetPB(c *gin.Context) {
-	req, code, err := this.RecvAndCheckPB(c)
-	if req == nil {
-		logging.Error("GetJson %v", err)
-		data, err := MakeRespDataByBytes(code, 0, nil)
-		if err != nil {
-			return
-		}
-		lib.WriteData(c, data)
-		return
-	}
-	res, err := publish.NewMarketStatus().GetPayloadPB(req)
-	if err != nil {
-		logging.Error("%v", err)
-		data, err := MakeRespDataByBytes(40002, 0, nil)
-		if err != nil {
-			return
-		}
-		lib.WriteData(c, data)
-		return
-	}
-
-	data, err := MakeRespDataByBytes(200, int(protocol.HAINA_PUBLISH_CMD_ACK_MARKET_STATUS), res)
-	if err != nil {
-		return
-	}
-
-	//  // 解码查看验证数据
-	//	var a protocol.PayloadMarketStatus
-	//	if err := proto.Unmarshal(res, &a); err != nil {
-	//		logging.Error("%v", err)
+	//	// 解码查看 验证数据
+	//	{
+	//		var a protocol.PayloadMarketStatus
+	//		if err := proto.Unmarshal(res, &a); err != nil {
+	//			logging.Error("%v", err)
+	//		}
+	//		logging.Info("%+v", a)
 	//	}
-	//	logging.Info("%+v", a)
 
-	lib.WriteData(c, data)
+	WriteDataBytes(c, protocol.HAINA_PUBLISH_CMD_ACK_MARKET_STATUS, res)
 }

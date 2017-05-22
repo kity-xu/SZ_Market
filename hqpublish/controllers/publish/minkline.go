@@ -7,6 +7,7 @@ import (
 
 	"haina.com/share/lib"
 
+	. "haina.com/market/hqpublish/controllers"
 	"haina.com/market/hqpublish/models"
 	"haina.com/market/hqpublish/models/publish"
 
@@ -40,21 +41,8 @@ func (this *MinKLine) POST(c *gin.Context) {
 	}
 }
 
-func getRequestData(c *gin.Context) ([]byte, error) {
-	temp := make([]byte, 1024)
-	n, err := c.Request.Body.Read(temp)
-	if err != nil && err != io.EOF {
-		logging.Error("Body Read: %v", err)
-		return nil, err
-	}
-	//logging.Info("\nBody len %d\n%s", n, temp[:n])
-	logging.Info("Body len %d", n)
-	return temp[:n], nil
-
-}
-
 func (this *MinKLine) PostJson(c *gin.Context) {
-	buf, err := getRequestData(c)
+	buf, err := GetRequestData(c, 1024)
 	if err != nil && err != io.EOF {
 		logging.Error("%v", err)
 		return
@@ -90,7 +78,7 @@ func (this *MinKLine) PostPB(c *gin.Context) {
 		request kline.RequestMinK
 	)
 
-	buf, err := getRequestData(c)
+	buf, err := GetRequestData(c, 1024)
 	if err != nil && err != io.EOF {
 		logging.Error("%v", err)
 		return
