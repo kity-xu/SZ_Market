@@ -19,15 +19,17 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-var _ = fmt.Print
-var _ = lib.WriteString
-var _ = logging.Error
-var _ = protocol.MarketStatus{}
-var _ = publish.MarketStatus{}
-var _ = strings.ToLower
-var _ = proto.Marshal
-var _ = json.Marshal
-var _ = io.ReadFull
+var (
+	_ = fmt.Print
+	_ = lib.WriteString
+	_ = logging.Error
+	_ = protocol.MarketStatus{}
+	_ = publish.MarketStatus{}
+	_ = strings.ToLower
+	_ = proto.Marshal
+	_ = json.Marshal
+	_ = io.ReadFull
+)
 
 type MarketStatus struct{}
 

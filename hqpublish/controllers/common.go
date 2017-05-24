@@ -103,6 +103,9 @@ func MakeRespDataByPB(c int, t protocol.HAINA_PUBLISH_CMD, pb proto.Message) ([]
 func WriteJson(c *gin.Context, code int, data interface{}) {
 	lib.WriteString(c, code, data)
 }
+func WriteDataJson(c *gin.Context, jsonb []byte) {
+	c.Data(200, "application/json; charset=utf-8", jsonb)
+}
 func WriteDataBytes(c *gin.Context, _type protocol.HAINA_PUBLISH_CMD, payload []byte) {
 	data, err := MakeRespDataByBytes(200, _type, payload)
 	if err != nil {

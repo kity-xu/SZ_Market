@@ -16,15 +16,17 @@ import (
 	"haina.com/share/store/redis"
 )
 
-var _ = fmt.Print
-var _ = logging.Error
-var _ = proto.Marshal
-var _ = protocol.QuoteRecord{}
-var _ = hsgrr.Dial
-var _ = redis.NewRedisPool
-var _ = GetStore
-var _ = bytes.NewBuffer
-var _ = io.ReadFull
+var (
+	_ = fmt.Print
+	_ = logging.Error
+	_ = proto.Marshal
+	_ = protocol.QuoteRecord{}
+	_ = hsgrr.Dial
+	_ = redis.NewRedisPool
+	_ = GetStore
+	_ = bytes.NewBuffer
+	_ = io.ReadFull
+)
 
 type MarketStatus struct {
 	Model `db:"-"`
@@ -74,7 +76,7 @@ func (this MarketStatus) Decode(bin []byte) (*protocol.MarketStatus, error) {
 }
 
 //------------------------------------------------------------------------------
-// 由于有多个市场，请求的参数不同，返回的内容组合也不同，如果将应答缓存应答,其内容具有不确定性
+// 由于有多个市场，根据请求的参数不同，返回的内容组合也不同，如果将应答缓存应答,其内容具有不确定性
 // 所以，最佳做法是将数据Redis里的每个原始市场状态信息缓存下来，使用时就近组合，达到灵活加速目的
 func (this MarketStatus) GetSingle(mid int32) (*protocol.MarketStatus, error) {
 	key := fmt.Sprintf(this.CacheKey, mid)
@@ -89,7 +91,7 @@ func (this MarketStatus) GetSingle(mid int32) (*protocol.MarketStatus, error) {
 	// 如果将没找到也当成错误返回，那么已查到的市场状态数据也将会被丢弃  如
 	//   if err != nil { return nil, err }
 	// 如果不将其没找到当成错误处理，那么客户端会得到能查询到的那部分市场状态信息 如
-	//   if err != nil && err != hsgrr.ErrNil {return nil, err }
+	//   if err != nil && err != hsgrr.ErrNil { return nil, err }
 	if err != nil && err != hsgrr.ErrNil {
 		return nil, err
 	}

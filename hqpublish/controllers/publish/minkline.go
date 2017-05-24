@@ -2,21 +2,33 @@ package publish
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
-	"net/http"
+	"strings"
 
-	"haina.com/share/lib"
+	"ProtocolBuffer/projects/hqpublish/go/protocol"
 
-	. "haina.com/market/hqpublish/controllers"
 	"haina.com/market/hqpublish/models"
 	"haina.com/market/hqpublish/models/publish"
 
+	. "haina.com/market/hqpublish/controllers"
+	"haina.com/share/lib"
 	"haina.com/share/logging"
-
-	"ProtocolBuffer/format/kline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
+)
+
+var (
+	_ = fmt.Print
+	_ = lib.WriteString
+	_ = logging.Error
+	_ = protocol.MarketStatus{}
+	_ = publish.MarketStatus{}
+	_ = strings.ToLower
+	_ = proto.Marshal
+	_ = json.Marshal
+	_ = io.ReadFull
 )
 
 type MinKLine struct{}
@@ -42,78 +54,51 @@ func (this *MinKLine) POST(c *gin.Context) {
 }
 
 func (this *MinKLine) PostJson(c *gin.Context) {
-	buf, err := GetRequestData(c, 1024)
-	if err != nil && err != io.EOF {
-		logging.Error("%v", err)
+	var request protocol.RequestMinK
+	code, err := RecvAndUnmarshalJson(c, 1024, &request)
+	if err != nil {
+		logging.Error("post json %v", err)
+		WriteJson(c, code, nil)
 		return
 	}
 
-	var request kline.RequestMinK
-	if err := json.Unmarshal(buf, &request); err != nil {
-		logging.Error("Json Request Unmarshal: %v", err)
+	if request.BeginTime > 1502 {
+		logging.Error("%v", ERROR_KLINE_BEGIN_TIME)
 		return
 	}
-	logging.Info("Request Data: %+v", request)
-	data, err := publish.NewMinKLine().GetMinKLine(&request)
+
+	//	data, err := publish.NewMinKLine().GetMinKObj(&request)
+	//	if err != nil {
+	//		logging.Error("%v", err)
+	//		WriteJson(c, 40002, nil)
+	//		return
+	//	}
+	//	WriteJson(c, 200, data)
+
+	js, err := publish.NewMinKLine().GetMinKJson(&request)
 	if err != nil {
 		logging.Error("%v", err)
-		reply := kline.ReplyMinK{
-			Code: 40002,
-		}
-		c.JSON(http.StatusOK, reply)
+		WriteJson(c, 40002, nil)
 		return
 	}
-	reply := &kline.ReplyMinK{
-		Code: 200,
-		Data: data,
-	}
-
-	c.JSON(http.StatusOK, reply)
+	WriteDataJson(c, js)
 }
 
 func (this *MinKLine) PostPB(c *gin.Context) {
-	var (
-		replypb []byte
-		err     error
-		request kline.RequestMinK
-	)
+	var request protocol.RequestMinK
+	code, err := RecvAndUnmarshalPB(c, 1024, &request)
+	if err != nil {
+		logging.Error("post pb %v", err)
+		WriteDataErrCode(c, code)
+		return
+	}
 
-	buf, err := GetRequestData(c, 1024)
-	if err != nil && err != io.EOF {
-		logging.Error("%v", err)
-		return
-	}
-	if err := proto.Unmarshal(buf, &request); err != nil {
-		logging.Error("PB Request Unmarshal: %v", err)
-		return
-	}
 	logging.Info("Request Data: %+v", request)
-	data, err := publish.NewMinKLine().GetMinKLine(&request)
+	data, err := publish.NewMinKLine().GetMinKObj(&request)
 	if err != nil {
-		reply := kline.ReplyMinK{
-			Code: 40002,
-		}
-		replypb, err = proto.Marshal(&reply)
-		if err != nil {
-			logging.Error("pb marshal error: %v", err)
-		}
-		lib.WriteData(c, replypb)
+		logging.Error("%v", err)
+		WriteDataErrCode(c, 40002)
 		return
 	}
-
-	reply := &kline.ReplyMinK{
-		Code: 200,
-		Data: data,
-	}
-	replypb, err = proto.Marshal(reply)
-	if err != nil {
-		reply := kline.ReplyMinK{
-			Code: 40002,
-		}
-		replypb, err = proto.Marshal(&reply)
-		if err != nil {
-			logging.Error("pb marshal error: %v", err)
-		}
-	}
-	lib.WriteData(c, replypb)
+	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_MINKLINE, data)
 }
