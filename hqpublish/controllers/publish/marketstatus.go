@@ -101,14 +101,5 @@ func (this *MarketStatus) PostPB(c *gin.Context) {
 		return
 	}
 
-	//	// 解码查看 验证数据
-	//	{
-	//		var a protocol.PayloadMarketStatus
-	//		if err := proto.Unmarshal(res, &a); err != nil {
-	//			logging.Error("%v", err)
-	//		}
-	//		logging.Info("%+v", a)
-	//	}
-
 	WriteDataBytes(c, protocol.HAINA_PUBLISH_CMD_ACK_MARKET_STATUS, res)
 }
