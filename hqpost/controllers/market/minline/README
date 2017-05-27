@@ -1,9 +1,10 @@
 一.综述
 minline目录下是当天各类分钟线的生成
 1.数据来源于快照生成的实时分钟线
+2.目前测试阶段1分钟线仅在文件，其他的redis和文件都有。
 
 
-二.结构
+二.程序结构
 
 //K线、指数定义
 type StockSingle struct {
@@ -41,3 +42,16 @@ type AllMinLine struct {
 
 MinKline为主结构，同样后续方法的成功执行依赖于HMinLine_1()方法
 dayline.go中用以生成当天的日线
+
+三.存储结构
+1. 入文件结构
+ type kline.HMinLineDay struct {
+	Date int32    //当天日期
+	List []*KInfo //当天分钟线list
+  }
+
+2. 入redis结构
+ type kline.HMinTable struct {
+	List []*HMinLineDay		
+ }
+}

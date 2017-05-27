@@ -55,4 +55,32 @@
         <db>0</db>
         <timeout>3</timeout> 
     </redisCache>
+	<fileStore>
+		<path>E:/opt/develop/store/kline</path>
+		<day>dk.dat</day>
+		<index>index.dat</index>
+		<week>wk.dat</week>
+		<month>mnk.dat</month>
+		<year>yk.dat</year>
+		<index>index.dat</index>
+		<hmin>hmin.dat</hmin>
+		<hmin5>hmin5.dat</hmin5>
+		<hmin15>hmin15.dat</hmin15>
+		<hmin30>hmin30.dat</hmin30>
+		<hmin60>hmin60.dat</hmin60>
+	</fileStore>
+	
+	<cacheTTL>						 <!--   单位秒     -->
+	<day>3600</day> 				 <!--   60*60*1   -->
+	<week>43200</week> 				 <!--   60*60*12  -->
+	<month>43200</month>
+	<year>43200</year>
+	
+	<hmin1>120</hmin1>					 <!--   60*2      -->
+	<hmin5>300</hmin5>					 <!--   60*5      -->
+	<hmin15>900</hmin15>				 <!--   60*15     -->
+	<hmin30>1800</hmin30>				 <!--   60*30     -->
+	<hmin60>3600</hmin60>   			 <!--   60*60     -->
+	</cacheTTL>
+	
 </configuration>

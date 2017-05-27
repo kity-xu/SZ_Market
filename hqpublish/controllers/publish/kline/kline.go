@@ -1,14 +1,11 @@
 package kline
 
 import (
-	"ProtocolBuffer/format/kline"
-	"encoding/json"
-	"io"
-
+	. "haina.com/market/hqpublish/controllers"
 	"haina.com/market/hqpublish/models"
 	"haina.com/share/logging"
 
-	"github.com/golang/protobuf/proto"
+	"ProtocolBuffer/projects/hqpublish/go/protocol"
 
 	"github.com/gin-gonic/gin"
 )
@@ -37,32 +34,43 @@ func (this *Kline) POST(c *gin.Context) {
 }
 
 func (this *Kline) PostJson(c *gin.Context) {
-	var request kline.RequestHisK
+	var request = &protocol.RequestHisK{}
 
-	buf, err := models.GetRequestData(c)
-	if err != nil && err != io.EOF {
-		logging.Error("%v", err)
-		return
-	}
-
-	if err := json.Unmarshal(buf, &request); err != nil {
-		logging.Error("Json Request Unmarshal: %v", err)
+	code, err := RecvAndUnmarshalJson(c, 1024, request)
+	if err != nil {
+		logging.Error("post json %v", err)
+		WriteJson(c, code, nil)
 		return
 	}
 	logging.Info("Request Data: %+v", request)
 
-	switch kline.KLINE_TYPE(request.Type) {
-	case kline.KLINE_TYPE_KLINE_TYPE_DAY:
-		this.DayJson(c, &request)
+	switch protocol.HAINA_KLINE_TYPE(request.Type) {
+	case protocol.HAINA_KLINE_TYPE_KDAY:
+		this.DayJson(c, request)
 		break
-	case kline.KLINE_TYPE_KLINE_TYPE_WEEK:
-		this.WeekJson(c, &request)
+	case protocol.HAINA_KLINE_TYPE_KWEEK:
+		this.WeekJson(c, request)
 		break
-	case kline.KLINE_TYPE_KLINE_TYPE_MONTH:
-		this.MonthJson(c, &request)
+	case protocol.HAINA_KLINE_TYPE_KMONTH:
+		this.MonthJson(c, request)
 		break
-	case kline.KLINE_TYPE_KLINE_TYPE_YEAR:
-		this.YearJson(c, &request)
+	case protocol.HAINA_KLINE_TYPE_KYEAR:
+		this.YearJson(c, request)
+		break
+	case protocol.HAINA_KLINE_TYPE_KMIN1:
+		this.MinJson_01(c, request)
+		break
+	case protocol.HAINA_KLINE_TYPE_KMIN5:
+		this.MinJson_05(c, request)
+		break
+	case protocol.HAINA_KLINE_TYPE_KMIN15:
+		this.MinJson_15(c, request)
+		break
+	case protocol.HAINA_KLINE_TYPE_KMIN30:
+		this.MinJson_30(c, request)
+		break
+	case protocol.HAINA_KLINE_TYPE_KMIN60:
+		this.MinJson_60(c, request)
 		break
 	default:
 		logging.Error("Invalid parameter 'Type'...")
@@ -71,31 +79,43 @@ func (this *Kline) PostJson(c *gin.Context) {
 }
 
 func (this *Kline) PostPB(c *gin.Context) {
-	var request kline.RequestHisK
+	var request = &protocol.RequestHisK{}
 
-	buf, err := models.GetRequestData(c)
-	if err != nil && err != io.EOF {
-		logging.Error("%v", err)
-		return
-	}
-	if err := proto.Unmarshal(buf, &request); err != nil {
-		logging.Error("PB Request Unmarshal: %v", err)
+	code, err := RecvAndUnmarshalPB(c, 1024, request)
+	if err != nil {
+		logging.Error("post pb %v", err)
+		WriteJson(c, code, nil)
 		return
 	}
 	logging.Info("Request Data: %+v", request)
 
-	switch kline.KLINE_TYPE(request.Type) {
-	case kline.KLINE_TYPE_KLINE_TYPE_DAY:
-		this.DayPB(c, &request)
+	switch protocol.HAINA_KLINE_TYPE(request.Type) {
+	case protocol.HAINA_KLINE_TYPE_KDAY:
+		this.DayPB(c, request)
 		break
-	case kline.KLINE_TYPE_KLINE_TYPE_WEEK:
-		this.WeekPB(c, &request)
+	case protocol.HAINA_KLINE_TYPE_KWEEK:
+		this.WeekPB(c, request)
 		break
-	case kline.KLINE_TYPE_KLINE_TYPE_MONTH:
-		this.MonthPB(c, &request)
+	case protocol.HAINA_KLINE_TYPE_KMONTH:
+		this.MonthPB(c, request)
 		break
-	case kline.KLINE_TYPE_KLINE_TYPE_YEAR:
-		this.YearPB(c, &request)
+	case protocol.HAINA_KLINE_TYPE_KYEAR:
+		this.YearPB(c, request)
+		break
+	case protocol.HAINA_KLINE_TYPE_KMIN1:
+		this.MinPB_01(c, request)
+		break
+	case protocol.HAINA_KLINE_TYPE_KMIN5:
+		this.MinPB_05(c, request)
+		break
+	case protocol.HAINA_KLINE_TYPE_KMIN15:
+		this.MinPB_15(c, request)
+		break
+	case protocol.HAINA_KLINE_TYPE_KMIN30:
+		this.MinPB_30(c, request)
+		break
+	case protocol.HAINA_KLINE_TYPE_KMIN60:
+		this.MinPB_60(c, request)
 		break
 	default:
 		logging.Error("Invalid parameter 'Type'...")

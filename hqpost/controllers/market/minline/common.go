@@ -2,6 +2,8 @@ package minline
 
 import (
 	"ProtocolBuffer/format/kline"
+	"bytes"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"os"
@@ -56,6 +58,51 @@ type AllMinLine struct {
 	All *[]*SingleMin
 }
 
+//数据追加相应文件的操作
+func AppendFile(sid int32, name string, kinfo *[]*kline.KInfo) error {
+	var filename string
+	buffer := new(bytes.Buffer)
+
+	market := sid / 1000000
+	if market == 100 {
+		filename = fmt.Sprintf("%s/sh/%d/", cfg.File.Path, sid)
+	} else if market == 200 {
+		filename = fmt.Sprintf("%s/sz/%d/", cfg.File.Path, sid)
+	} else {
+		logging.Error("Monthline write file error...Invalid file path")
+		return errors.New("Invalid file path")
+	}
+
+	if !lib.IsFileExist(filename) { //文件不存在，做第一次写入
+		err := os.MkdirAll(filename, 0777)
+		if err != nil {
+			return err
+		}
+	}
+
+	//date := GetDateToday() % 1000000
+	for _, v := range *kinfo {
+		//v.NTime = date*10000 + v.NTime //	计算端加年月日时间
+		if err := binary.Write(buffer, binary.LittleEndian, v); err != nil {
+			logging.Error("%v", err.Error())
+			return err
+		}
+	}
+
+	file, err := os.OpenFile(filename+name, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if _, err = file.Write(buffer.Bytes()); err != nil {
+		logging.Error("%v", err.Error())
+		return err
+	}
+	return nil
+}
+
+/********************************PB整体读写文件***********************************/
 //K线数据写入相应文件的操作
 func KlineWriteFile(sid int32, name string, data *[]byte) error {
 	var filename string
@@ -74,7 +121,7 @@ func KlineWriteFile(sid int32, name string, data *[]byte) error {
 		fmt.Printf("%s", err)
 	}
 
-	err = ioutil.WriteFile(filename+name, *data, 0664)
+	err = ioutil.WriteFile(filename+name, *data, 0666)
 	if err != nil {
 		logging.Error("%v", err.Error())
 		return err
@@ -98,6 +145,8 @@ func KlineReadFile(sid int32, name string) ([]byte, error) {
 	}
 	return ioutil.ReadFile(filename + name)
 }
+
+/*******************************************************************************/
 
 func GetDateToday() int32 {
 	timestamp := time.Now().Unix()

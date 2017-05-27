@@ -78,6 +78,8 @@ type LogServer struct {
 }
 
 type AppConfig struct {
+	File       FileStore      `xml:"fileStore"`
+	TTL        CacheTTL       `xml:"cacheTTL"`
 	AccessKeys AccessKeys     `xml:"accessKeys"`
 	Cors       CorsSetting    `xml:"cors"`
 	Db         Database       `xml:"database"`
@@ -90,6 +92,33 @@ type AppConfig struct {
 	Session    SessionSetting `xml:"session"`
 	Settings   AppSettings    `xml:"appSettings"`
 	Log        LogServer      `xml:"logServer"`
+}
+type FileStore struct {
+	Path  string `xml:"path"`
+	Day   string `xml:"day"`
+	Index string `xml:"index"`
+	Week  string `xml:"week"`
+	Month string `xml:"month"`
+	Year  string `xml:"year"`
+
+	Min   string `xml:"hmin"`
+	Min5  string `xml:"hmin5"`
+	Min15 string `xml:"hmin15"`
+	Min30 string `xml:"hmin30"`
+	Min60 string `xml:"hmin60"`
+}
+
+type CacheTTL struct {
+	Day   int `xml:"day"`
+	Week  int `xml:"week"`
+	Month int `xml:"month"`
+	Year  int `xml:"year"`
+
+	Min1  int `xml:"hmin1"`
+	Min5  int `xml:"hmin5"`
+	Min15 int `xml:"hmin15"`
+	Min30 int `xml:"hmin30"`
+	Min60 int `xml:"hmin60"`
 }
 
 type CorsSetting struct {

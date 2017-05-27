@@ -1,24 +1,17 @@
 package security
 
 import (
+	"ProtocolBuffer/projects/hqpublish/go/protocol"
 	"fmt"
 
 	. "haina.com/share/models"
 
-	"ProtocolBuffer/format/securitytable"
-
 	"github.com/golang/protobuf/proto"
+	. "haina.com/market/hqpublish/models"
 
 	"haina.com/market/hqpublish/models/publish"
-
-	redigo "haina.com/share/garyburd/redigo/redis"
 	"haina.com/share/logging"
-	"haina.com/share/store/redis"
 )
-
-var _ = fmt.Println
-var _ = redigo.Bytes
-var _ = logging.Info
 
 type SecurityInfo struct {
 	Model `db:"-"`
@@ -27,44 +20,61 @@ type SecurityInfo struct {
 func NewSecurityInfo() *SecurityInfo {
 	return &SecurityInfo{
 		Model: Model{
-			CacheKey: publish.REDISKEY_MARKET_SECURITY_TABLE,
+			CacheKey: publish.REDISKEY_SECURITY_NAME_ID,
 		},
 	}
 }
 
-func (this *SecurityInfo) GetSecurityTable(MarketID int32) (*securitytable.SecurityCodeTable, int, error) {
-	var table securitytable.SecurityCodeTable
+func (this *SecurityInfo) GetSecurityBasicInfo(req *protocol.RequestSingleSecurity) (*protocol.PayloadSingleSecurity, error) {
+	return this.getSecurityInfoFromeCache(req.SID)
+}
 
-	key := fmt.Sprintf(this.CacheKey, MarketID)
-	logging.Debug("key %v", key)
+func (this *SecurityInfo) getSecurityInfoFromeCache(sid int32) (*protocol.PayloadSingleSecurity, error) {
+	key := fmt.Sprintf(this.CacheKey, sid)
+	var single = &protocol.PayloadSingleSecurity{}
 
-	str, err := redis.Get(key)
+	bs, err := GetCache(key)
 	if err != nil {
-		return nil, 0, err
+		if err = getSecurityInfoFromeStore(key, single); err != nil {
+			return nil, err
+		}
+
+		if err = setSecurityInfoToCache(key, single); err != nil {
+			logging.Error("%v", err.Error())
+		}
+
+	} else {
+		if err = proto.Unmarshal(bs, single); err != nil {
+			return nil, err
+		}
+	}
+	return single, nil
+}
+
+func getSecurityInfoFromeStore(key string, single *protocol.PayloadSingleSecurity) error {
+	bs, err := RedisStore.GetBytes(key)
+	if err != nil {
+		return err
 	}
 
-	if str == "" {
-		return nil, 0, publish.ERROR_REDIS_LIST_NULL
+	var kinfo = &protocol.SecurityName{}
+
+	if err = proto.Unmarshal(bs, kinfo); err != nil {
+		return err
 	}
-	data := []byte(str)
+	single.SID = kinfo.NSID
+	single.SNInfo = kinfo
+	return nil
+}
 
-	if err := proto.Unmarshal(data, &table); err != nil {
-		logging.Error("%v", err.Error())
-		return nil, 0, err
+func setSecurityInfoToCache(key string, single *protocol.PayloadSingleSecurity) error {
+	bs, err := proto.Marshal(single)
+	if err != nil {
+		return err
 	}
-	logging.Debug("---%+v", table)
 
-	//	for _, v := range table {
-	//		k := &securitytable.SecurityInfo{}
-	//		buffer := bytes.NewBuffer([]byte(v))
-	//		if err := binary.Read(buffer, binary.LittleEndian, k); err != nil && err != io.EOF {
-	//			return table, 0, err
-	//		}
-
-	//		info = append(info, k)
-	//		logging.Debug("---%v", k)
-
-	//	}
-	//	table.List = info
-	return &table, len(table.List), nil
+	if err = SetCache(key, 60*5, bs); err != nil {
+		return err
+	}
+	return nil
 }
