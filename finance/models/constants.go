@@ -4,7 +4,7 @@ package models
 //---------------------------------------------------------------------------------
 const (
 	APP_NAME    = "market_finance"
-	APP_VERSION = "0.0.3.0"
+	APP_VERSION = "0.0.3.1"
 	APP_PID     = "market_finance"
 )
 

@@ -61,19 +61,13 @@ func (this *MinKLine) PostJson(c *gin.Context) {
 		WriteJson(c, code, nil)
 		return
 	}
+	logging.Info("Request %+v", request)
 
 	if request.BeginTime > 1502 {
-		logging.Error("%v", ERROR_KLINE_BEGIN_TIME)
+		logging.Error("%v %d", ERROR_KLINE_BEGIN_TIME, request.BeginTime)
+		WriteJson(c, 40004, nil)
 		return
 	}
-
-	//	data, err := publish.NewMinKLine().GetMinKObj(&request)
-	//	if err != nil {
-	//		logging.Error("%v", err)
-	//		WriteJson(c, 40002, nil)
-	//		return
-	//	}
-	//	WriteJson(c, 200, data)
 
 	js, err := publish.NewMinKLine().GetMinKJson(&request)
 	if err != nil {
@@ -92,13 +86,19 @@ func (this *MinKLine) PostPB(c *gin.Context) {
 		WriteDataErrCode(c, code)
 		return
 	}
+	logging.Info("Request %+v", request)
 
-	logging.Info("Request Data: %+v", request)
-	data, err := publish.NewMinKLine().GetMinKObj(&request)
+	if request.BeginTime > 1502 {
+		logging.Error("%v", ERROR_KLINE_BEGIN_TIME)
+		WriteJson(c, 40004, nil)
+		return
+	}
+
+	data, err := publish.NewMinKLine().GetMinKPB(&request)
 	if err != nil {
 		logging.Error("%v", err)
 		WriteDataErrCode(c, 40002)
 		return
 	}
-	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_MINKLINE, data)
+	WriteDataBinary(c, data)
 }
