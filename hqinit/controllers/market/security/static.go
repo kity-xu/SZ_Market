@@ -2,7 +2,7 @@
 package security
 
 import (
-	sec "ProtocolBuffer/format/securitytable"
+	"ProtocolBuffer/projects/hqinit/go/protocol"
 	"bytes"
 	"encoding/binary"
 	"fmt"
@@ -69,7 +69,7 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 		if err != nil {
 			logging.Error("%v", err.Error())
 		}
-		tag := sec.StockStatic{ //入redis的结构
+		tag := protocol.StockStatic{ //入redis的结构
 			NSID:              v.NSID,
 			SzSType:           v.SzSType,
 			SzStatus:          v.SzStatus,

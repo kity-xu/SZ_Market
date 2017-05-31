@@ -1,7 +1,7 @@
 package models
 
 import (
-	"ProtocolBuffer/format/kline"
+	"ProtocolBuffer/projects/hqpublish/go/protocol"
 	"io"
 	"sort"
 	"strconv"
@@ -22,7 +22,7 @@ func (r Reverse) Less(i, j int) bool {
 	return r.Interface.Less(j, i)
 }
 
-type KTable []*kline.KInfo
+type KTable []*protocol.KInfo
 
 func (this KTable) Len() int {
 	return len(this)
@@ -37,21 +37,21 @@ func (this KTable) Less(i, j int) bool {
 }
 
 //升序
-func GetASCStruct(a *[]*kline.KInfo) {
+func GetASCStruct(a *[]*protocol.KInfo) {
 	sort.Sort(sort.Reverse(KTable(*a)))
 }
 
 //降序
-func GetSECStruct(a *[]*kline.KInfo) {
+func GetSECStruct(a *[]*protocol.KInfo) {
 	sort.Sort(KTable(*a))
 }
 
 //获取当前时间20170101
-func GetCurrentTime() int {
+func GetCurrentTime() int32 {
 	timestamp := time.Now().Unix()
 	tm := time.Unix(timestamp, 0)
 	date, _ := strconv.Atoi(tm.Format("20060102"))
-	return date
+	return int32(date)
 }
 
 func GetRequestData(c *gin.Context) ([]byte, error) {

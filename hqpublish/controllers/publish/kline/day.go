@@ -2,123 +2,95 @@
 package kline
 
 import (
-	"ProtocolBuffer/format/kline"
-
-	"net/http"
+	"ProtocolBuffer/projects/hqpublish/go/protocol"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang/protobuf/proto"
+	. "haina.com/market/hqpublish/controllers"
 	"haina.com/market/hqpublish/models"
-
 	"haina.com/market/hqpublish/models/publish"
-	"haina.com/share/lib"
 	"haina.com/share/logging"
 )
 
-func (this *Kline) DayJson(c *gin.Context, request *kline.RequestHisK) {
-	reply := this.ReplyKLine(c, publish.REDISKEY_SECURITY_HDAY, request)
-
-	c.JSON(http.StatusOK, reply)
-}
-
-func (this *Kline) DayPB(c *gin.Context, request *kline.RequestHisK) {
-	reply := this.ReplyKLine(c, publish.REDISKEY_SECURITY_HDAY, request)
-
-	//转PB
-	replypb, err := proto.Marshal(reply)
+func (this *Kline) DayJson(c *gin.Context, request *protocol.RequestHisK) {
+	reply, err := this.PayLoadKLineData(publish.REDISKEY_SECURITY_HDAY, request)
 	if err != nil {
-		reply := kline.ReplyHisK{
-			Code: 40002,
-		}
-		replypb, err = proto.Marshal(&reply)
-		if err != nil {
-			logging.Error("pb marshal error: %v", err)
-		}
-		lib.WriteData(c, replypb)
+		logging.Error("%v", err.Error())
+		WriteJson(c, 40002, nil)
 		return
-
 	}
-	lib.WriteData(c, replypb)
+	maybeAddKline(reply)
+	WriteJson(c, 200, reply)
 }
 
-func (this *Kline) ReplyKLine(c *gin.Context, redisKey string, request *kline.RequestHisK) *kline.ReplyHisK {
-	reply := &kline.ReplyHisK{}
-
-	dlines, _, err := publish.NewKLine(redisKey).GetHisKLine(request.SID)
+func (this *Kline) DayPB(c *gin.Context, request *protocol.RequestHisK) {
+	reply, err := this.PayLoadKLineData(publish.REDISKEY_SECURITY_HDAY, request)
 	if err != nil {
-		logging.Error("%v", err)
-		return &kline.ReplyHisK{
-			Code: 4002,
-			Data: &kline.HisK{},
-		}
+		WriteDataErrCode(c, 40002)
+		return
 	}
+	maybeAddKline(reply)
+	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_HISKLINE, reply)
+}
 
-	if int(request.Num) > len(dlines.List) {
-		request.Num = int32(len(dlines.List))
-		//		logging.Error("Invalid request parameters 'Num'...")
-		//		return &kline.ReplyHisK{
-		//			Code: 4002,
-		//			Data: &kline.HisK{},
-		//		}
+func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHisK) (*protocol.PayloadHisK, error) {
+	var ret *protocol.PayloadHisK
+	dlines, err := publish.NewKLine(redisKey).GetHisKLineAll(request)
+	if err != nil {
+		return nil, err
 	}
+	total := int32(len(*dlines))
 
-	models.GetASCStruct(&dlines.List) //升序排序
-
-	if request.Num == 0 { //num==0, 获取全部
-		reply = &kline.ReplyHisK{
-			Code: 200,
-			Data: &kline.HisK{
-				SID:   request.SID,
-				Type:  request.Type,
-				Total: int32(len(dlines.List)),
-				Begin: dlines.List[0].NTime,
-				Num:   int32(len(dlines.List)),
-				List:  dlines.List,
-			},
+	if request.Num > total {
+		request.Num = total
+	}
+	models.GetASCStruct(dlines) //升序排序
+	if request.Num == 0 {       //num==0, 获取全部
+		ret = &protocol.PayloadHisK{
+			SID:   request.SID,
+			Type:  request.Type,
+			Total: total,
+			Begin: request.TimeIndex,
+			Num:   total,
+			KList: *dlines,
 		}
-
+		return ret, nil
 	} else { //根据num, 获取部分
 		if request.TimeIndex == 0 { //起始日期最新
-			var table []*kline.KInfo
+			var table []*protocol.KInfo
 
-			lindex := len(dlines.List)
-			for i := lindex - int(request.Num); i < lindex; i++ {
-				table = append(table, dlines.List[i])
+			lindex := total
+			for i := lindex - request.Num; i < lindex; i++ {
+				table = append(table, (*dlines)[i])
 			}
-			reply = &kline.ReplyHisK{
-				Code: 200,
-				Data: &kline.HisK{
+			ret = &protocol.PayloadHisK{ //向前
+				SID:   request.SID,
+				Type:  request.Type,
+				Total: total,
+				Begin: table[0].NTime,
+				Num:   total,
+				KList: table,
+			}
+
+			if request.Direct == 1 { //向后
+				var sig []*protocol.KInfo
+				sig = append(sig, table[len(table)-1])
+				ret = &protocol.PayloadHisK{
 					SID:   request.SID,
 					Type:  request.Type,
-					Total: int32(len(dlines.List)),
-					Begin: table[0].NTime,
-					Num:   int32(len(table)),
-					List:  table,
-				},
-			}
-
-			if request.Direct == 1 {
-				var sig []*kline.KInfo
-				sig = append(sig, table[len(table)-1])
-				return &kline.ReplyHisK{
-					Code: 200,
-					Data: &kline.HisK{
-						SID:   request.SID,
-						Type:  request.Type,
-						Total: int32(len(dlines.List)),
-						Begin: table[len(table)-1].NTime,
-						Num:   1,
-						List:  sig,
-					},
+					Total: total,
+					Begin: table[len(table)-1].NTime,
+					Num:   1,
+					KList: sig,
 				}
 			}
+			return ret, nil
 
 		} else { //TimeIndex作为起始日期
 
-			var frontedSwap, palinalSwap []*kline.KInfo
-			var databuf []*kline.KInfo
+			var frontedSwap, palinalSwap []*protocol.KInfo
+			var databuf []*protocol.KInfo
 
-			for _, v := range dlines.List {
+			for _, v := range *dlines {
 				if v.NTime <= request.TimeIndex {
 					frontedSwap = append(frontedSwap, v)
 				}
@@ -138,26 +110,25 @@ func (this *Kline) ReplyKLine(c *gin.Context, redisKey string, request *kline.Re
 				}
 			} else if request.Direct == 1 { //向后 palinalSwap
 				if len(palinalSwap) == 0 { //不加此判断 最新日期向后取，会越界panic
-					var table []*kline.KInfo
+					var table []*protocol.KInfo
 
-					lindex := len(dlines.List)
-					for i := lindex - int(request.Num); i < lindex; i++ {
-						table = append(table, dlines.List[i])
+					lindex := total
+					for i := lindex - request.Num; i < lindex; i++ {
+						table = append(table, (*dlines)[i])
 					}
 
-					var sig []*kline.KInfo
+					var sig []*protocol.KInfo
 					sig = append(sig, table[len(table)-1])
-					return &kline.ReplyHisK{
-						Code: 200,
-						Data: &kline.HisK{
-							SID:   request.SID,
-							Type:  request.Type,
-							Total: int32(len(dlines.List)),
-							Begin: table[len(table)-1].NTime,
-							Num:   1,
-							List:  sig,
-						},
+
+					ret = &protocol.PayloadHisK{
+						SID:   request.SID,
+						Type:  request.Type,
+						Total: total,
+						Begin: table[len(table)-1].NTime,
+						Num:   1,
+						KList: sig,
 					}
+					return ret, nil
 				}
 
 				if int(request.Num) > len(palinalSwap) {
@@ -165,37 +136,51 @@ func (this *Kline) ReplyKLine(c *gin.Context, redisKey string, request *kline.Re
 						databuf = append(databuf, palinalSwap[i])
 					}
 				} else {
-
 					for i := 0; i < int(request.Num); i++ {
 						databuf = append(databuf, palinalSwap[i])
 					}
 				}
 			} else {
-				reply = &kline.ReplyHisK{
-					Code: 4002,
-					Data: &kline.HisK{},
-				}
-
-				logging.Error("Invalid request parameters 'Direct'...")
-				return &kline.ReplyHisK{
-					Code: 4002,
-					Data: &kline.HisK{},
-				}
+				return nil, ERROR_REQUEST_PARAM
 			}
-
-			reply = &kline.ReplyHisK{
-				Code: 200,
-				Data: &kline.HisK{
-					SID:   request.SID,
-					Type:  request.Type,
-					Total: int32(len(dlines.List)),
-					Begin: databuf[0].NTime,
-					Num:   int32(len(databuf)),
-					List:  databuf,
-				},
+			ret = &protocol.PayloadHisK{
+				SID:   request.SID,
+				Type:  request.Type,
+				Total: total,
+				Begin: databuf[0].NTime,
+				Num:   int32(len(databuf)),
+				KList: databuf,
 			}
-
+			return ret, nil
 		}
 	}
-	return reply
+}
+
+//新增K线
+func maybeAddKline(reply *protocol.PayloadHisK) {
+	if len(reply.KList) < 1 {
+		logging.Error("PayloadHisK is null...")
+		return
+	}
+
+	today := models.GetCurrentTime()
+	if reply.SID/1000000 == 100 {
+		if today != Trade_100 {
+			var kinfo = protocol.KInfo{}
+
+			kinfo = *reply.KList[len(reply.KList)-1]
+			kinfo.NTime = today
+			reply.KList = append(reply.KList, &kinfo)
+		}
+	} else if reply.SID/1000000 == 200 {
+		if today != Trade_100 {
+			var kinfo = protocol.KInfo{}
+
+			kinfo = *reply.KList[len(reply.KList)-1]
+			kinfo.NTime = today
+			reply.KList = append(reply.KList, &kinfo)
+		}
+	} else {
+		logging.Error("Invalid NSID...")
+	}
 }

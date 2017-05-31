@@ -5,9 +5,16 @@ import (
 	"haina.com/share/store/redis"
 )
 
+var (
+	FStore *config.FileStore
+	TTL    *config.CacheTTL
+)
+
 func init() {
 
 	cfg := config.Default(APP_PID)
+	FStore = &cfg.File
+	TTL = &cfg.TTL
 
 	// 初始化 Redis 配置（即将废弃）
 	redis.Init(

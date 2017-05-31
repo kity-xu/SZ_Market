@@ -1,8 +1,10 @@
-//股票基本信息		1.按市场分类				2.个股
+// 包含如下两个模块
+// 0.2:按市场分类的股票代码表
+// 0.3:证券基本信息
 package security
 
 import (
-	sec "ProtocolBuffer/format/securitytable"
+	"ProtocolBuffer/projects/hqinit/go/protocol"
 	"bytes"
 	"encoding/binary"
 	"fmt"
@@ -49,8 +51,9 @@ func MarketTable() (*[]tb_security.TagSecurityInfo, error) {
 //证券基本信息和单市场的证券代码表的实现
 func UpdateSecurityTable(cfg *config.AppConfig) {
 	var (
-		stype, status  string
-		sec_sh, sec_sz sec.MarketSecurityCodeTable
+		stype, status string
+		//sec_sh, sec_sz sec.MarketSecurityCodeTable
+		sec_sh, sec_sz protocol.PayloadMarketSecurityNameTable
 	)
 
 	table, err := MarketTable()
@@ -74,7 +77,7 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 
 		buf := TagSecurityName{}
 
-		single := sec.SecurityInfo{}
+		single := protocol.SecurityName{}
 		single.NMarket = int32(v.NMarket)
 		single.NSID = int32(v.NSID)
 		single.SzSType = stype
@@ -125,10 +128,10 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 
 		/*************************OVER******************************/
 
-		if v.NMarket == sec.HAINA_PUBLISH_MARKET_value["SH"] {
-			sec_sh.List = append(sec_sh.List, &single)
-		} else if v.NMarket == sec.HAINA_PUBLISH_MARKET_value["SZ"] {
-			sec_sz.List = append(sec_sz.List, &single)
+		if v.NMarket == protocol.HAINA_PUBLISH_MARKET_value["SH"] {
+			sec_sh.SNList = append(sec_sh.SNList, &single)
+		} else if v.NMarket == protocol.HAINA_PUBLISH_MARKET_value["SZ"] {
+			sec_sz.SNList = append(sec_sz.SNList, &single)
 		} else {
 			logging.Error("security info nMarket ID error ...")
 			return
@@ -148,12 +151,12 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 	defer file.Close()
 	/*************************OVER******************************/
 
-	sec_sh.MarketID = sec.HAINA_PUBLISH_MARKET_value["SH"]
-	sec_sh.Num = int32(len(sec_sh.List))
+	sec_sh.MarketID = protocol.HAINA_PUBLISH_MARKET_value["SH"]
+	sec_sh.Num = int32(len(sec_sh.SNList))
 	sec_sh.TimeStamp = int32(time.Now().Unix())
 
-	sec_sz.MarketID = sec.HAINA_PUBLISH_MARKET_value["SZ"]
-	sec_sz.Num = int32(len(sec_sz.List))
+	sec_sz.MarketID = protocol.HAINA_PUBLISH_MARKET_value["SZ"]
+	sec_sz.Num = int32(len(sec_sz.SNList))
 	sec_sz.TimeStamp = int32(time.Now().Unix())
 
 	//上海入redis
@@ -162,7 +165,7 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 		logging.Error("Encode protocbuf of week Line error...%v", err.Error())
 		return
 	}
-	logging.Info("Lengh of SH security table:%v", len(sec_sh.List))
+	logging.Info("Lengh of SH security table:%v", len(sec_sh.SNList))
 
 	key_sh := fmt.Sprintf(REDISKEY_MARKET_SECURITY_TABLE, sec_sh.MarketID)
 	if err := redis.Set(key_sh, data_sh); err != nil {
@@ -175,7 +178,7 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 		logging.Error("Encode protocbuf of week Line error...%v", err.Error())
 		return
 	}
-	logging.Info("Lengh of SZ security table:%v", len(sec_sz.List))
+	logging.Info("Lengh of SZ security table:%v", len(sec_sz.SNList))
 
 	key_sz := fmt.Sprintf(REDISKEY_MARKET_SECURITY_TABLE, sec_sz.MarketID)
 	if err := redis.Set(key_sz, data_sz); err != nil {

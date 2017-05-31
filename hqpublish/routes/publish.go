@@ -3,7 +3,6 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"haina.com/market/hqpublish/controllers/publish"
-	hmin "haina.com/market/hqpublish/controllers/publish/hminline"
 	"haina.com/market/hqpublish/controllers/publish/kline"
 	"haina.com/market/hqpublish/controllers/publish/security"
 )
@@ -25,10 +24,11 @@ func RegPublish(rg *gin.RouterGroup) {
 	//市场、证券信息、股票代码表
 	rg.POST("/sntab", security.NewSecurityTable().POST) //默认pb模式
 	rg.POST("/sn", security.NewSecurityInfo().POST)     //默认pb模式
+	rg.POST("/ssta", security.NewSecurityStatic().POST) //默认pb模式
 
 	//历史K线
 	rg.POST("/kline", kline.NewKline().POST) //默认pb模式
 
 	//历史分钟线
-	rg.POST("/kmin", hmin.NewKMinline().POST)
+	//	rg.POST("/kmin", hmin.NewKMinline().POST)
 }

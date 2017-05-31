@@ -2,41 +2,35 @@
 package kline
 
 import (
-	"ProtocolBuffer/format/kline"
-
-	"net/http"
-
 	"github.com/gin-gonic/gin"
-	"github.com/golang/protobuf/proto"
+	. "haina.com/market/hqpublish/controllers"
+
+	"ProtocolBuffer/projects/hqpublish/go/protocol"
 
 	"haina.com/market/hqpublish/models/publish"
-	"haina.com/share/lib"
 	"haina.com/share/logging"
 )
 
-func (this *Kline) WeekJson(c *gin.Context, request *kline.RequestHisK) {
-	reply := this.ReplyKLine(c, publish.REDISKEY_SECURITY_HWEEK, request)
+func (this *Kline) WeekJson(c *gin.Context, request *protocol.RequestHisK) {
+	reply, err := this.PayLoadKLineData(publish.REDISKEY_SECURITY_HWEEK, request)
+	if err != nil {
+		logging.Error("%v", err.Error())
+		WriteJson(c, 40002, nil)
+		return
+	}
 
-	c.JSON(http.StatusOK, reply)
-
+	maybeAddKline(reply)
+	WriteJson(c, 200, reply)
 }
 
-func (this *Kline) WeekPB(c *gin.Context, request *kline.RequestHisK) {
-	reply := this.ReplyKLine(c, publish.REDISKEY_SECURITY_HWEEK, request)
-
-	//转PB
-	replypb, err := proto.Marshal(reply)
+func (this *Kline) WeekPB(c *gin.Context, request *protocol.RequestHisK) {
+	reply, err := this.PayLoadKLineData(publish.REDISKEY_SECURITY_HWEEK, request)
 	if err != nil {
-		reply := kline.ReplyHisK{
-			Code: 40002,
-		}
-		replypb, err = proto.Marshal(&reply)
-		if err != nil {
-			logging.Error("pb marshal error: %v", err)
-		}
-		lib.WriteData(c, replypb)
+		logging.Error("%v", err.Error())
+		WriteDataErrCode(c, 40002)
 		return
-
 	}
-	lib.WriteData(c, replypb)
+
+	maybeAddKline(reply)
+	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_HISKLINE, reply)
 }
