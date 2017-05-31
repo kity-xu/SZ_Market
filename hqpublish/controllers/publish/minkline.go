@@ -54,22 +54,25 @@ func (this *MinKLine) POST(c *gin.Context) {
 }
 
 func (this *MinKLine) PostJson(c *gin.Context) {
-	var request protocol.RequestMinK
-	code, err := RecvAndUnmarshalJson(c, 1024, &request)
+	var req protocol.RequestMinK
+	code, err := RecvAndUnmarshalJson(c, 1024, &req)
 	if err != nil {
 		logging.Error("post json %v", err)
 		WriteJson(c, code, nil)
 		return
 	}
-	logging.Info("Request %+v", request)
-
-	if request.BeginTime > 1502 {
-		logging.Error("%v %d", ERROR_KLINE_BEGIN_TIME, request.BeginTime)
+	logging.Info("Request %+v", req)
+	if req.SID == 0 {
+		WriteJson(c, 40004, nil)
+		return
+	}
+	if req.BeginTime > 1502 {
+		logging.Error("%v %d", ERROR_KLINE_BEGIN_TIME, req.BeginTime)
 		WriteJson(c, 40004, nil)
 		return
 	}
 
-	js, err := publish.NewMinKLine().GetMinKJson(&request)
+	js, err := publish.NewMinKLine().GetMinKJson(&req)
 	if err != nil {
 		logging.Error("%v", err)
 		WriteJson(c, 40002, nil)
@@ -79,22 +82,26 @@ func (this *MinKLine) PostJson(c *gin.Context) {
 }
 
 func (this *MinKLine) PostPB(c *gin.Context) {
-	var request protocol.RequestMinK
-	code, err := RecvAndUnmarshalPB(c, 1024, &request)
+	var req protocol.RequestMinK
+	code, err := RecvAndUnmarshalPB(c, 1024, &req)
 	if err != nil {
 		logging.Error("post pb %v", err)
 		WriteDataErrCode(c, code)
 		return
 	}
-	logging.Info("Request %+v", request)
+	logging.Info("Request %+v", req)
+	if req.SID == 0 {
+		WriteDataErrCode(c, 40004)
+		return
+	}
 
-	if request.BeginTime > 1502 {
+	if req.BeginTime > 1502 {
 		logging.Error("%v", ERROR_KLINE_BEGIN_TIME)
 		WriteJson(c, 40004, nil)
 		return
 	}
 
-	data, err := publish.NewMinKLine().GetMinKPB(&request)
+	data, err := publish.NewMinKLine().GetMinKPB(&req)
 	if err != nil {
 		logging.Error("%v", err)
 		WriteDataErrCode(c, 40002)

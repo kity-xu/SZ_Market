@@ -64,7 +64,7 @@ func (this *MarketStatus) PostJson(c *gin.Context) {
 		WriteJson(c, code, nil)
 		return
 	}
-	if int(req.Num) != len(req.MarketIDList) {
+	if req.Num == 0 || int(req.Num) != len(req.MarketIDList) {
 		logging.Error("Num %d, List len %d", req.Num, len(req.MarketIDList))
 		WriteJson(c, 40002, nil)
 		return
@@ -88,7 +88,7 @@ func (this *MarketStatus) PostPB(c *gin.Context) {
 		return
 	}
 
-	if int(req.Num) != len(req.MarketIDList) {
+	if req.Num == 0 || int(req.Num) != len(req.MarketIDList) {
 		logging.Error("Num %d, List len %d", req.Num, len(req.MarketIDList))
 		WriteDataErrCode(c, 40002)
 		return

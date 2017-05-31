@@ -9,15 +9,15 @@ import (
 
 	. "haina.com/share/models"
 
-	"ProtocolBuffer/format/snap"
+	"ProtocolBuffer/projects/hqpublish/go/protocol"
 
-	redigo "haina.com/share/garyburd/redigo/redis"
+	hsgrr "haina.com/share/garyburd/redigo/redis"
 	"haina.com/share/logging"
 	"haina.com/share/store/redis"
 )
 
 var _ = fmt.Println
-var _ = redigo.Bytes
+var _ = hsgrr.Bytes
 var _ = logging.Info
 var _ = bytes.NewBuffer
 var _ = binary.Read
@@ -28,6 +28,7 @@ type StockSnapshot struct {
 }
 
 /// 股票快照消息 (MSG_CALC_SNAPSHOT REDISKEY_SECURITY_SNAP )
+/// 数据 Redis 里的定义
 type REDIS_BIN_STOCK_SNAPSHOT struct {
 	NSID         int32           ///< 证券ID
 	NTime        int32           ///< 时间 unix time
@@ -72,12 +73,12 @@ func NewStockSnapshot() *StockSnapshot {
 }
 
 // 获取证券快照
-func (this *StockSnapshot) GetStockSnapshot(request *snap.RequestSnap) (*snap.Snapshot, error) {
-	key := fmt.Sprintf(this.CacheKey, request.SID)
+func (this *StockSnapshot) GetStockSnapshot(req *protocol.RequestSnapshot) (*protocol.PayloadSnapshot, error) {
+	key := fmt.Sprintf(this.CacheKey, req.SID)
 
-	bin, err := redigo.Bytes(redis.Get(key))
+	bin, err := hsgrr.Bytes(redis.Get(key))
 	if err != nil {
-		if err == redigo.ErrNil {
+		if err == hsgrr.ErrNil {
 			logging.Warning("redis not found key: %v", key)
 			return nil, err
 		}
@@ -90,9 +91,9 @@ func (this *StockSnapshot) GetStockSnapshot(request *snap.RequestSnap) (*snap.Sn
 		logging.Fatal(err)
 	}
 
-	ret := &snap.Snapshot{
-		SID: request.SID,
-		Snap: &snap.StockSnapshot{
+	ret := &protocol.PayloadSnapshot{
+		SID: req.SID,
+		SnapInfo: &protocol.StockSnapshot{
 			NSID:         data.NSID,
 			NTime:        data.NTime,
 			NStatus:      data.NStatus,
@@ -119,23 +120,23 @@ func (this *StockSnapshot) GetStockSnapshot(request *snap.RequestSnap) (*snap.Sn
 			NTurnOver:    data.NTurnOver,
 			NPE:          data.NPE,
 			NPB:          data.NPB,
-			Bid:          make([]*snap.QuoteRecord, 0, 5),
-			Offer:        make([]*snap.QuoteRecord, 0, 5),
+			Bid:          make([]*protocol.QuoteRecord, 0, 5),
+			Offer:        make([]*protocol.QuoteRecord, 0, 5),
 		},
 	}
 	for _, v := range data.Bid {
-		bid := &snap.QuoteRecord{
+		bid := &protocol.QuoteRecord{
 			NPx:      v.NPx,
 			LlVolume: v.LlVolume,
 		}
-		ret.Snap.Bid = append(ret.Snap.Bid, bid)
+		ret.SnapInfo.Bid = append(ret.SnapInfo.Bid, bid)
 	}
 	for _, v := range data.Offer {
-		offer := &snap.QuoteRecord{
+		offer := &protocol.QuoteRecord{
 			NPx:      v.NPx,
 			LlVolume: v.LlVolume,
 		}
-		ret.Snap.Offer = append(ret.Snap.Offer, offer)
+		ret.SnapInfo.Offer = append(ret.SnapInfo.Offer, offer)
 	}
 
 	return ret, nil

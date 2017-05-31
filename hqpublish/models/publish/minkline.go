@@ -29,7 +29,7 @@ type MinKLine struct {
 	Model `db:"-"`
 }
 
-const TTL_REDISKEY_SECURITY_MIN = 1130 // 暂存，避免合并冲突 constants.go
+const TTL_REDISKEY_SECURITY_MIN = 30 // 暂存，避免合并冲突 constants.go
 
 func NewMinKLine() *MinKLine {
 	return &MinKLine{

@@ -2,22 +2,15 @@
 package publish
 
 import (
-	"encoding/json"
-	"io"
-	"net/http"
-
-	"haina.com/share/lib"
-
 	. "haina.com/market/hqpublish/controllers"
 	"haina.com/market/hqpublish/models"
 	"haina.com/market/hqpublish/models/publish"
 
 	"haina.com/share/logging"
 
-	"ProtocolBuffer/format/snap"
+	"ProtocolBuffer/projects/hqpublish/go/protocol"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang/protobuf/proto"
 )
 
 type StockSnapshot struct{}
@@ -43,81 +36,49 @@ func (this *StockSnapshot) POST(c *gin.Context) {
 }
 
 func (this *StockSnapshot) PostJson(c *gin.Context) {
-	var request snap.RequestSnap
+	var req protocol.RequestSnapshot
 
-	buf, err := GetRequestData(c, 1024)
-	if err != nil && err != io.EOF {
-		logging.Error("%v", err)
+	code, err := RecvAndUnmarshalJson(c, 1024, &req)
+	if err != nil {
+		logging.Error("post json %v", err)
+		WriteJson(c, code, nil)
 		return
 	}
-	if err := json.Unmarshal(buf, &request); err != nil {
-		logging.Error("Json Request Unmarshal: %v", err)
+	logging.Info("Request %+v", req)
+	if req.SID == 0 {
+		WriteJson(c, 40004, nil)
 		return
 	}
-	logging.Info("Request Data: %+v", request)
 
-	data, err := publish.NewStockSnapshot().GetStockSnapshot(&request)
+	data, err := publish.NewStockSnapshot().GetStockSnapshot(&req)
 	if err != nil {
 		logging.Error("%v", err)
-		reply := snap.ReplySnap{
-			Code: 40002,
-		}
-		c.JSON(http.StatusOK, reply)
+		WriteJson(c, 40002, nil)
 		return
 	}
-
-	reply := snap.ReplySnap{
-		Code: 200,
-		Data: data,
-	}
-
-	c.JSON(http.StatusOK, reply)
+	WriteJson(c, 200, data)
 }
 
 func (this *StockSnapshot) PostPB(c *gin.Context) {
-	var (
-		replypb []byte
-		err     error
-		request snap.RequestSnap
-	)
+	var req protocol.RequestSnapshot
 
-	buf, err := GetRequestData(c, 1024)
-	if err != nil && err != io.EOF {
+	code, err := RecvAndUnmarshalPB(c, 1024, &req)
+	if err != nil {
+		logging.Error("post pb %v", err)
+		WriteDataErrCode(c, code)
+		return
+	}
+	logging.Info("Request %+v", req)
+	if req.SID == 0 {
+		WriteDataErrCode(c, 40004)
+		return
+	}
+
+	data, err := publish.NewStockSnapshot().GetStockSnapshot(&req)
+	if err != nil {
 		logging.Error("%v", err)
+		WriteDataErrCode(c, 40002)
 		return
 	}
-	if err := proto.Unmarshal(buf, &request); err != nil {
-		logging.Error("PB Request Unmarshal: %v", err)
-		return
-	}
-	logging.Info("Request Data: %+v", request)
-
-	data, err := publish.NewStockSnapshot().GetStockSnapshot(&request)
-	if err != nil {
-		reply := snap.ReplySnap{
-			Code: 40002,
-		}
-		replypb, err = proto.Marshal(&reply)
-		if err != nil {
-			logging.Error("pb marshal error: %v", err)
-		}
-		lib.WriteData(c, replypb)
-		return
-	}
-
-	reply := snap.ReplySnap{
-		Code: 200,
-		Data: data,
-	}
-	replypb, err = proto.Marshal(&reply)
-	if err != nil {
-		reply := snap.ReplySnap{
-			Code: 40002,
-		}
-		replypb, err = proto.Marshal(&reply)
-		if err != nil {
-			logging.Error("pb marshal error: %v", err)
-		}
-	}
-	lib.WriteData(c, replypb)
+	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_SNAPSHOT, data)
 }
