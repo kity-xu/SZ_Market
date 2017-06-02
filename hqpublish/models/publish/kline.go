@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strconv"
+	"time"
 
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
 
@@ -210,4 +212,28 @@ func (this *KLine) getHisKlineFromeRedisCache(key string, req *protocol.RequestH
 		}
 	}
 	return ktable, nil
+}
+
+func getHQpostExecutedTime() int64 {
+
+	ss, err := RedisStore.Get(REDISKEY_HQPOST_EXECUTED_TIME)
+	if err != nil {
+		logging.Error("getHQpostExecutedTime failed.. %v", err.Error())
+		return 0
+	}
+
+	tm, err := strconv.ParseInt(ss, 10, 64)
+	if err != nil {
+		logging.Error("getHQpostExecutedTime failed.. %v", err.Error())
+		return 0
+	}
+
+	return tm
+}
+
+func IsHQpostRunOver() bool {
+	if getHQpostExecutedTime() < time.Now().Unix() { //hqpost 没执行
+		return false
+	}
+	return true
 }

@@ -18,7 +18,6 @@ func (this *Kline) DayJson(c *gin.Context, request *protocol.RequestHisK) {
 		WriteJson(c, 40002, nil)
 		return
 	}
-	maybeAddKline(reply)
 	WriteJson(c, 200, reply)
 }
 
@@ -28,7 +27,6 @@ func (this *Kline) DayPB(c *gin.Context, request *protocol.RequestHisK) {
 		WriteDataErrCode(c, 40002)
 		return
 	}
-	maybeAddKline(reply)
 	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_HISKLINE, reply)
 }
 
@@ -38,6 +36,26 @@ func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHi
 	if err != nil {
 		return nil, err
 	}
+
+	//新增K线的判断   待改。。。。
+	//if publish.IsHQpostRunOver() {
+	if models.GetCurrentTimeHM()%10000 < 1530 {
+		switch redisKey {
+		case publish.REDISKEY_SECURITY_HDAY:
+			maybeAddKline(dlines)
+			break
+		case publish.REDISKEY_SECURITY_HWEEK:
+			maybeAddWeekLine(dlines)
+			break
+		case publish.REDISKEY_SECURITY_HMONTH:
+			maybeAddMonthLine(dlines)
+			break
+		case publish.REDISKEY_SECURITY_HYEAR:
+			maybeAddYearLine(dlines)
+			break
+		}
+	}
+
 	total := int32(len(*dlines))
 
 	if request.Num > total {
@@ -67,7 +85,7 @@ func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHi
 				Type:  request.Type,
 				Total: total,
 				Begin: table[0].NTime,
-				Num:   total,
+				Num:   int32(len(table)),
 				KList: table,
 			}
 
@@ -157,28 +175,32 @@ func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHi
 }
 
 //新增K线
-func maybeAddKline(reply *protocol.PayloadHisK) {
-	if len(reply.KList) < 1 {
+func maybeAddKline(reply *[]*protocol.KInfo) {
+	if len(*reply) < 1 {
 		logging.Error("PayloadHisK is null...")
 		return
 	}
 
 	today := models.GetCurrentTime()
-	if reply.SID/1000000 == 100 {
-		if today != Trade_100 {
+	if (*reply)[0].NSID/1000000 == 100 {
+		if today == Trade_100 {
 			var kinfo = protocol.KInfo{}
 
-			kinfo = *reply.KList[len(reply.KList)-1]
+			kinfo = *(*reply)[len(*reply)-1]
 			kinfo.NTime = today
-			reply.KList = append(reply.KList, &kinfo)
+			kinfo.LlValue = 0
+			kinfo.LlVolume = 0
+			*reply = append(*reply, &kinfo)
 		}
-	} else if reply.SID/1000000 == 200 {
-		if today != Trade_100 {
+	} else if (*reply)[0].NSID/1000000 == 200 {
+		if today == Trade_200 {
 			var kinfo = protocol.KInfo{}
 
-			kinfo = *reply.KList[len(reply.KList)-1]
+			kinfo = *(*reply)[len(*reply)-1]
 			kinfo.NTime = today
-			reply.KList = append(reply.KList, &kinfo)
+			kinfo.LlValue = 0
+			kinfo.LlVolume = 0
+			*reply = append(*reply, &kinfo)
 		}
 	} else {
 		logging.Error("Invalid NSID...")

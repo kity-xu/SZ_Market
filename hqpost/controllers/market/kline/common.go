@@ -1,7 +1,7 @@
 package kline
 
 import (
-	"ProtocolBuffer/format/kline"
+	"ProtocolBuffer/projects/hqpost/go/protocol"
 
 	"haina.com/market/hqpost/config"
 )
@@ -34,12 +34,12 @@ type Security struct {
 type SingleSecurity struct {
 	Sid int32 //股票SID
 
-	Date      []int32               //单个股票的历史日期
-	SigStock  map[int32]kline.KInfo //单个股票的历史数据
-	WeekDays  *[][]int32            //单个股票的历史周天
-	MonthDays *[][]int32            //单个股票的历史月天
-	YearDays  *[][]int32            //单个股票的历史年天
-	today     *kline.KInfo          //单个股票的当天数据
+	Date      []int32                  //单个股票的历史日期
+	SigStock  map[int32]protocol.KInfo //单个股票的历史数据
+	WeekDays  *[][]int32               //单个股票的历史周天
+	MonthDays *[][]int32               //单个股票的历史月天
+	YearDays  *[][]int32               //单个股票的历史年天
+	today     *protocol.KInfo          //单个股票的当天数据
 }
 
 //所有股票

@@ -36,6 +36,7 @@ func (this *SecurityStatic) getSecurityStaticFromeCache(sid int32) (*protocol.Pa
 	bs, err := GetCache(key)
 	if err != nil {
 		if err = getSecurityStaticFromeStore(key, single); err != nil {
+			logging.Error("%v", err.Error())
 			return nil, err
 		}
 
@@ -45,6 +46,7 @@ func (this *SecurityStatic) getSecurityStaticFromeCache(sid int32) (*protocol.Pa
 
 	} else {
 		if err = proto.Unmarshal(bs, single); err != nil {
+			logging.Error("%v", err.Error())
 			return nil, err
 		}
 	}
@@ -52,14 +54,20 @@ func (this *SecurityStatic) getSecurityStaticFromeCache(sid int32) (*protocol.Pa
 }
 
 func getSecurityStaticFromeStore(key string, single *protocol.PayloadSecurityStatic) error {
+	static := &protocol.StockStatic{}
+
 	bs, err := RedisStore.GetBytes(key)
 	if err != nil {
 		return err
 	}
 
-	if err = proto.Unmarshal(bs, single); err != nil {
+	if err = proto.Unmarshal(bs, static); err != nil {
+		logging.Error("-----getSecurityStaticFromeStore--error..%v", err.Error())
 		return err
 	}
+
+	single.SSInfo = static
+
 	return nil
 }
 

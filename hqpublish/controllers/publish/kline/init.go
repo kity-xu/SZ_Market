@@ -13,7 +13,11 @@ var (
 	Trade_200 int32 = 0
 )
 
-func init() {
+func initMarketTradeDate() {
+	if Trade_100 != 0 && Trade_200 != 0 {
+		return
+	}
+
 	mlist, err := getMarketStatus()
 	if err != nil {
 		logging.Error("%v", err)

@@ -1,7 +1,7 @@
 package minline
 
 import (
-	"ProtocolBuffer/format/kline"
+	"ProtocolBuffer/projects/hqpost/go/protocol"
 
 	"haina.com/market/hqpost/config"
 	"haina.com/market/hqpost/models"
@@ -52,7 +52,7 @@ func (this *MinKline) initBasicMinData() {
 func (this *MinKline) getBasicMinDataToday(sid int32) (*SingleMin, error) {
 	day := &SingleMin{
 		Time: make([]int32, 0), //单个股票的历史日期
-		Min:  make(map[int32]kline.KInfo),
+		Min:  make(map[int32]protocol.KInfo),
 	}
 	dmin, err := mstore.GetMinKLineToday(sid)
 	if err != nil {
@@ -73,13 +73,14 @@ func (this *MinKline) getBasicMinDataToday(sid int32) (*SingleMin, error) {
 
 	lib.GetASCIntArray(day.Time) //升序排序time
 	generateMinLineTimes(day)
+
 	return day, nil
 }
 
 //当天分钟线并入历史
-func (this *MinKline) mergeMin(sid int32, rs *redistore.HMinKLine, dmin *[]*kline.KInfo) {
+func (this *MinKline) mergeMin(sid int32, rs *redistore.HMinKLine, dmin *[]*protocol.KInfo) {
 	if rs.Ktype != REDISKEY_SECURITY_HMIN { //如果不是历史1分钟线的话，进行redis操作（也就是说minline_1不进redis）
-		kinfo := kline.HMinLineDay{
+		kinfo := protocol.HMinLineDay{
 			Date: GetDateToday(),
 			List: *dmin,
 		}
@@ -129,8 +130,6 @@ func (this *MinKline) mergeMin(sid int32, rs *redistore.HMinKLine, dmin *[]*klin
 
 //生成分钟线时间（5、15、30、60）[][]into2
 func generateMinLineTimes(day *SingleMin) {
-	//logging.Debug("****day_time:%v*******", day.Time)
-
 	var minbuf_5, minbuf_15, minbuf_30, minbuf_60 []int32
 	var time_5, time_15, time_30, time_60 [][]int32
 
@@ -138,11 +137,15 @@ func generateMinLineTimes(day *SingleMin) {
 	st_15 := MIN_START + 15 // 0945
 	st_30 := 1000           // 930 + 30
 	st_60 := 1030           // 1030
-	for _, min := range day.Time {
+	for i, min := range day.Time {
+		length := len(day.Time)
 
 		//5
-		if min <= int32(st_05) {
+		if min%10000 <= int32(st_05) {
 			minbuf_5 = append(minbuf_5, min)
+			if i == length-1 { //别遗漏最后一条
+				time_5 = append(time_5, minbuf_5)
+			}
 		} else { //生成了一个n分钟
 			time_5 = append(time_5, minbuf_5)
 
@@ -159,8 +162,11 @@ func generateMinLineTimes(day *SingleMin) {
 		}
 
 		//15
-		if min <= int32(st_15) {
+		if min%10000 <= int32(st_15) {
 			minbuf_15 = append(minbuf_15, min)
+			if i == length-1 { //别遗漏最后一条
+				time_15 = append(time_15, minbuf_15)
+			}
 		} else {
 			time_15 = append(time_15, minbuf_15)
 			minbuf_15 = nil
@@ -176,8 +182,11 @@ func generateMinLineTimes(day *SingleMin) {
 		}
 
 		//30
-		if min <= int32(st_30) {
+		if min%10000 <= int32(st_30) {
 			minbuf_30 = append(minbuf_30, min)
+			if i == length-1 { //别遗漏最后一条
+				time_30 = append(time_30, minbuf_30)
+			}
 		} else {
 			time_30 = append(time_30, minbuf_30)
 			minbuf_30 = nil
@@ -194,8 +203,11 @@ func generateMinLineTimes(day *SingleMin) {
 		}
 
 		//60
-		if min <= int32(st_60) {
+		if min%10000 <= int32(st_60) {
 			minbuf_60 = append(minbuf_60, min)
+			if i == length-1 { //别遗漏最后一条
+				time_60 = append(time_60, minbuf_60)
+			}
 		} else {
 			time_60 = append(time_60, minbuf_60)
 			minbuf_60 = nil

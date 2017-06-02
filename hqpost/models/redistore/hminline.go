@@ -6,7 +6,7 @@ import (
 	"haina.com/market/hqpost/models"
 	. "haina.com/share/models"
 
-	"ProtocolBuffer/format/kline"
+	"ProtocolBuffer/projects/hqpost/go/protocol"
 
 	"github.com/golang/protobuf/proto"
 	"haina.com/share/logging"
@@ -27,7 +27,7 @@ func NewHMinKLine(key string) *HMinKLine {
 	}
 }
 
-func (this *HMinKLine) LPushHMinKLine(sid int32, kinfo *kline.HMinLineDay) error {
+func (this *HMinKLine) LPushHMinKLine(sid int32, kinfo *protocol.HMinLineDay) error {
 	key := fmt.Sprintf(this.CacheKey, sid)
 	data, err := proto.Marshal(kinfo)
 	if err != nil {
@@ -42,8 +42,8 @@ func (this *HMinKLine) LPushHMinKLine(sid int32, kinfo *kline.HMinLineDay) error
 }
 
 // 获取历史分钟线
-func (this *HMinKLine) GetHMinKLine(sid int32) (*kline.HMinTable, error) {
-	var lines kline.HMinTable
+func (this *HMinKLine) GetHMinKLine(sid int32) (*protocol.HMinTable, error) {
+	var lines protocol.HMinTable
 
 	key := fmt.Sprintf(this.CacheKey, sid)
 

@@ -60,12 +60,16 @@ func (this *Kline) PayLoadMinLineData(redisKey string, request *protocol.Request
 			for i := lindex - request.Num; i < lindex; i++ {
 				table = append(table, (*mlines)[i])
 			}
+
+			if len(table) < 1 {
+				return nil, ERROR_INDEX_MAYBE_OUTOF_RANGE
+			}
 			ret = &protocol.PayloadHisK{ //向前
 				SID:   request.SID,
 				Type:  request.Type,
 				Total: total,
 				Begin: table[0].NTime,
-				Num:   total,
+				Num:   int32(len(table)),
 				KList: table,
 			}
 
@@ -118,6 +122,9 @@ func (this *Kline) PayLoadMinLineData(redisKey string, request *protocol.Request
 					var sig []*protocol.KInfo
 					sig = append(sig, table[len(table)-1])
 
+					if len(table) < 1 {
+						return nil, ERROR_INDEX_MAYBE_OUTOF_RANGE
+					}
 					ret = &protocol.PayloadHisK{
 						SID:   request.SID,
 						Type:  request.Type,
@@ -140,6 +147,10 @@ func (this *Kline) PayLoadMinLineData(redisKey string, request *protocol.Request
 				}
 			} else {
 				return nil, ERROR_REQUEST_PARAM
+			}
+
+			if len(databuf) < 1 {
+				return nil, ERROR_INDEX_MAYBE_OUTOF_RANGE
 			}
 			ret = &protocol.PayloadHisK{
 				SID:   request.SID,

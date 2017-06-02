@@ -1,22 +1,26 @@
 package minline
 
 import (
-	"ProtocolBuffer/format/kline"
+	"ProtocolBuffer/projects/hqpost/go/protocol"
 
+	. "haina.com/market/hqpost/controllers"
 	"haina.com/market/hqpost/models/redistore"
 
-	//"haina.com/share/logging"
+	"haina.com/share/logging"
 )
 
 //生成历史60分钟线
 func (this *MinKline) HMinLine_60() {
 	rstore60 := redistore.NewHMinKLine(REDISKEY_SECURITY_HMIN60)
+	for _, dmin := range *(this.list.All) { //个股当天数据
 
-	for _, dmin := range *this.list.All { //个股当天数据
-
-		var tmps []*kline.KInfo
+		var tmps []*protocol.KInfo
 		for _, min60 := range *dmin.Time_60 { //当天的每个60分钟
-			tmp := &kline.KInfo{}
+			if len(min60) < 1 {
+				logging.Error("%v", ERROR_INDEX_MAYBE_OUTOF_RANGE)
+				continue
+			}
+			tmp := &protocol.KInfo{}
 
 			var (
 				i          int

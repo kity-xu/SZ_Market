@@ -13,3 +13,7 @@ const (
 	CONTEXt_MARKET = "marketID" //市场ID
 	CONTEXT_SNID   = "snid"     // snid
 )
+
+const (
+	REDISKEY_HQPOST_EXECUTED_TIME = "hq:post:time:executed" ///hqpost 上次执行完毕时的时间戳
+)

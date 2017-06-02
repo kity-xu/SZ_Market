@@ -10,16 +10,16 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"haina.com/share/lib"
-
-	pbk "ProtocolBuffer/format/kline"
+	"ProtocolBuffer/projects/hqpost/go/protocol"
 	"errors"
+
+	"haina.com/share/lib"
 
 	"haina.com/share/logging"
 )
 
-func UpdateMonthLineToFile(filename string, today *pbk.KInfo) error {
-	var tmp, result pbk.KInfo
+func UpdateMonthLineToFile(filename string, today *protocol.KInfo) error {
+	var tmp, result protocol.KInfo
 
 	size := binary.Size(&tmp)
 	bs := make([]byte, size)
@@ -63,8 +63,8 @@ func UpdateMonthLineToFile(filename string, today *pbk.KInfo) error {
 	return nil
 }
 
-func UpdateYearLineToFile(filename string, today *pbk.KInfo) error {
-	var tmp, result pbk.KInfo
+func UpdateYearLineToFile(filename string, today *protocol.KInfo) error {
+	var tmp, result protocol.KInfo
 
 	size := binary.Size(&tmp)
 	bs := make([]byte, size)
@@ -111,8 +111,8 @@ func UpdateYearLineToFile(filename string, today *pbk.KInfo) error {
 }
 
 //更新周线
-func UpdateWeekLineToFile(filename string, today *pbk.KInfo) error {
-	var tmp, result pbk.KInfo
+func UpdateWeekLineToFile(filename string, today *protocol.KInfo) error {
+	var tmp, result protocol.KInfo
 
 	size := binary.Size(&tmp)
 	bs := make([]byte, size)
@@ -160,8 +160,8 @@ func UpdateWeekLineToFile(filename string, today *pbk.KInfo) error {
 }
 
 //读PB形式
-func ReadSrcFileStore(filename string) (*pbk.KInfoTable, error) {
-	var klist pbk.KInfoTable
+func ReadSrcFileStore(filename string) (*protocol.KInfoTable, error) {
+	var klist protocol.KInfoTable
 
 	fd, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -177,7 +177,7 @@ func ReadSrcFileStore(filename string) (*pbk.KInfoTable, error) {
 }
 
 //binary形式
-func ReadHainaFileStore(filename string) (*pbk.KInfoTable, error) {
+func ReadHainaFileStore(filename string) (*protocol.KInfoTable, error) {
 	if !lib.IsFileExist(filename) {
 		return nil, errors.New("file not exist..")
 	}
@@ -188,12 +188,12 @@ func ReadHainaFileStore(filename string) (*pbk.KInfoTable, error) {
 		return nil, err
 	}
 
-	size := binary.Size(&pbk.KInfo{})
-	ktable := pbk.KInfoTable{}
+	size := binary.Size(&protocol.KInfo{})
+	ktable := protocol.KInfoTable{}
 
 	for i := 0; i < len(data); i += size {
 		v := data[i : i+size]
-		kinfo := pbk.KInfo{}
+		kinfo := protocol.KInfo{}
 		buffer := bytes.NewBuffer(v)
 		if err = binary.Read(buffer, binary.LittleEndian, &kinfo); err != nil && err != io.EOF {
 			return nil, err
@@ -204,7 +204,7 @@ func ReadHainaFileStore(filename string) (*pbk.KInfoTable, error) {
 }
 
 //binary 形式
-func WiteHainaFileStore(filepath string, ktable *pbk.KInfoTable) error {
+func WiteHainaFileStore(filepath string, ktable *protocol.KInfoTable) error {
 	buffer := new(bytes.Buffer)
 
 	for _, v := range ktable.List {
@@ -225,7 +225,7 @@ func WiteHainaFileStore(filepath string, ktable *pbk.KInfoTable) error {
 }
 
 //日K线数据追加相应文件的操作
-func AppendFile(filepath string, today *pbk.KInfo) error {
+func AppendFile(filepath string, today *protocol.KInfo) error {
 	buffer := new(bytes.Buffer)
 
 	if err := binary.Write(buffer, binary.LittleEndian, today); err != nil {

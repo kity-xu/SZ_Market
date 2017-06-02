@@ -1,7 +1,7 @@
 package kline
 
 import (
-	"ProtocolBuffer/format/kline"
+	"ProtocolBuffer/projects/hqpost/go/protocol"
 
 	"haina.com/market/hqpost/models"
 	"haina.com/market/hqpost/models/filestore"
@@ -16,7 +16,7 @@ func (this *Security) YearLine() {
 	rstore := redistore.NewHKLine(REDISKEY_SECURITY_HYEAR)
 	for _, single := range securitys { //每支股票
 		var (
-			klist *kline.KInfoTable
+			klist *protocol.KInfoTable
 			err   error
 		)
 		filepath, ok := filestore.CheckFileSoteDir(single.Sid, cfg.File.Path, cfg.File.Year)
@@ -38,7 +38,7 @@ func (this *Security) YearLine() {
 					logging.Error("%v", err.Error())
 				}
 
-				var ss []kline.KInfo
+				var ss []protocol.KInfo
 				if err = rstore.LRangeHisKLine(single.Sid, 1, &ss); err != nil {
 					if err != models.ERROR_REDIS_LIST_NULL {
 						logging.Error("%v", err.Error())
@@ -59,16 +59,16 @@ func (this *Security) YearLine() {
 
 }
 
-func produceYearline(single *SingleSecurity) *kline.KInfoTable {
+func produceYearline(single *SingleSecurity) *protocol.KInfoTable {
 	//PB
-	var klist kline.KInfoTable
+	var klist protocol.KInfoTable
 
 	for _, year := range *single.YearDays { //每年
 		var (
 			i          int
 			day        int32
 			AvgPxTotal uint32
-			tmp        kline.KInfo //pb类型
+			tmp        protocol.KInfo //pb类型
 		)
 
 		for i, day = range year { //每一天

@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"io"
 
-	//redigo "haina.com/share/garyburd/redigo/redis"
 	"haina.com/market/hqpost/models"
 	. "haina.com/share/models"
 
-	"ProtocolBuffer/format/kline"
+	"ProtocolBuffer/projects/hqpost/go/protocol"
 
 	"haina.com/share/store/redis"
 )
@@ -28,7 +27,7 @@ func NewMinKLine(key string) *MinKLine {
 }
 
 // 获取分钟K线
-func (this *MinKLine) GetMinKLineToday(sid int32) (*[]*kline.KInfo, error) {
+func (this *MinKLine) GetMinKLineToday(sid int32) (*[]*protocol.KInfo, error) {
 	key := fmt.Sprintf(this.CacheKey, sid)
 
 	ls, err := redis.LRange(key, 0, -1)
@@ -40,9 +39,9 @@ func (this *MinKLine) GetMinKLineToday(sid int32) (*[]*kline.KInfo, error) {
 
 	}
 
-	kls := make([]*kline.KInfo, 0, 241)
+	kls := make([]*protocol.KInfo, 0, 241)
 	for _, v := range ls {
-		k := &kline.KInfo{}
+		k := &protocol.KInfo{}
 		buffer := bytes.NewBuffer([]byte(v))
 		if err := binary.Read(buffer, binary.LittleEndian, k); err != nil && err != io.EOF {
 			return nil, err

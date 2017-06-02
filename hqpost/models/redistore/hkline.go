@@ -4,10 +4,12 @@ package redistore
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"time"
 
 	. "haina.com/share/models"
 
-	"ProtocolBuffer/format/kline"
+	"ProtocolBuffer/projects/hqpost/go/protocol"
 
 	"haina.com/market/hqpost/models"
 
@@ -29,7 +31,7 @@ func NewHKLine(key string) *HKLine {
 }
 
 //Insert
-func (this *HKLine) LPushHisKLine(sid int32, line *kline.KInfo) error {
+func (this *HKLine) LPushHisKLine(sid int32, line *protocol.KInfo) error {
 	key := fmt.Sprintf(this.CacheKey, sid)
 	data, err := proto.Marshal(line)
 	if err != nil {
@@ -44,7 +46,7 @@ func (this *HKLine) LPushHisKLine(sid int32, line *kline.KInfo) error {
 }
 
 //Select
-func (this *HKLine) LRangeHisKLine(sid int32, num int, table *[]kline.KInfo) error {
+func (this *HKLine) LRangeHisKLine(sid int32, num int, table *[]protocol.KInfo) error {
 	if num < 1 {
 		return errors.New("Invalid request parameters num...")
 	}
@@ -58,7 +60,7 @@ func (this *HKLine) LRangeHisKLine(sid int32, num int, table *[]kline.KInfo) err
 	}
 
 	for _, by := range ss {
-		kinfo := kline.KInfo{}
+		kinfo := protocol.KInfo{}
 		if err := proto.Unmarshal([]byte(by), &kinfo); err != nil {
 			return err
 		}
@@ -68,7 +70,7 @@ func (this *HKLine) LRangeHisKLine(sid int32, num int, table *[]kline.KInfo) err
 }
 
 //Update
-func (this *HKLine) LSetHisKLine(sid int32, latest *kline.KInfo) error {
+func (this *HKLine) LSetHisKLine(sid int32, latest *protocol.KInfo) error {
 	key := fmt.Sprintf(this.CacheKey, sid)
 
 	data, err := proto.Marshal(latest)
@@ -81,8 +83,8 @@ func (this *HKLine) LSetHisKLine(sid int32, latest *kline.KInfo) error {
 }
 
 //比较历史最新和当天
-func CompareKInfo(tmp *kline.KInfo, today *kline.KInfo) *kline.KInfo {
-	var swap kline.KInfo
+func CompareKInfo(tmp *protocol.KInfo, today *protocol.KInfo) *protocol.KInfo {
+	var swap protocol.KInfo
 
 	swap.NSID = tmp.NSID
 	swap.NTime = tmp.NTime
@@ -103,4 +105,14 @@ func CompareKInfo(tmp *kline.KInfo, today *kline.KInfo) *kline.KInfo {
 	swap.LlValue = today.LlValue + tmp.LlValue
 	swap.NAvgPx = (today.NAvgPx + tmp.NAvgPx) / 2
 	return &swap
+}
+
+func (this *HKLine) HQpostExecutedTime() {
+	timestamp := time.Now().Unix()
+
+	ss := strconv.FormatInt(timestamp, 10) //int64转string
+
+	if err := redis.Set(this.CacheKey, []byte(ss)); err != nil {
+		logging.Error("%v", err.Error())
+	}
 }

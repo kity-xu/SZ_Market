@@ -46,7 +46,7 @@ func (this *SecurityStatic) PostJson(c *gin.Context) {
 
 	sinfo, err := security.NewSecurityStatic().GetSecurityStatic(request)
 	if err != nil {
-		logging.Error("post json %v", err)
+		logging.Error("%v", err)
 		WriteJson(c, 40002, nil)
 		return
 	}

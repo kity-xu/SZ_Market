@@ -197,18 +197,18 @@ func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.Reque
 		if tmpTime == 0 {
 			cache = &kline.HMinLineDay{}
 			cache.List = append(cache.List, &kinfo)
-			tmpTime = kinfo.NTime / 10000
+			tmpTime = kinfo.NTime
 			continue
 		}
 
-		if tmpTime == kinfo.NTime/10000 {
+		if tmpTime == kinfo.NTime {
 			cache.List = append(cache.List, &kinfo)
 			if i == lengh-size { //防止最后一天的数据丢失、
-				cache.Date = 20*1000000 + tmpTime
+				cache.Date = 20*1000000 + tmpTime/10000
 				cacheTable.List = append(cacheTable.List, cache)
 			}
 		} else {
-			cache.Date = 20*1000000 + tmpTime
+			cache.Date = 20*1000000 + tmpTime/10000
 			cacheTable.List = append(cacheTable.List, cache) //得到了一天的分钟线，cache加入cacheTable
 
 			cache = &kline.HMinLineDay{}            //重新创建HMinLineDay结构，cache指向它
@@ -216,6 +216,8 @@ func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.Reque
 			tmpTime = kinfo.NTime                   //更新时间
 		}
 	}
+
+	logging.Debug("table:%v", table)
 
 	if err = this.setPaylodToRedisCache(key, req.Type, cacheTable); err != nil { //这里文件存储结构转换为redis存储结构
 		logging.Error("%v", err.Error()) //此处不能因为该错误而返回，但又不能忽略错误，故打印

@@ -1,7 +1,7 @@
 package minline
 
 import (
-	"ProtocolBuffer/format/kline"
+	"ProtocolBuffer/projects/hqpost/go/protocol"
 	"bytes"
 	"encoding/binary"
 	"errors"
@@ -44,9 +44,9 @@ type MinKline struct {
 
 //个股
 type SingleMin struct {
-	Sid     int32                 //股票SID
-	Time    []int32               //单个股票的历史日期
-	Min     map[int32]kline.KInfo //单个股票的当天分钟数据
+	Sid     int32                    //股票SID
+	Time    []int32                  //单个股票的历史日期
+	Min     map[int32]protocol.KInfo //单个股票的当天分钟数据
 	Time_5  *[][]int32
 	Time_15 *[][]int32
 	Time_30 *[][]int32
@@ -59,7 +59,7 @@ type AllMinLine struct {
 }
 
 //数据追加相应文件的操作
-func AppendFile(sid int32, name string, kinfo *[]*kline.KInfo) error {
+func AppendFile(sid int32, name string, kinfo *[]*protocol.KInfo) error {
 	var filename string
 	buffer := new(bytes.Buffer)
 

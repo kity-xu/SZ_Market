@@ -1,7 +1,7 @@
 package kline
 
 import (
-	"ProtocolBuffer/format/kline"
+	"ProtocolBuffer/projects/hqpost/go/protocol"
 
 	"haina.com/market/hqpost/models"
 
@@ -18,12 +18,12 @@ func (this *Security) WeekLine() {
 
 	for _, single := range securitys { // 以sid分类的单个股票
 		var (
-			klist *kline.KInfoTable
+			klist *protocol.KInfoTable
 			err   error
 		)
 		filepath, ok := filestore.CheckFileSoteDir(single.Sid, cfg.File.Path, cfg.File.Week)
 		if !ok { //不存在，做第一次生成
-			klist = produceWeekline(&single)
+			klist = produceWeeprotocol(&single)
 
 			//1.入文件
 			filestore.WiteHainaFileStore(filepath, klist)
@@ -41,7 +41,7 @@ func (this *Security) WeekLine() {
 					logging.Error("%v", err.Error())
 				}
 
-				var ss []kline.KInfo
+				var ss []protocol.KInfo
 				if err = rstore.LRangeHisKLine(single.Sid, 1, &ss); err != nil {
 					if err != models.ERROR_REDIS_LIST_NULL {
 						logging.Error("%v", err.Error())
@@ -63,13 +63,13 @@ func (this *Security) WeekLine() {
 
 }
 
-func produceWeekline(single *SingleSecurity) *kline.KInfoTable {
-	var tmps []kline.KInfo
-	var klist kline.KInfoTable
+func produceWeeprotocol(single *SingleSecurity) *protocol.KInfoTable {
+	var tmps []protocol.KInfo
+	var klist protocol.KInfoTable
 
 	for _, week := range *single.WeekDays { //每一周
 		//logging.Debug("Week:%v", week)
-		tmp := kline.KInfo{}
+		tmp := protocol.KInfo{}
 
 		var (
 			i          int

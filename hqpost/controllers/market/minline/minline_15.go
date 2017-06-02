@@ -1,23 +1,27 @@
 package minline
 
 import (
-	"ProtocolBuffer/format/kline"
+	"ProtocolBuffer/projects/hqpost/go/protocol"
 
+	. "haina.com/market/hqpost/controllers"
 	"haina.com/market/hqpost/models/redistore"
 
-	//"haina.com/share/logging"
+	"haina.com/share/logging"
 )
 
 //生成历史15分钟线
 func (this *MinKline) HMinLine_15() {
 	rstore15 := redistore.NewHMinKLine(REDISKEY_SECURITY_HMIN15)
+	for _, dmin := range *(this.list.All) { //个股当天数据
 
-	for _, dmin := range *this.list.All { //个股当天数据
-		//logging.Debug("SID:%v   今天15分钟时间----%v", dmin.Sid, dmin.Time_15)
-
-		var tmps []*kline.KInfo
+		var tmps []*protocol.KInfo
 		for _, min15 := range *dmin.Time_15 { //当天的每个15分钟
-			tmp := &kline.KInfo{}
+			if len(min15) < 1 {
+				logging.Error("%v", ERROR_INDEX_MAYBE_OUTOF_RANGE)
+				continue
+			}
+
+			tmp := &protocol.KInfo{}
 
 			var (
 				i          int

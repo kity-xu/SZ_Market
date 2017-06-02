@@ -3,12 +3,11 @@ package filestore
 import (
 	"fmt"
 
+	"ProtocolBuffer/projects/hqpost/go/protocol"
+	"errors"
 	"strconv"
 	"strings"
 	"time"
-
-	"ProtocolBuffer/format/kline"
-	"errors"
 )
 
 //int型时间转Time类型（最小单位 天）
@@ -72,8 +71,8 @@ func IntToMonth(date int) time.Time {
 }
 
 //比较历史最新和当天
-func compareKInfo(tmp *kline.KInfo, today *kline.KInfo) kline.KInfo {
-	var swap kline.KInfo
+func compareKInfo(tmp *protocol.KInfo, today *protocol.KInfo) protocol.KInfo {
+	var swap protocol.KInfo
 
 	swap.NSID = tmp.NSID
 	swap.NTime = tmp.NTime

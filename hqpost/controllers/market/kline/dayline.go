@@ -1,7 +1,7 @@
 package kline
 
 import (
-	"ProtocolBuffer/format/kline"
+	"ProtocolBuffer/projects/hqpost/go/protocol"
 	"fmt"
 	"strings"
 
@@ -31,12 +31,12 @@ func (this *Security) DayLine() {
 			filename string         //文件名
 			exchange string         //股票交易所
 			issrc    bool   = false //判断是否需要去读源文件
-			klist           = &kline.KInfoTable{}
+			klist           = &protocol.KInfoTable{}
 			sigList  SingleSecurity
 			date     []int32
 		)
 
-		dmap := make(map[int32]kline.KInfo)
+		dmap := make(map[int32]protocol.KInfo)
 
 		if sid/100000000 == 1 { //ascii 字符
 			exchange = SH
@@ -150,13 +150,13 @@ func (this *Security) DayLine() {
 }
 
 //获取今天分钟线生成的日线
-func GetTodayDayLine(sid int32, lastPx int32) (*kline.KInfo, error) {
+func GetTodayDayLine(sid int32, lastPx int32) (*protocol.KInfo, error) {
 	min, err := redistore.NewMinKLine(REDISKEY_SECURITY_MIN).GetMinKLineToday(sid)
 	if err != nil {
 		logging.Debug("%v", err.Error())
 		return nil, err
 	}
-	var tmp kline.KInfo //pb类型
+	var tmp protocol.KInfo //pb类型
 
 	var (
 		i          int = 0
