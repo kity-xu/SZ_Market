@@ -13,8 +13,12 @@ import (
 )
 
 const (
+
+	// 服务器mongodb://user:passwd@ip:port/db_name
+	//URL = "mongodb://hgs:xnX9^tsx7!4W@172.16.1.59:57017/hgs"
+	// 本地用
 	URL                  = "192.168.18.200:27017"
-	GLOBAL_SECRITY_TABLE = "basic_securityinfo_table" // 证券代码表monogoDb库
+	GLOBAL_SECRITY_TABLE = "basic_securityinfo_table" // 证券静态数据monogoDb库
 )
 
 type TagSecurityInfo struct {
@@ -39,6 +43,8 @@ func main() {
 	// 获取沪深股票信息
 	logging.Info("begin==")
 	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
+	// 服务器用
+	// conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
 	if err != nil {
 		logging.Debug("mysql onn", err)
 	}

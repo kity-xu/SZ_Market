@@ -33,7 +33,9 @@ func main() {
 	logging.SetLogModel(true, false)
 	logging.Info("begin..")
 	// 查询finance数据库历史日K线
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
+	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
+	// 服务器用
+	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
 	if err != nil {
 		logging.Debug("mysql onn", err)
 	}
@@ -44,6 +46,7 @@ func main() {
 
 	var stocks []financemysql.Stock
 	var err1 error
+	logging.Info("=====len=%v", len(CCodes))
 	for _, item := range CCodes {
 		// 根据证券代码查询历史K线
 		stocks, err1 = new(financemysql.Stock).GetSKTListFC(sess, item.SECODE.String)
@@ -54,14 +57,14 @@ func main() {
 		}
 
 		if item.EXCHANGE.String == "001002" {
-			var addstr = "E:/hqdata/sh/100" + item.SYMBOL.String
-			// linux 下路径  var addstr = "/home/hqdata/sh/100" + item.SYMBOL.String
+			var addstr = "/opt/develop/hgs/filestore/hqdatax/sh/100" + item.SYMBOL.String
+			//var addstr = "E:/hqdata/sh/100" + item.SYMBOL.String
 			WriteFileInfo(addstr, stocks, "100"+item.SYMBOL.String)
 		}
 		// 001003 深圳交易市场
 		if item.EXCHANGE.String == "001003" {
-			var addstr = "E:/hqdata/sz/200" + item.SYMBOL.String
-			// linux 下路径  var addstr = "/home/hqdata/sz/200" + item.SYMBOL.String
+			var addstr = "/opt/develop/hgs/filestore/hqdatax/sz/200" + item.SYMBOL.String
+			//var addstr = "E:/hqdata/sz/200" + item.SYMBOL.String
 			WriteFileInfo(addstr, stocks, "200"+item.SYMBOL.String)
 		}
 	}
@@ -76,8 +79,7 @@ func WriteFileInfo(add string, sto []financemysql.Stock, snid string) {
 		logging.Info("%v这支证券数据为空", snid)
 		return
 	}
-	var adds = add + "//dk.dat"
-	// linux 下路径  var adds = add +"/dk.dat"
+	var adds = add + "/dk.dat"
 	var klist kline.KInfoTable
 
 	i, err := strconv.Atoi(snid)
@@ -85,6 +87,10 @@ func WriteFileInfo(add string, sto []financemysql.Stock, snid string) {
 		logging.Info("类型转换出错 %v", snid)
 	}
 	for _, v := range sto {
+		if int(v.VOL.Int64) == 0 || v.AMOUNT.Float64 == 0.000 {
+			//logging.Info("证券%v在交易日%v成交量为:%v成交额为:%v", i, v.TRADEDATE, v.VOL, v.AMOUNT)
+			continue
+		}
 		var sj kline.KInfo
 		sj.NSID = int32(i) // 证券ID
 		sj.NTime = int32(v.TRADEDATE.Int64)
@@ -104,7 +110,7 @@ func WriteFileInfo(add string, sto []financemysql.Stock, snid string) {
 		return
 	}
 
-	if err = ioutil.WriteFile(adds, data, 0644); err != nil {
+	if err = ioutil.WriteFile(adds, data, 0666); err != nil {
 		logging.Error("%v", err.Error())
 		return
 	}

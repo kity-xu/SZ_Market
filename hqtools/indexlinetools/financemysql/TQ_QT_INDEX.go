@@ -23,6 +23,7 @@ func (this *TQ_QT_INDEX) GetIndexInfoList(sess *dbr.Session, secode string) ([]T
 	var index []TQ_QT_INDEX
 	_, err := sess.Select("*").From("TQ_QT_INDEX").
 		Where("SECODE =" + secode).
+		Where("TCLOSE > 0").
 		Where("ISVALID=1").
 		OrderBy("TRADEDATE").LoadStructs(&index)
 	return index, err
