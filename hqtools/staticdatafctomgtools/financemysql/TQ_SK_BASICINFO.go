@@ -18,7 +18,7 @@ type TQ_SK_BASICINFO struct {
 // 查询证券信息
 func (this *TQ_SK_BASICINFO) GetBasicinfoList(sess *dbr.Session, symb string) (TQ_SK_BASICINFO, error) {
 	var tsb TQ_SK_BASICINFO
-	err := sess.Select("*").From("TQ_SK_BASICINFO").
+	err := sess.Select("SYMBOL,SETYPE,EXCHANGE,LISTSTATUS,LISTDATE,DELISTDATE").From("TQ_SK_BASICINFO").
 		Where("SYMBOL='" + symb + "' and  ISVALID=1").
 		Limit(1).
 		LoadStruct(&tsb)

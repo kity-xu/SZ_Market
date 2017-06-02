@@ -19,8 +19,11 @@ import (
 )
 
 const (
+	// 服务器mongodb://user:passwd@ip:port/db_name
+	//URL = "mongodb://hgs:xnX9^tsx7!4W@172.16.1.59:57017/hgs"
+	// 本地用
 	URL                  = "192.168.18.200:27017"
-	GLOBAL_SECRITY_TABLE = "basic_staticdata_table_test" // 证券静态数据monogoDb库
+	GLOBAL_SECRITY_TABLE = "basic_staticdata_table" // 证券静态数据monogoDb库
 )
 
 type SjsHqFile struct {
@@ -62,6 +65,8 @@ func main() {
 	logging.Info("begin==")
 	// FC数据库连接
 	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
+	// 服务器用
+	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
 	if err != nil {
 		logging.Debug("mysql onn", err)
 	} else {
@@ -72,7 +77,7 @@ func main() {
 	StockTreatingData(sess)
 
 	// 解析沪深市场证券信息文档
-	AnalysisFileUpMongodb()
+	//AnalysisFileUpMongodb() //解析实时文件用
 	logging.Info("end==")
 }
 
@@ -153,7 +158,6 @@ func StockTreatingData(sess *dbr.Session) {
 
 		// 根据公司内码查询股票历史信息
 		dklinfo, err := new(dkfm.Stock).GetSKTList5FC(sess, item.SECODE.String)
-
 		if err != nil {
 			if err == dbr.ErrNotFound {
 				logging.Info("查询股票历史信息未找到数据 %v", err)
@@ -211,7 +215,7 @@ func StockTreatingData(sess *dbr.Session) {
 
 		if err != nil {
 			if err == dbr.ErrNotFound {
-				logging.Info("查询行业财务指标信息未找到数据 %v", err)
+				logging.Info("%v查询行业财务指标信息未找到数据 %v", sym, err)
 			} else {
 				logging.Info("查询行业财务指标信息出错 error %v", err)
 			}

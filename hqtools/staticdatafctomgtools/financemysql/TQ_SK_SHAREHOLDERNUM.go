@@ -15,7 +15,7 @@ type TQ_SK_SHAREHOLDERNUM struct {
 // 查询证券信息
 func (this *TQ_SK_SHAREHOLDERNUM) GetSingleInfo(sess *dbr.Session, comc string) (TQ_SK_SHAREHOLDERNUM, error) {
 	var tss TQ_SK_SHAREHOLDERNUM
-	err := sess.Select("*").From("TQ_SK_SHAREHOLDERNUM").
+	err := sess.Select("CIRCSKAAMT,TOTALSHARE,TOTALSHAMT").From("TQ_SK_SHAREHOLDERNUM").
 		Where("COMPCODE='" + comc + "' and  ISVALID=1").OrderBy("ENDDATE DESC").Limit(1).LoadStruct(&tss)
 	return tss, err
 }

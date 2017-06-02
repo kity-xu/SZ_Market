@@ -14,7 +14,7 @@ type TQ_FIN_PROINDICDATA struct {
 // 查询公司业绩报表
 func (this *TQ_FIN_PROINDICDATA) GetSingleInfo(sess *dbr.Session, comc string) (TQ_FIN_PROINDICDATA, error) {
 	var tss TQ_FIN_PROINDICDATA
-	err := sess.Select("*").From("TQ_FIN_PROINDICDATA").
+	err := sess.Select("CURRENTRT,QUICKRT").From("TQ_FIN_PROINDICDATA").
 		Where("COMPCODE='" + comc + "' and  ISVALID=1").
 		OrderBy("ENDDATE DESC").
 		Limit(1).

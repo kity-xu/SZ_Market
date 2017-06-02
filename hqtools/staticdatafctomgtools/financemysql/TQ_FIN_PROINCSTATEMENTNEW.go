@@ -18,7 +18,7 @@ type TQ_FIN_PROINCSTATEMENTNEW struct {
 func (this *TQ_FIN_PROINCSTATEMENTNEW) GetSingleInfo(sess *dbr.Session, comc string) (TQ_FIN_PROINCSTATEMENTNEW, error) {
 	var tsp TQ_FIN_PROINCSTATEMENTNEW
 
-	err := sess.Select("*").From("TQ_FIN_PROINCSTATEMENTNEW").
+	err := sess.Select("BASICEPS,TOTPROFIT,NETPROFIT,PUBLISHDATE").From("TQ_FIN_PROINCSTATEMENTNEW").
 		Where("COMPCODE=" + comc + " and  ISVALID=1").
 		OrderBy("ENDDATE DESC ").
 		Limit(1).

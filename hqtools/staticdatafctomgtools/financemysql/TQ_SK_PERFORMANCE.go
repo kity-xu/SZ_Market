@@ -15,7 +15,7 @@ type TQ_SK_PERFORMANCE struct {
 func (this *TQ_SK_PERFORMANCE) GetSingleInfo(sess *dbr.Session, comc string) (TQ_SK_PERFORMANCE, error) {
 	var tsp TQ_SK_PERFORMANCE
 
-	err := sess.Select("*").From("TQ_FIN_PROBALSHEETNEW").
+	err := sess.Select("TOTASSET").From("TQ_FIN_PROBALSHEETNEW").
 		Where("COMPCODE=" + comc + " and  ISVALID=1").
 		OrderBy("PUBLISHDATE  DESC ").
 		Limit(1).

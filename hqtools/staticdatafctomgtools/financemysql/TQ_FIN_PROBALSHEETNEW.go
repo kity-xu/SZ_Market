@@ -14,7 +14,7 @@ type TQ_FIN_PROBALSHEETNEW struct {
 func (this *TQ_FIN_PROBALSHEETNEW) GetSingleInfo(sess *dbr.Session, comc string) (TQ_FIN_PROBALSHEETNEW, error) {
 	var tsp TQ_FIN_PROBALSHEETNEW
 
-	err := sess.Select("*").From("TQ_FIN_PROBALSHEETNEW").
+	err := sess.Select("TOTCURRASSET").From("TQ_FIN_PROBALSHEETNEW").
 		Where("COMPCODE=" + comc).
 		Where("ISVALID=1").
 		OrderBy("PUBLISHDATE DESC ").

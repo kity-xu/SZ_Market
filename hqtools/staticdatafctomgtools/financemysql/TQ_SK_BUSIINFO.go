@@ -14,7 +14,7 @@ type TQ_SK_BUSIINFO struct {
 // 查询公司业绩报表
 func (this *TQ_SK_BUSIINFO) GetSingleInfo(sess *dbr.Session, comc string) (TQ_SK_BUSIINFO, error) {
 	var tss TQ_SK_BUSIINFO
-	err := sess.Select("*").From("TQ_SK_BUSIINFO").
+	err := sess.Select("TCOREBIZINCOME,TCOREBIZPROFIT").From("TQ_SK_BUSIINFO").
 		Where("COMPCODE='" + comc + "' and  ISVALID=1").
 		OrderBy("PUBLISHDATE DESC").
 		Limit(1).
