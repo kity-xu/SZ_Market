@@ -8,6 +8,7 @@ import (
 	. "haina.com/market/hqpublish/controllers"
 	"haina.com/market/hqpublish/models"
 	"haina.com/market/hqpublish/models/publish"
+	"haina.com/market/hqpublish/models/publish/kline"
 	"haina.com/share/logging"
 )
 
@@ -32,37 +33,39 @@ func (this *Kline) DayPB(c *gin.Context, request *protocol.RequestHisK) {
 
 func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHisK) (*protocol.PayloadHisK, error) {
 	var ret *protocol.PayloadHisK
-	dlines, err := publish.NewKLine(redisKey).GetHisKLineAll(request)
+	dlines, err := kline.NewKLine(redisKey).GetHisKLineAll(request)
 	if err != nil {
 		return nil, err
 	}
 
-	//新增K线的判断   待改。。。。
-	//if publish.IsHQpostRunOver() {
-	if models.GetCurrentTimeHM()%10000 < 1530 {
-		switch redisKey {
-		case publish.REDISKEY_SECURITY_HDAY:
-			maybeAddKline(dlines)
-			break
-		case publish.REDISKEY_SECURITY_HWEEK:
-			maybeAddWeekLine(dlines)
-			break
-		case publish.REDISKEY_SECURITY_HMONTH:
-			maybeAddMonthLine(dlines)
-			break
-		case publish.REDISKEY_SECURITY_HYEAR:
-			maybeAddYearLine(dlines)
-			break
-		}
-	}
+	models.GetASCStruct(dlines) //升序排序
+
+	//	//新增K线的判断   待改。。。。
+	//	//if over, err := kline.IsHQpostRunOver(); err != nil && over {
+	//	if models.GetCurrentTimeHM()%10000 < 1530 {
+	//		switch redisKey {
+	//		case publish.REDISKEY_SECURITY_HDAY:
+	//			maybeAddKline(dlines)
+	//			break
+	//		case publish.REDISKEY_SECURITY_HWEEK:
+	//			maybeAddWeekLine(dlines)
+	//			break
+	//		case publish.REDISKEY_SECURITY_HMONTH:
+	//			maybeAddMonthLine(dlines)
+	//			break
+	//		case publish.REDISKEY_SECURITY_HYEAR:
+	//			maybeAddYearLine(dlines)
+	//			break
+	//		}
+	//	}
 
 	total := int32(len(*dlines))
 
 	if request.Num > total {
 		request.Num = total
 	}
-	models.GetASCStruct(dlines) //升序排序
-	if request.Num == 0 {       //num==0, 获取全部
+
+	if request.Num == 0 { //num==0, 获取全部
 		ret = &protocol.PayloadHisK{
 			SID:   request.SID,
 			Type:  request.Type,

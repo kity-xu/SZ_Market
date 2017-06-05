@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"haina.com/market/hqinit/config"
+	"haina.com/share/lib"
 
 	sec "ProtocolBuffer/format/securitytable"
 
@@ -22,14 +23,9 @@ import (
 func UpdateIndexTable(cfg *config.AppConfig) {
 	var stype, status string
 
-	stocks, err := tb_security.GetStockIndexTableFromMG()
-	if err != nil {
-		logging.Error("%v", err.Error())
-		return
-	}
-
+	stocks := tb_security.GetStockIndexTableFromMG()
 	buffer := new(bytes.Buffer)
-
+	var err error
 	for _, v := range *stocks {
 		stype, err = HainaSecurityType(strconv.Itoa(int(v.NSID)), v.SzSType)
 		if err != nil {
@@ -72,8 +68,6 @@ func UpdateIndexTable(cfg *config.AppConfig) {
 		buf.SzCUR = StringToByte_4(v.SzCUR)
 		buf.SzIndusCode = StringToByte_INDUSTRY_CODE_LEN(v.SzIndusCode)
 
-		//logging.Debug("stype:%v----status:%v", stype, status)
-
 		if err := binary.Write(buffer, binary.LittleEndian, buf); err != nil {
 			logging.Fatal(err)
 		}
@@ -91,7 +85,7 @@ func UpdateIndexTable(cfg *config.AppConfig) {
 		}
 
 	}
-
+	lib.CheckDir(cfg.File.Path)
 	file, err := OpenFile(cfg.File.Path + cfg.File.IndexName)
 	if err != nil {
 		return

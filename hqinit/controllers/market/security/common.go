@@ -81,9 +81,9 @@ const (
 	SECURITY_TYPE_AZF        = '7' ///< A股增发
 	SECURITY_TYPE_PG         = '8' ///< 配股
 	///证券类型第3字节
-	SECURITY_TYPE_ZB       = '1' ///< A股主板
-	SECURITY_TYPE_ZXB      = '2' ///< A股中小板
-	SECURITY_TYPE_CYB      = '3' ///< A股创业板
+	SECURITY_TYPE_ZB       = 'Z' ///< A股主板
+	SECURITY_TYPE_ZXB      = 'X' ///< A股中小板
+	SECURITY_TYPE_CYB      = 'C' ///< A股创业板
 	SECURITY_TYPE_FUND_ETF = 'E' ///< ETF基金类
 	SECURITY_TYPE_FUND_LOF = 'L' ///< LOF基金类
 )

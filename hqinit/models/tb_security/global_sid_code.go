@@ -1,34 +1,25 @@
-//股票代码表
+// 证券代码表
 package tb_security
 
 import (
-	"gopkg.in/mgo.v2/bson"
-	"haina.com/market/hqinit/models"
+	"haina.com/market/hqinit/servers"
 	"haina.com/share/logging"
-	"haina.com/share/store/mongo"
 )
 
 type SecurityCode struct {
 	SID int32 `bson:"nSID"`
 }
 
-func GetSecuritCodeyModel() *mongo.Model {
-	return &mongo.Model{
-		TableName: models.MOGON_SECURITY_TABLE,
-	}
-}
-
-//股票代码表
-func GetSecurityCodeTableFromMG() (*[]*SecurityCode, error) {
+// 证券代码表
+func GetSecurityCodeTableFromMG() *[]*SecurityCode {
 	var codes []*SecurityCode
-	mogo := GetSecuritCodeyModel()
-
-	exps := bson.M{}
-	err := mogo.GetMulti(exps, &codes, 0, "nSID")
-	if err != nil {
-		logging.Error("%v", err.Error())
+	tagS := new(servers.TagSecurityInfo).GetStockInfo("s1")
+	for _, item := range tagS {
+		var sc SecurityCode
+		sc.SID = item.NSID
+		codes = append(codes, &sc)
 	}
 	logging.Debug("lenght of sidcode tables:%v", len(codes))
 
-	return &codes, err
+	return &codes
 }

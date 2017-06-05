@@ -7,11 +7,12 @@ import (
 	. "haina.com/market/hqpublish/controllers"
 	"haina.com/market/hqpublish/models"
 	"haina.com/market/hqpublish/models/publish"
+	"haina.com/market/hqpublish/models/publish/kline"
 	"haina.com/share/logging"
 )
 
 func (this *Kline) MinJson_01(c *gin.Context, request *protocol.RequestHisK) {
-	reply, err := this.PayLoadMinLineData(publish.REDISKEY_SECURITY_HMIN, request)
+	reply, err := this.PayLoadMinLineData(publish.REDISKEY_SECURITY_HMIN1, request)
 	if err != nil {
 		logging.Error("%v", err.Error())
 		WriteJson(c, 40002, nil)
@@ -21,7 +22,7 @@ func (this *Kline) MinJson_01(c *gin.Context, request *protocol.RequestHisK) {
 }
 
 func (this *Kline) MinPB_01(c *gin.Context, request *protocol.RequestHisK) {
-	reply, err := this.PayLoadMinLineData(publish.REDISKEY_SECURITY_HMIN, request)
+	reply, err := this.PayLoadMinLineData(publish.REDISKEY_SECURITY_HMIN1, request)
 	if err != nil {
 		logging.Error("%v", err.Error())
 		WriteDataErrCode(c, 40002)
@@ -32,7 +33,7 @@ func (this *Kline) MinPB_01(c *gin.Context, request *protocol.RequestHisK) {
 
 func (this *Kline) PayLoadMinLineData(redisKey string, request *protocol.RequestHisK) (*protocol.PayloadHisK, error) {
 	var ret *protocol.PayloadHisK
-	mlines, err := publish.NewHMinKLine(redisKey).GetHMinKLineAll(request)
+	mlines, err := kline.NewHMinKLine(redisKey).GetHMinKLineAll(request)
 	if err != nil {
 		return nil, err
 	}

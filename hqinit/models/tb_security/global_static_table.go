@@ -2,24 +2,17 @@
 package tb_security
 
 import (
-	"gopkg.in/mgo.v2/bson"
-	"haina.com/market/hqinit/models"
+	"haina.com/market/hqinit/servers"
 	"haina.com/share/logging"
-	"haina.com/share/store/mongo"
 )
 
 type TagStockStatic struct {
-	NSID           int32  `bson:"nSID"`           // 证券ID
-	SzSType        string `bson:"szSType"`        // 证券类型
-	SzStatus       string `bson:"szStatus"`       // 证券状态
-	NListDate      int32  `bson:"nListDate"`      // 上市日期
-	NLastTradeDate int32  `bson:"nLastTradeDate"` // 最近正常交易日期
-	NDelistDate    int32  `bson:"nDelistDate"`    // 退市日期
-
-	//NPreClose int32 `bson:"nPreClose"` // 前收价(*10000)
-	//NHighLimitPx int32 `bson:"nHighLimitPx"` // 涨停价格(*10000)    // 作废
-	//NLowLimitPx  int32 `bson:"nLowLimitPx"`  // 跌停价格(*10000)    // 作废
-
+	NSID              int32   `bson:"nSID"`              // 证券ID
+	SzSType           string  `bson:"szSType"`           // 证券类型
+	SzStatus          string  `bson:"szStatus"`          // 证券状态
+	NListDate         int32   `bson:"nListDate"`         // 上市日期
+	NLastTradeDate    int32   `bson:"nLastTradeDate"`    // 最近正常交易日期
+	NDelistDate       int32   `bson:"nDelistDate"`       // 退市日期
 	LlCircuShare      int64   `bson:"llCircuShare"`      // 流通盘
 	LlTotalShare      int64   `bson:"llTotalShare"`      // 总股本
 	LlLast5Volume     int64   `bson:"llLast5Volume"`     // 最近5日成交总量(股)
@@ -37,23 +30,37 @@ type TagStockStatic struct {
 	NQuickMovingRatio int32   `bson:"nQuickMovingRatio"` // 速动比例
 }
 
-func GetStockStaticModel() *mongo.Model {
-	return &mongo.Model{
-		TableName: models.MOGON_STATIC_TABLE,
-	}
-}
-
 //股票代码表
-func GetSecurityStaticTableFromMG() (*[]*TagStockStatic, error) {
+func GetSecurityStaticTableFromMG() *[]*TagStockStatic {
 	var tags []*TagStockStatic
-	mogo := GetStockStaticModel()
 
-	exps := bson.M{}
-	err := mogo.GetMulti(exps, &tags, 0, "nSID")
-	if err != nil {
-		logging.Error("%v", err.Error())
+	stat := new(servers.TagStockStatic).GetStaticDataList()
+	for _, ite := range stat {
+		var tssc TagStockStatic
+		tssc.NSID = ite.NSID
+		tssc.SzSType = ite.SzSType
+		tssc.SzStatus = ite.SzStatus
+		tssc.NListDate = ite.NListDate
+		tssc.NLastTradeDate = ite.NLastTradeDate
+		tssc.NDelistDate = ite.NDelistDate
+		tssc.LlCircuShare = ite.LlCircuShare
+		tssc.LlTotalShare = ite.LlTotalShare
+		tssc.LlLast5Volume = ite.LlLast5Volume
+		tssc.NEPS = ite.NEPS
+		tssc.LlTotalProperty = ite.LlTotalProperty
+		tssc.LlFlowProperty = ite.LlFlowProperty
+		tssc.NAVPS = ite.NAVPS
+		tssc.LlMainIncoming = ite.LlMainIncoming
+		tssc.LlMainProfit = ite.LlMainProfit
+		tssc.LlTotalProfit = ite.LlTotalProfit
+		tssc.LlNetProfit = ite.LlNetProfit
+		tssc.NHolders = ite.NHolders
+		tssc.NReportDate = ite.NReportDate
+		tssc.NCurrentRatio = ite.NCurrentRatio
+		tssc.NQuickMovingRatio = ite.NQuickMovingRatio
+		tags = append(tags, &tssc)
 	}
 	logging.Debug("lenght of security static data tables:%v", len(tags))
 
-	return &tags, err
+	return &tags
 }
