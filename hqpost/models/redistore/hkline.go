@@ -2,13 +2,14 @@
 package redistore
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
 	. "haina.com/share/models"
 
 	"ProtocolBuffer/projects/hqpost/go/protocol"
+
+	"haina.com/market/hqpost/models/filestore"
 
 	"haina.com/market/hqpost/models"
 
@@ -44,13 +45,9 @@ func (this *HKLine) LPushHisKLine(sid int32, line *protocol.KInfo) error {
 	return nil
 }
 
-//Select
-func (this *HKLine) LRangeHisKLine(sid int32, num int, table *[]protocol.KInfo) error {
-	if num < 1 {
-		return errors.New("Invalid request parameters num...")
-	}
+func (this *HKLine) UpdateWeekKLineToRedis(sid int32, today *protocol.KInfo) error {
 	key := fmt.Sprintf(this.CacheKey, sid)
-	ss, err := redis.LRange(key, 0, num-1)
+	ss, err := redis.LRange(key, 0, 0)
 	if err != nil {
 		return err
 	}
@@ -58,14 +55,138 @@ func (this *HKLine) LRangeHisKLine(sid int32, num int, table *[]protocol.KInfo) 
 		return models.ERROR_REDIS_LIST_NULL
 	}
 
-	for _, by := range ss {
-		kinfo := protocol.KInfo{}
-		if err := proto.Unmarshal([]byte(by), &kinfo); err != nil {
+	var kinfo protocol.KInfo
+	if err := proto.Unmarshal([]byte(ss[0]), &kinfo); err != nil {
+		return err
+	}
+
+	b1, _ := filestore.DateAdd(kinfo.NTime) //找到该日期所在周日的那天
+	b2, _ := filestore.DateAdd(today.NTime)
+
+	if b1.Equal(b2) { //同属一周
+		result := compareKInfo(&kinfo, today)
+
+		data, err := proto.Marshal(result)
+		if err != nil {
+			logging.Error("Marshal error...", err.Error())
 			return err
 		}
-		*table = append(*table, kinfo)
+
+		if err = redis.LSet(key, 0, data); err != nil {
+			logging.Error("Lset error...", err.Error())
+			return err
+		}
+		return nil
+	} else { //不属于同周
+		result := *today
+		result.NPreCPx = kinfo.NLastPx //昨收价
+
+		data, err := proto.Marshal(&result)
+		if err != nil {
+			logging.Error("Marshal error...", err.Error())
+			return err
+		}
+
+		if err = redis.Lpush(key, data); err != nil {
+			logging.Error("Lpush error...", err.Error())
+			return err
+		}
+		return nil
 	}
-	return nil
+}
+
+func (this *HKLine) UpdateMonthKLineToRedis(sid int32, today *protocol.KInfo) error {
+	key := fmt.Sprintf(this.CacheKey, sid)
+	ss, err := redis.LRange(key, 0, 0)
+	if err != nil {
+		return err
+	}
+	if len(ss) == 0 {
+		return models.ERROR_REDIS_LIST_NULL
+	}
+
+	var kinfo protocol.KInfo
+	if err := proto.Unmarshal([]byte(ss[0]), &kinfo); err != nil {
+		return err
+	}
+
+	if kinfo.NTime/100 == today.NTime/100 { //同属一月
+		result := compareKInfo(&kinfo, today)
+
+		data, err := proto.Marshal(result)
+		if err != nil {
+			logging.Error("Marshal error...", err.Error())
+			return err
+		}
+
+		if err = redis.LSet(key, 0, data); err != nil {
+			logging.Error("Lset error...", err.Error())
+			return err
+		}
+		return nil
+	} else { //不属于同月
+		result := *today
+		result.NPreCPx = kinfo.NLastPx //昨收价
+
+		data, err := proto.Marshal(&result)
+		if err != nil {
+			logging.Error("Marshal error...", err.Error())
+			return err
+		}
+
+		if err = redis.Lpush(key, data); err != nil {
+			logging.Error("Lpush error...", err.Error())
+			return err
+		}
+		return nil
+	}
+}
+
+func (this *HKLine) UpdateYearKLineToRedis(sid int32, today *protocol.KInfo) error {
+	key := fmt.Sprintf(this.CacheKey, sid)
+	ss, err := redis.LRange(key, 0, 0)
+	if err != nil {
+		return err
+	}
+	if len(ss) == 0 {
+		return models.ERROR_REDIS_LIST_NULL
+	}
+
+	var kinfo protocol.KInfo
+	if err := proto.Unmarshal([]byte(ss[0]), &kinfo); err != nil {
+		return err
+	}
+
+	if kinfo.NTime/10000 == today.NTime/10000 { //同属一年
+		result := compareKInfo(&kinfo, today)
+
+		data, err := proto.Marshal(result)
+		if err != nil {
+			logging.Error("Marshal error...", err.Error())
+			return err
+		}
+
+		if err = redis.LSet(key, 0, data); err != nil {
+			logging.Error("Lset error...", err.Error())
+			return err
+		}
+		return nil
+	} else { //不属于同年
+		result := *today
+		result.NPreCPx = kinfo.NLastPx //昨收价
+
+		data, err := proto.Marshal(&result)
+		if err != nil {
+			logging.Error("Marshal error...", err.Error())
+			return err
+		}
+
+		if err = redis.Lpush(key, data); err != nil {
+			logging.Error("Lpush error...", err.Error())
+			return err
+		}
+		return nil
+	}
 }
 
 //Update
@@ -82,7 +203,7 @@ func (this *HKLine) LSetHisKLine(sid int32, latest *protocol.KInfo) error {
 }
 
 //比较历史最新和当天
-func CompareKInfo(tmp *protocol.KInfo, today *protocol.KInfo) *protocol.KInfo {
+func compareKInfo(tmp *protocol.KInfo, today *protocol.KInfo) *protocol.KInfo {
 	var swap protocol.KInfo
 
 	swap.NSID = tmp.NSID

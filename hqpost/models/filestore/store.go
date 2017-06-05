@@ -24,7 +24,7 @@ func UpdateMonthLineToFile(filename string, today *protocol.KInfo) error {
 	size := binary.Size(&tmp)
 	bs := make([]byte, size)
 
-	file, err := os.OpenFile(filename, os.O_RDWR|os.O_APPEND, 0666)
+	file, err := os.OpenFile(filename, os.O_RDWR, 0666)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func UpdateYearLineToFile(filename string, today *protocol.KInfo) error {
 	size := binary.Size(&tmp)
 	bs := make([]byte, size)
 
-	file, err := os.OpenFile(filename, os.O_RDWR|os.O_APPEND, 0666)
+	file, err := os.OpenFile(filename, os.O_RDWR, 0666)
 	if err != nil {
 		return err
 	}
@@ -117,7 +117,7 @@ func UpdateWeekLineToFile(filename string, today *protocol.KInfo) error {
 	size := binary.Size(&tmp)
 	bs := make([]byte, size)
 
-	file, err := os.OpenFile(filename, os.O_RDWR|os.O_APPEND, 0666)
+	file, err := os.OpenFile(filename, os.O_RDWR, 0666)
 	if err != nil {
 		return err
 	}
@@ -212,7 +212,7 @@ func WiteHainaFileStore(filepath string, ktable *protocol.KInfoTable) error {
 			return err
 		}
 	}
-	file, err := os.OpenFile(filepath, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
+	file, err := os.OpenFile(filepath, os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
 		return err
 	}

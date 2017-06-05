@@ -40,24 +40,24 @@ func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHi
 
 	models.GetASCStruct(dlines) //升序排序
 
-	//	//新增K线的判断   待改。。。。
-	//	//if over, err := kline.IsHQpostRunOver(); err != nil && over {
-	//	if models.GetCurrentTimeHM()%10000 < 1530 {
-	//		switch redisKey {
-	//		case publish.REDISKEY_SECURITY_HDAY:
-	//			maybeAddKline(dlines)
-	//			break
-	//		case publish.REDISKEY_SECURITY_HWEEK:
-	//			maybeAddWeekLine(dlines)
-	//			break
-	//		case publish.REDISKEY_SECURITY_HMONTH:
-	//			maybeAddMonthLine(dlines)
-	//			break
-	//		case publish.REDISKEY_SECURITY_HYEAR:
-	//			maybeAddYearLine(dlines)
-	//			break
-	//		}
-	//	}
+	//新增K线的判断   待改。。。。
+	if over, err := kline.IsHQpostRunOver(); err != nil && over {
+		//if models.GetCurrentTimeHM()%10000 < 1530 {
+		switch redisKey {
+		case publish.REDISKEY_SECURITY_HDAY:
+			maybeAddKline(dlines)
+			break
+		case publish.REDISKEY_SECURITY_HWEEK:
+			maybeAddWeekLine(dlines)
+			break
+		case publish.REDISKEY_SECURITY_HMONTH:
+			maybeAddMonthLine(dlines)
+			break
+		case publish.REDISKEY_SECURITY_HYEAR:
+			maybeAddYearLine(dlines)
+			break
+		}
+	}
 
 	total := int32(len(*dlines))
 

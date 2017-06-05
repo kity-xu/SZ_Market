@@ -38,20 +38,12 @@ func (this *Security) YearLine() {
 					logging.Error("%v", err.Error())
 				}
 
-				var ss []protocol.KInfo
-				if err = rstore.LRangeHisKLine(single.Sid, 1, &ss); err != nil {
+				if err = rstore.UpdateYearKLineToRedis(single.Sid, single.today); err != nil {
 					if err != models.ERROR_REDIS_LIST_NULL {
-						logging.Error("%v", err.Error())
 						return
 					} else {
 						continue
 					}
-				}
-				latest := redistore.CompareKInfo(&ss[0], single.today)
-
-				if err := rstore.LSetHisKLine(single.Sid, latest); err != nil {
-					logging.Error("%v", err.Error())
-					return
 				}
 			}
 		}
