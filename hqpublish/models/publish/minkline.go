@@ -26,8 +26,9 @@ var (
 )
 
 type MinKLine struct {
-	Model   `db:"-"`
-	Compare compMinKline
+	Model    `db:"-"`
+	Compare  compMinKline
+	CacheTTL int
 }
 
 type compMinKline func(k *pro.KInfo, req *pro.RequestMinK) bool
@@ -45,7 +46,8 @@ func NewMinKLine() *MinKLine {
 		Model: Model{
 			CacheKey: REDISKEY_SECURITY_MIN,
 		},
-		Compare: compareMinKline,
+		Compare:  compareMinKline,
+		CacheTTL: 30,
 	}
 }
 
@@ -241,22 +243,22 @@ func (this MinKLine) Decode(bs []byte) ([]*pro.KInfo, error) {
 func (this MinKLine) SaveToCache(key string, obj *pro.PayloadMinK) {
 	if obj == nil {
 		if p, err := ctrl.MakeRespDataByPB(40002, 0, nil); err == nil {
-			SetCachePB(key, TTL_REDISKEY_SECURITY_MIN, p)
+			SetCachePB(key, this.CacheTTL, p)
 		}
 		if j, err := ctrl.MakeRespJson(40002, nil); err == nil {
-			SetCacheJson(key, TTL_REDISKEY_SECURITY_MIN, j)
+			SetCacheJson(key, this.CacheTTL, j)
 		}
 	} else {
 		if p, err := ctrl.MakeRespDataByPB(200, pro.HAINA_PUBLISH_CMD_ACK_MINKLINE, obj); err == nil {
-			SetCachePB(key, TTL_REDISKEY_SECURITY_MIN, p)
+			SetCachePB(key, this.CacheTTL, p)
 		}
 		if j, err := ctrl.MakeRespJson(200, obj); err == nil {
-			SetCacheJson(key, TTL_REDISKEY_SECURITY_MIN, j)
+			SetCacheJson(key, this.CacheTTL, j)
 		}
 	}
 	// origin
 	if o, err := this.Encode(obj.GetKList()); err == nil {
-		SetCache(key, TTL_REDISKEY_SECURITY_MIN, o)
+		SetCache(key, this.CacheTTL, o)
 	}
 }
 

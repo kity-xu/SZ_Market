@@ -29,7 +29,8 @@ var (
 )
 
 type MarketStatus struct {
-	Model `db:"-"`
+	Model    `db:"-"`
+	CacheTTL int
 }
 
 func NewMarketStatus() *MarketStatus {
@@ -37,6 +38,7 @@ func NewMarketStatus() *MarketStatus {
 		Model: Model{
 			CacheKey: REDISKEY_MARKET_STATUS,
 		},
+		CacheTTL: 3,
 	}
 }
 
@@ -102,7 +104,7 @@ func (this MarketStatus) GetSingle(mid int32) (*protocol.MarketStatus, error) {
 	}
 
 	if err == nil {
-		SetCache(key, TTL_REDISKEY_MARKETSTATUS, bin)
+		SetCache(key, this.CacheTTL, bin)
 	}
 	return this.Decode(bin)
 }

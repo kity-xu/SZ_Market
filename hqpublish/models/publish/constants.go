@@ -9,6 +9,7 @@ var (
 	ERROR_REDIS_LIST_NULL  = errors.New("redis list is null")
 	ERROR_KLINE_BEGIN_TIME = errors.New("error's kline begin time")
 	ERROR_KLINE_DATA_NULL  = errors.New("kline data is null")
+	ERROR_INVALID_DATA     = errors.New("Invalid data or data is null")
 
 	INVALID_FILE_PATH    = errors.New("Invalid file path")
 	INVALID_REQUEST_PARA = errors.New("Invalid request parameter type")
@@ -44,11 +45,9 @@ const (
 	REDISKEY_SECURITY_MIN = "hq:st:min:%d" ///<证券分钟线数据(参数：sid) (calc写入)
 )
 
+/// 分笔成交统计
 const (
-	REDISKEY_SECURITY_CODETABLE_REPLY_TTL = 300
-)
-const (
-	TTL_REDISKEY_MARKETSTATUS = 300
+	REDISKEY_SECURITY_TRADE = "hq:st:trade:%d" ///<证券分笔成交数据(参数：sid) (calc写入)
 )
 
 //历史K线
