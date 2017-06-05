@@ -26,16 +26,26 @@ var (
 )
 
 type MinKLine struct {
-	Model `db:"-"`
+	Model   `db:"-"`
+	Compare compMinKline
 }
 
-const TTL_REDISKEY_SECURITY_MIN = 30 // 暂存，避免合并冲突 constants.go
+type compMinKline func(k *pro.KInfo, req *pro.RequestMinK) bool
+
+func compareMinKline(k *pro.KInfo, req *pro.RequestMinK) bool {
+	if k.NTime%10000 >= req.BeginTime {
+		return true
+	} else {
+		return false
+	}
+}
 
 func NewMinKLine() *MinKLine {
 	return &MinKLine{
 		Model: Model{
 			CacheKey: REDISKEY_SECURITY_MIN,
 		},
+		Compare: compareMinKline,
 	}
 }
 
@@ -147,7 +157,7 @@ func (this MinKLine) GetCacheMinKObj(req *pro.RequestMinK) (*pro.PayloadMinK, er
 
 	kls := make([]*pro.KInfo, 0, 250)
 	for _, k := range ls {
-		if k.NTime >= req.BeginTime {
+		if this.Compare(k, req) {
 			kls = append(kls, k)
 		}
 	}
@@ -256,7 +266,7 @@ func (this MinKLine) NewPayloadMinK(req *pro.RequestMinK, klist []*pro.KInfo) *p
 	}
 	kls := make([]*pro.KInfo, 0, 250)
 	for _, k := range klist {
-		if k.NTime >= req.BeginTime {
+		if this.Compare(k, req) {
 			kls = append(kls, k)
 		}
 	}
