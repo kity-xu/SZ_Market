@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"io"
 
+	. "haina.com/market/hqpublish/models"
 	. "haina.com/share/models"
 
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
 
 	hsgrr "haina.com/share/garyburd/redigo/redis"
 	"haina.com/share/logging"
-	"haina.com/share/store/redis"
 )
 
 var _ = fmt.Println
@@ -76,7 +76,7 @@ func NewStockSnapshot() *StockSnapshot {
 func (this *StockSnapshot) GetStockSnapshot(req *protocol.RequestSnapshot) (*protocol.PayloadSnapshot, error) {
 	key := fmt.Sprintf(this.CacheKey, req.SID)
 
-	bin, err := hsgrr.Bytes(redis.Get(key))
+	bin, err := RedisStore.GetBytes(key)
 	if err != nil {
 		if err == hsgrr.ErrNil {
 			logging.Warning("redis not found key: %v", key)

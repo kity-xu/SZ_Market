@@ -71,18 +71,21 @@
 		<hmin60>hmin60.dat</hmin60>
 	</fileStore>
 	
-	<cacheTTL>						 <!--   单位秒     -->
-	<day>3600</day> 				 <!--   60*60*1   -->
-	<week>43200</week> 				 <!--   60*60*12  -->
-	<month>43200</month>
-	<year>43200</year>
-	
-	<hmin>300</hmin>
-	<hmin1>120</hmin1>					 <!--   60*2      -->
-	<hmin5>300</hmin5>					 <!--   60*5      -->
-	<hmin15>900</hmin15>				 <!--   60*15     -->
-	<hmin30>1800</hmin30>				 <!--   60*30     -->
-	<hmin60>3600</hmin60>   			 <!--   60*60     -->
-	</cacheTTL>
+	<cacheTTL>                          <!--   单位秒     -->
+        <day>3600</day>                 <!--   60*60*1   -->
+        <week>43200</week>              <!--   60*60*12  -->
+        <month>43200</month>
+        <year>43200</year>
+        
+        <hmin>300</hmin>
+        <hmin1>120</hmin1>              <!--   60*2      -->
+        <hmin5>300</hmin5>              <!--   60*5      -->
+        <hmin15>900</hmin15>            <!--   60*15     -->
+        <hmin30>1800</hmin30>           <!--   60*30     -->
+        <hmin60>3600</hmin60>   		<!--   60*60     -->
+        
+        <minK>30</minK>                 <!-- 分钟k线 分时线 -->
+        <marketStatus>3</marketStatus> 	<!-- 市场状态 -->
+    </cacheTTL>
 	
 </configuration>

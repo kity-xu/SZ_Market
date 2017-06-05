@@ -47,12 +47,12 @@ func NewMinKLine() *MinKLine {
 			CacheKey: REDISKEY_SECURITY_MIN,
 		},
 		Compare:  compareMinKline,
-		CacheTTL: 30,
+		CacheTTL: TTL.MinK,
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 分钟K线 缓存 TTL 30秒
+// 分钟K线 缓存
 // BeginTime == 0 作为特例参数 取应答缓存 key.p key.j pb/json应答数据
 // BeginTime != 0 非特例参数   取应答缓存 key 然后封装应答数据
 ////////////////////////////////////////////////////////////////////////////////

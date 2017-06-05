@@ -120,6 +120,9 @@ type CacheTTL struct {
 	Min15 int `xml:"hmin15"`
 	Min30 int `xml:"hmin30"`
 	Min60 int `xml:"hmin60"`
+
+	MinK         int `xml:"minK"`
+	MarketStatus int `xml:"marketStatus"`
 }
 
 type CorsSetting struct {
