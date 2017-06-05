@@ -114,6 +114,7 @@ type CacheTTL struct {
 	Month int `xml:"month"`
 	Year  int `xml:"year"`
 
+	Min   int `xml:"hmin"`
 	Min1  int `xml:"hmin1"`
 	Min5  int `xml:"hmin5"`
 	Min15 int `xml:"hmin15"`

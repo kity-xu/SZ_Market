@@ -1,3 +1,4 @@
+//分时数据（历史分钟线）
 package publish
 
 import (
@@ -11,128 +12,129 @@ import (
 
 	. "haina.com/share/models"
 
-	"ProtocolBuffer/format/kline"
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
 
-	"haina.com/share/logging"
+	//"haina.com/share/logging"
 
 	"github.com/golang/protobuf/proto"
 	. "haina.com/market/hqpublish/models"
 )
 
-type HMinKLine struct {
+type HisMinLine struct {
 	Model `db:"-"`
 }
 
-func NewHMinKLine(redis_key string) *HMinKLine {
-	return &HMinKLine{
+func NewHisMinLine(redis_key string) *HisMinLine {
+	return &HisMinLine{
 		Model: Model{
 			CacheKey: redis_key,
 		},
 	}
 }
 
-// 获取某一NSID的某类历史分钟线（全部）
-func (this *HMinKLine) GetHMinKLineAll(req *protocol.RequestHisK) (*[]*protocol.KInfo, error) {
-	key := fmt.Sprintf(this.CacheKey, req.SID)
-	var kinfolist *[]*kline.KInfo = nil
+func (this *HisMinLine) PayloadHisMinLine(req *protocol.RequestHisMinK) (*protocol.PayloadHisMinK, error) {
+	table, err := this.getHisLineMin_01(req)
 
-	list, err := this.getHMinlineFromeRedisCache(key, req)
-	if err != nil {
-		if err != ERROR_REDIS_LIST_NULL {
-			return nil, err
+	if err != nil || len(table.List) < 1 {
+		return nil, err
+	}
+
+	var tmpTime, count, day, sid int32
+	var kinfos []*protocol.KInfo
+
+	for i := len(table.List) - 1; i > 0; i-- {
+		if tmpTime == 0 {
+			tmpTime = table.List[i].NTime / 10000
+			kinfos = append(kinfos, table.List[i])
+			sid = table.List[i].NSID
+			count++
+			continue
 		}
-		kinfolist, err = this.getHMinlineFromeFileStore(key, req)
+
+		if tmpTime != table.List[i].NTime/10000 {
+			day++
+			if req.DayNum == day {
+				break
+			}
+		}
+
+		count++
+		kinfos = append(kinfos, table.List[i])
+		tmpTime = table.List[i].NTime / 10000
+	}
+
+	GetASCStruct(&kinfos) //升序排序
+
+	hismin := &protocol.PayloadHisMinK{
+		SID:    sid,
+		DayNum: day,
+		Num:    count,
+		KList:  kinfos,
+	}
+	return hismin, nil
+}
+
+// 获取某一NSID的某类历史分钟线（全部）
+func (this *HisMinLine) getHisLineMin_01(req *protocol.RequestHisMinK) (*protocol.KInfoTable, error) {
+	key := fmt.Sprintf(this.CacheKey, req.SID)
+	var (
+		blist []byte
+		err   error
+	)
+
+	blist, err = GetCache(key)
+	if err != nil {
+		blist, err = this.getHisMin01_FromeFileStore(req)
 		if err != nil {
 			return nil, err
 		}
-	}
 
-	var ktale []*protocol.KInfo
-	if list != nil {
-		for _, dayk := range list.List {
-			for _, v := range dayk.List { //某一日内的分钟K线
-				kinfo := &protocol.KInfo{
-					NSID:     v.NSID,
-					NTime:    v.NTime,
-					NPreCPx:  v.NPreCPx,
-					NOpenPx:  v.NOpenPx,
-					NHighPx:  v.NHighPx,
-					NLowPx:   v.NLowPx,
-					NLastPx:  v.NLastPx,
-					LlVolume: v.LlVolume,
-					LlValue:  v.LlValue,
-					NAvgPx:   v.NAvgPx,
-				}
-				ktale = append(ktale, kinfo)
-			}
-		}
-	} else if kinfolist != nil {
-		for _, v := range *kinfolist {
-			kinfo := &protocol.KInfo{
-				NSID:     v.NSID,
-				NTime:    v.NTime,
-				NPreCPx:  v.NPreCPx,
-				NOpenPx:  v.NOpenPx,
-				NHighPx:  v.NHighPx,
-				NLowPx:   v.NLowPx,
-				NLastPx:  v.NLastPx,
-				LlVolume: v.LlVolume,
-				LlValue:  v.LlValue,
-				NAvgPx:   v.NAvgPx,
-			}
-			ktale = append(ktale, kinfo)
-		}
-	} else {
-		return nil, ERROR_KLINE_DATA_NULL
-	}
-	return &ktale, nil
-}
-
-func (this *HMinKLine) getHMinlineFromeRedisCache(key string, req *protocol.RequestHisK) (*kline.HMinTable, error) {
-	var ktable = &kline.HMinTable{}
-	bs, err := GetCache(key)
-	if err != nil { //错误或没找到
-		if err = getHMinlineFromeRedisStore(key, ktable); err != nil {
+		ks, err := bytesUnMarshal(blist)
+		if err != nil {
 			return nil, err
 		}
 
-		if len(ktable.List) < 1 {
-			return nil, READ_REDIS_STORE_NULL
+		table := &protocol.KInfoTable{
+			List: *ks,
 		}
 
-		if err = this.setPaylodToRedisCache(key, req.Type, ktable); err != nil {
-			logging.Error("%v", err.Error())
-		}
-	} else {
-		if err = proto.Unmarshal(bs, ktable); err != nil {
+		bs, err := proto.Marshal(table)
+		if err != nil {
 			return nil, err
 		}
-	}
-	return ktable, nil
-}
 
-func getHMinlineFromeRedisStore(key string, table *kline.HMinTable) error {
-	ss, err := RedisStore.LRange(key, 0, -1)
-	if err != nil {
-		return err
-	}
+		SetCache(key, TTL.Min, bs)
 
-	if len(ss) == 0 {
-		return ERROR_REDIS_LIST_NULL
-	}
-
-	for _, v := range ss {
-		kinfo := &kline.HMinLineDay{}
-		if err := proto.Unmarshal([]byte(v), kinfo); err != nil {
-			return err
+		return table, nil
+	} else {
+		table := &protocol.KInfoTable{}
+		err = proto.Unmarshal(blist, table)
+		if err != nil {
+			return nil, err
 		}
-		table.List = append(table.List, kinfo)
+		return table, nil
 	}
-	return nil
 }
 
-func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.RequestHisK) (*[]*kline.KInfo, error) {
+func bytesUnMarshal(data []byte) (*[]*protocol.KInfo, error) {
+	var table []*protocol.KInfo
+	var line protocol.KInfo
+
+	size := binary.Size(&line)
+
+	for i := 0; i < len(data); i += size {
+		v := data[i : i+size]
+		kinfo := protocol.KInfo{}
+		buffer := bytes.NewBuffer(v)
+		if err := binary.Read(buffer, binary.LittleEndian, &kinfo); err != nil && err != io.EOF {
+			return nil, err
+		}
+		table = append(table, &kinfo)
+	}
+	return &table, nil
+}
+
+func (this *HisMinLine) getHisMin01_FromeFileStore(req *protocol.RequestHisMinK) ([]byte, error) {
 	var dir, filename string
 
 	market := req.SID / 1000000
@@ -144,115 +146,16 @@ func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.Reque
 		return nil, INVALID_FILE_PATH
 	}
 
-	switch protocol.HAINA_KLINE_TYPE(req.Type) {
-	case protocol.HAINA_KLINE_TYPE_KMIN1:
-		filename = dir + FStore.Min
-		break
-	case protocol.HAINA_KLINE_TYPE_KMIN5:
-		filename = dir + FStore.Min5
-		break
-	case protocol.HAINA_KLINE_TYPE_KMIN15:
-		filename = dir + FStore.Min15
-		break
-	case protocol.HAINA_KLINE_TYPE_KMIN30:
-		filename = dir + FStore.Min30
-		break
-	case protocol.HAINA_KLINE_TYPE_KMIN60:
-		filename = dir + FStore.Min60
-		break
-	default:
-		return nil, INVALID_REQUEST_PARA
-	}
+	filename = dir + FStore.Min
 
 	if !lib.IsFileExist(filename) {
 		return nil, INVALID_FILE_PATH
 	}
 
-	///do something
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	var line kline.KInfo
-	size := binary.Size(&line)
-
-	var table []*kline.KInfo
-	var cache *kline.HMinLineDay //指针
-	var cacheTable = &kline.HMinTable{}
-
-	var tmpTime int32
-
-	lengh := len(data)
-
-	for i := 0; i < lengh; i += size {
-		v := data[i : i+size]
-		kinfo := kline.KInfo{}
-		buffer := bytes.NewBuffer(v)
-		if err = binary.Read(buffer, binary.LittleEndian, &kinfo); err != nil && err != io.EOF {
-			return nil, err
-		}
-		table = append(table, &kinfo)
-
-		if tmpTime == 0 {
-			cache = &kline.HMinLineDay{}
-			cache.List = append(cache.List, &kinfo)
-			tmpTime = kinfo.NTime
-			continue
-		}
-
-		if tmpTime == kinfo.NTime {
-			cache.List = append(cache.List, &kinfo)
-			if i == lengh-size { //防止最后一天的数据丢失、
-				cache.Date = 20*1000000 + tmpTime/10000
-				cacheTable.List = append(cacheTable.List, cache)
-			}
-		} else {
-			cache.Date = 20*1000000 + tmpTime/10000
-			cacheTable.List = append(cacheTable.List, cache) //得到了一天的分钟线，cache加入cacheTable
-
-			cache = &kline.HMinLineDay{}            //重新创建HMinLineDay结构，cache指向它
-			cache.List = append(cache.List, &kinfo) //本次kinfo加入新cache
-			tmpTime = kinfo.NTime                   //更新时间
-		}
-	}
-
-	logging.Debug("table:%v", table)
-
-	if err = this.setPaylodToRedisCache(key, req.Type, cacheTable); err != nil { //这里文件存储结构转换为redis存储结构
-		logging.Error("%v", err.Error()) //此处不能因为该错误而返回，但又不能忽略错误，故打印
-	}
-	return &table, nil
-}
-
-func (this *HMinKLine) setPaylodToRedisCache(key string, stype int32, table *kline.HMinTable) error {
-	var ttl int
-	switch protocol.HAINA_KLINE_TYPE(stype) {
-	case protocol.HAINA_KLINE_TYPE_KMIN1:
-		ttl = TTL.Min1
-		break
-	case protocol.HAINA_KLINE_TYPE_KMIN5:
-		ttl = TTL.Min5
-		break
-	case protocol.HAINA_KLINE_TYPE_KMIN15:
-		ttl = TTL.Min15
-		break
-	case protocol.HAINA_KLINE_TYPE_KMIN30:
-		ttl = TTL.Min30
-		break
-	case protocol.HAINA_KLINE_TYPE_KMIN60:
-		ttl = TTL.Min60
-		break
-	default:
-		return INVALID_REQUEST_PARA
-	}
-
-	data, err := proto.Marshal(table)
-	if err != nil {
-		return err
-	}
-	if err = SetCache(key, ttl, data); err != nil {
-		return err
-	}
-	return nil
+	return data, nil
 }

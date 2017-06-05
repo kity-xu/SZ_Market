@@ -24,7 +24,7 @@ var (
 
 //所有股票当天的分钟线数据
 func (this *MinKline) HMinLine_1() {
-	rstore1 = redistore.NewHMinKLine(REDISKEY_SECURITY_HMIN)
+	rstore1 = redistore.NewHMinKLine(REDISKEY_SECURITY_HMIN1)
 	mstore = redistore.NewMinKLine(REDISKEY_SECURITY_MIN)
 	this.initBasicMinData()
 }
@@ -79,7 +79,7 @@ func (this *MinKline) getBasicMinDataToday(sid int32) (*SingleMin, error) {
 
 //当天分钟线并入历史
 func (this *MinKline) mergeMin(sid int32, rs *redistore.HMinKLine, dmin *[]*protocol.KInfo) {
-	if rs.Ktype != REDISKEY_SECURITY_HMIN { //如果不是历史1分钟线的话，进行redis操作（也就是说minline_1不进redis）
+	if rs.Ktype != REDISKEY_SECURITY_HMIN1 { //如果不是历史1分钟线的话，进行redis操作（也就是说minline_1不进redis）
 		kinfo := protocol.HMinLineDay{
 			Date: GetDateToday(),
 			List: *dmin,
@@ -92,7 +92,7 @@ func (this *MinKline) mergeMin(sid int32, rs *redistore.HMinKLine, dmin *[]*prot
 
 	//文件
 	switch rs.Ktype {
-	case REDISKEY_SECURITY_HMIN:
+	case REDISKEY_SECURITY_HMIN1:
 		if e := AppendFile(sid, cfg.File.Min, dmin); e != nil {
 			logging.Error("%v", e.Error())
 			return

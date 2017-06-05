@@ -4,7 +4,6 @@ package redistore
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	. "haina.com/share/models"
@@ -110,8 +109,9 @@ func CompareKInfo(tmp *protocol.KInfo, today *protocol.KInfo) *protocol.KInfo {
 func (this *HKLine) HQpostExecutedTime() {
 	timestamp := time.Now().Unix()
 
-	ss := strconv.FormatInt(timestamp, 10) //int64转string
-
+	tm := time.Unix(timestamp, 0)
+	ss := tm.Format("200601021504")
+	//ss := strconv.FormatInt(timestamp, 10) //int64转string
 	if err := redis.Set(this.CacheKey, []byte(ss)); err != nil {
 		logging.Error("%v", err.Error())
 	}

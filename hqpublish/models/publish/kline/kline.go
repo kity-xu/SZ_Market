@@ -1,10 +1,11 @@
 //K线
-package publish
+package kline
 
 import (
 	"ProtocolBuffer/format/kline"
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,20 +14,15 @@ import (
 
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
 
+	"haina.com/market/hqpublish/models/publish"
 	sm "haina.com/share/models"
 
 	. "haina.com/market/hqpublish/models"
 	"haina.com/share/lib"
 
 	"github.com/golang/protobuf/proto"
-
-	redigo "haina.com/share/garyburd/redigo/redis"
 	"haina.com/share/logging"
 )
-
-var _ = fmt.Println
-var _ = redigo.Bytes
-var _ = logging.Info
 
 type KLine struct {
 	sm.Model `db:"-"`
@@ -46,7 +42,7 @@ func (this *KLine) GetHisKLineAll(req *protocol.RequestHisK) (*[]*protocol.KInfo
 
 	list, err := this.getHisKlineFromeRedisCache(key, req)
 	if err != nil {
-		if err != ERROR_REDIS_LIST_NULL {
+		if err != publish.ERROR_REDIS_LIST_NULL {
 			return nil, err
 		}
 		list, err = this.getHisKlineFromeFileStore(key, req)
@@ -55,7 +51,7 @@ func (this *KLine) GetHisKLineAll(req *protocol.RequestHisK) (*[]*protocol.KInfo
 		}
 	}
 	if list == nil {
-		return nil, ERROR_KLINE_DATA_NULL
+		return nil, publish.ERROR_KLINE_DATA_NULL
 	}
 
 	var table []*protocol.KInfo
@@ -86,7 +82,7 @@ func getHisKlineFromeRedisStore(key string) (*kline.KInfoTable, error) {
 	}
 
 	if len(ss) == 0 {
-		return nil, ERROR_REDIS_LIST_NULL
+		return nil, publish.ERROR_REDIS_LIST_NULL
 	}
 
 	var table = &kline.KInfoTable{}
@@ -110,7 +106,7 @@ func (this *KLine) getHisKlineFromeFileStore(key string, req *protocol.RequestHi
 	} else if market == 200 {
 		dir = fmt.Sprintf("%s/sz/%d/", FStore.Path, req.SID)
 	} else {
-		return nil, INVALID_FILE_PATH
+		return nil, publish.INVALID_FILE_PATH
 	}
 
 	switch protocol.HAINA_KLINE_TYPE(req.Type) {
@@ -130,11 +126,11 @@ func (this *KLine) getHisKlineFromeFileStore(key string, req *protocol.RequestHi
 		filename = dir + FStore.Year
 		break
 	default:
-		return nil, INVALID_REQUEST_PARA
+		return nil, publish.INVALID_REQUEST_PARA
 	}
 
 	if !lib.IsFileExist(filename) {
-		return nil, INVALID_FILE_PATH
+		return nil, publish.INVALID_FILE_PATH
 	}
 
 	///do something
@@ -214,26 +210,44 @@ func (this *KLine) getHisKlineFromeRedisCache(key string, req *protocol.RequestH
 	return ktable, nil
 }
 
-func getHQpostExecutedTime() int64 {
+func getHQpostExecutedTime() (string, error) {
 
 	ss, err := RedisStore.Get(REDISKEY_HQPOST_EXECUTED_TIME)
 	if err != nil {
-		logging.Error("getHQpostExecutedTime failed.. %v", err.Error())
-		return 0
+		return "", err
 	}
-
-	tm, err := strconv.ParseInt(ss, 10, 64)
-	if err != nil {
-		logging.Error("getHQpostExecutedTime failed.. %v", err.Error())
-		return 0
+	if ss == "" {
+		return "", errors.New("redis get HQpostExecutedTime is null..")
 	}
-
-	return tm
+	return ss, nil
 }
 
-func IsHQpostRunOver() bool {
-	if getHQpostExecutedTime() < time.Now().Unix() { //hqpost 没执行
-		return false
+func IsHQpostRunOver() (bool, error) {
+	ss, err := getHQpostExecutedTime()
+	if err != nil {
+		logging.Error("%v", err.Error())
+		return false, err
 	}
-	return true
+
+	dd, err := strconv.ParseInt(ss, 10, 64)
+	if err != nil {
+		logging.Error("%v", err.Error())
+		return false, err
+	}
+
+	timestamp := time.Now().Unix()
+
+	tm := time.Unix(timestamp, 0)
+	format := tm.Format("200601021504")
+	monment, err := strconv.ParseInt(format, 10, 64)
+	if err != nil {
+		logging.Error("%v", err.Error())
+		return false, err
+	}
+
+	//1530
+	if dd%10000 < monment%10000 { //hqpost更新完毕
+		return true, nil
+	}
+	return false, nil
 }

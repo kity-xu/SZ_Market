@@ -77,6 +77,7 @@
 	<month>43200</month>
 	<year>43200</year>
 	
+	<hmin>300</hmin>
 	<hmin1>120</hmin1>					 <!--   60*2      -->
 	<hmin5>300</hmin5>					 <!--   60*5      -->
 	<hmin15>900</hmin15>				 <!--   60*15     -->

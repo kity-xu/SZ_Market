@@ -18,6 +18,9 @@ func RegPublish(rg *gin.RouterGroup) {
 	// 分钟K线
 	rg.POST("/min", publish.NewMinKLine().POST)
 
+	//历史分钟K线
+	rg.POST("/hismin", publish.NewHisMinLine().POST) //默认pb模式
+
 	// 证券快照
 	rg.POST("/snap", publish.NewStockSnapshot().POST)
 
@@ -28,7 +31,4 @@ func RegPublish(rg *gin.RouterGroup) {
 
 	//历史K线
 	rg.POST("/kline", kline.NewKline().POST) //默认pb模式
-
-	//历史分钟线
-	//	rg.POST("/kmin", hmin.NewKMinline().POST)
 }
