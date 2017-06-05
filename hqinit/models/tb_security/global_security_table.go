@@ -2,14 +2,10 @@
 package tb_security
 
 import (
-	"gopkg.in/mgo.v2/bson"
-	"haina.com/market/hqinit/models"
-	"haina.com/share/logging"
-	"haina.com/share/store/mongo"
+	"haina.com/market/hqinit/servers"
 )
 
 type TagSecurityInfo struct {
-	//SID int32 `bson:"nSID"`
 	NSID        int32  `bson:"nSID"`
 	NMarket     int32  `bson:"nMarket"`     // 市场类型
 	SzSType     string `bson:"szSType"`     // 证券类型
@@ -25,25 +21,27 @@ type TagSecurityInfo struct {
 	SzIndusCode string `bson:"szIndusCode"` // 行业代码
 }
 
-func GetMarketInfoModel() *mongo.Model {
-	return &mongo.Model{
-		TableName: models.MOGON_MARKET_TABLE,
-	}
-}
-
 //市场代码表
-func GetSecurityInfoTableFromMG() (*[]TagSecurityInfo, error) {
-	var secus []TagSecurityInfo
-	mogo := GetMarketInfoModel()
+func GetSecurityInfoTableFromMG() *[]*TagSecurityInfo {
+	var secus []*TagSecurityInfo
 
-	exps := bson.M{
-		"szSType": "101", //A股
+	TagI := new(servers.TagSecurityInfo).GetStockInfo("s2")
+	for _, ite := range TagI {
+		var tsi TagSecurityInfo
+		tsi.NSID = ite.NSID
+		tsi.NMarket = ite.NMarket
+		tsi.SzSType = ite.SzSType
+		tsi.SzStatus = ite.SzStatus
+		tsi.SzSCode = ite.SzSCode
+		tsi.SzSymbol = ite.SzSymbol
+		tsi.SzISIN = ite.SzISIN
+		tsi.SzSName = ite.SzSName
+		tsi.SzSCName = ite.SzSCName
+		tsi.SzDESC = ite.SzDESC
+		tsi.SzPhonetic = ite.SzPhonetic
+		tsi.SzCUR = ite.SzCUR
+		tsi.SzIndusCode = ite.SzIndusCode
+		secus = append(secus, &tsi)
 	}
-	err := mogo.GetMulti(exps, &secus, 0, "nSID")
-	if err != nil {
-		logging.Error("%v", err.Error())
-	}
-	logging.Debug("lenght of security market(include SH、SZ) tables:%v", len(secus))
-
-	return &secus, err
+	return &secus
 }

@@ -13,11 +13,11 @@ import (
 
 	"haina.com/market/hqinit/config"
 
-	. "haina.com/market/hqinit/controllers"
-	"haina.com/share/logging"
-
 	"github.com/golang/protobuf/proto"
+	. "haina.com/market/hqinit/controllers"
 	"haina.com/market/hqinit/models/tb_security"
+	"haina.com/share/lib"
+	"haina.com/share/logging"
 	"haina.com/share/store/redis"
 )
 
@@ -27,7 +27,6 @@ type Market struct {
 }
 
 type TagSecurityName struct {
-	//SID int32 `bson:"nSID"`
 	NSID        int32
 	NMarket     int32                   // 市场类型
 	SzSType     [4]byte                 // 证券类型										len:4
@@ -44,7 +43,7 @@ type TagSecurityName struct {
 }
 
 //市场代码表
-func MarketTable() (*[]tb_security.TagSecurityInfo, error) {
+func MarketTable() *[]*tb_security.TagSecurityInfo {
 	return tb_security.GetSecurityInfoTableFromMG()
 }
 
@@ -56,15 +55,11 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 		sec_sh, sec_sz protocol.PayloadMarketSecurityNameTable
 	)
 
-	table, err := MarketTable()
-	if err != nil {
-		logging.Error("%v", err)
-		return
-	}
+	table := MarketTable()
 
 	//入文件
 	buffer := new(bytes.Buffer)
-
+	var err error
 	for _, v := range *table {
 		stype, err = HainaSecurityType(strconv.Itoa(int(v.NSID)), v.SzSType)
 		if err != nil {
@@ -138,6 +133,7 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 		}
 	}
 	/*************************START******************************/
+	lib.CheckDir(cfg.File.Path)
 	file, err := OpenFile(cfg.File.Path + cfg.File.StockName)
 	if err != nil {
 		return

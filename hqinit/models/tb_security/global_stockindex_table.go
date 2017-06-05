@@ -2,14 +2,10 @@
 package tb_security
 
 import (
-	"gopkg.in/mgo.v2/bson"
-	"haina.com/market/hqinit/models"
-	"haina.com/share/logging"
-	"haina.com/share/store/mongo"
+	"haina.com/market/hqinit/servers"
 )
 
 type StockIndexInfo struct {
-	//SID int32 `bson:"nSID"`
 	NSID        int32  `bson:"nSID"`        //股票指数SID会出现CN2008这种样式[8]byte
 	NMarket     int32  `bson:"nMarket"`     // 市场类型
 	SzSType     string `bson:"szSType"`     // 证券类型
@@ -25,24 +21,26 @@ type StockIndexInfo struct {
 	SzIndusCode string `bson:"szIndusCode"` // 行业代码
 }
 
-func GetStockIndexModel() *mongo.Model {
-	return &mongo.Model{
-		TableName: models.MOGON_MARKET_TABLE,
-	}
-}
-
-func GetStockIndexTableFromMG() (*[]*StockIndexInfo, error) {
+func GetStockIndexTableFromMG() *[]*StockIndexInfo {
 	var table []*StockIndexInfo
-	mogo := GetStockIndexModel()
 
-	exps := bson.M{
-		"szSType": "701", //国内指数
+	TagIk := new(servers.TagSecurityInfo).GetStockInfo("s3")
+	for _, ite := range TagIk {
+		var tsi StockIndexInfo
+		tsi.NSID = ite.NSID
+		tsi.NMarket = ite.NMarket
+		tsi.SzSType = ite.SzSType
+		tsi.SzStatus = ite.SzStatus
+		tsi.SzSCode = ite.SzSCode
+		tsi.SzSymbol = ite.SzSymbol
+		tsi.SzISIN = ite.SzISIN
+		tsi.SzSName = ite.SzSName
+		tsi.SzSCName = ite.SzSCName
+		tsi.SzDESC = ite.SzDESC
+		tsi.SzPhonetic = ite.SzPhonetic
+		tsi.SzCUR = ite.SzCUR
+		tsi.SzIndusCode = ite.SzIndusCode
+		table = append(table, &tsi)
 	}
-	err := mogo.GetMulti(exps, &table, 0, "nSID")
-	if err != nil {
-		logging.Error("%v", err.Error())
-	}
-	logging.Debug("lenght of stockindex  tables:%v", len(table))
-
-	return &table, err
+	return &table
 }

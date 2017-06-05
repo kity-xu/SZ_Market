@@ -10,6 +10,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"haina.com/market/hqinit/config"
+	"haina.com/share/lib"
 
 	. "haina.com/market/hqinit/controllers"
 
@@ -42,8 +43,8 @@ type TagStockStatic struct {
 	NQuickMovingRatio int32   // 速动比例
 }
 
-//市场代码表
-func getSecurityStatic() (*[]*tb_security.TagStockStatic, error) {
+// 静态数据
+func getSecurityStatic() *[]*tb_security.TagStockStatic {
 	return tb_security.GetSecurityStaticTableFromMG()
 }
 
@@ -52,12 +53,8 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 	var (
 		stype, status string
 	)
-	stable, err := getSecurityStatic()
-	if err != nil {
-		logging.Error("%v", err.Error())
-		return
-	}
-
+	stable := getSecurityStatic()
+	var err error
 	//入文件
 	buffer := new(bytes.Buffer)
 	for _, v := range *stable {
@@ -135,6 +132,7 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 		}
 	}
 	//入文件
+	lib.CheckDir(cfg.File.Path)
 	file, err := OpenFile(cfg.File.Path + cfg.File.StaticName)
 	if err != nil {
 		return
