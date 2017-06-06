@@ -44,7 +44,7 @@ func maybeAddYearLine(reply *[]*protocol.KInfo) {
 			var kinfo = protocol.KInfo{}
 			kinfo = *(*reply)[len(*reply)-1]
 
-			if kinfo.NTime/10000 != today { //不同年
+			if kinfo.NTime/10000 != today/10000 { //不同年
 				kinfo.NTime = today
 				kinfo.LlValue = 0
 				kinfo.LlVolume = 0
@@ -56,7 +56,7 @@ func maybeAddYearLine(reply *[]*protocol.KInfo) {
 			var kinfo = protocol.KInfo{}
 			kinfo = *(*reply)[len(*reply)-1]
 
-			if kinfo.NTime/10000 != today { //不同年
+			if kinfo.NTime/10000 != today/10000 { //不同年
 				kinfo.NTime = today
 				kinfo.LlValue = 0
 				kinfo.LlVolume = 0

@@ -41,7 +41,12 @@ func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHi
 	models.GetASCStruct(dlines) //升序排序
 
 	//新增K线的判断   待改。。。。
-	if over, err := kline.IsHQpostRunOver(); err != nil && over {
+	over, err := kline.IsHQpostRunOver()
+	if err != nil {
+		logging.Debug("err:%v", err.Error())
+	}
+	if !over {
+		//logging.Debug("Create new kline...")
 		//if models.GetCurrentTimeHM()%10000 < 1530 {
 		switch redisKey {
 		case publish.REDISKEY_SECURITY_HDAY:

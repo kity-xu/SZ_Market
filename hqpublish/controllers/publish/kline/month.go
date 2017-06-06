@@ -44,7 +44,7 @@ func maybeAddMonthLine(reply *[]*protocol.KInfo) {
 			var kinfo = protocol.KInfo{}
 			kinfo = *(*reply)[len(*reply)-1]
 
-			if kinfo.NTime/100 != today { //不同月
+			if kinfo.NTime/100 != today/100 { //不同月
 				kinfo.NTime = today
 				kinfo.LlValue = 0
 				kinfo.LlVolume = 0
@@ -56,7 +56,7 @@ func maybeAddMonthLine(reply *[]*protocol.KInfo) {
 			var kinfo = protocol.KInfo{}
 			kinfo = *(*reply)[len(*reply)-1]
 
-			if kinfo.NTime/100 != today { //不同月
+			if kinfo.NTime/100 != today/100 { //不同月
 				kinfo.NTime = today
 				kinfo.LlValue = 0
 				kinfo.LlVolume = 0
