@@ -26,21 +26,28 @@ type TagStockStatic struct {
 	NListDate         int32   // 上市日期
 	NLastTradeDate    int32   // 最近正常交易日期
 	NDelistDate       int32   // 退市日期
-	LlCircuShare      int64   // 流通盘
-	LlTotalShare      int64   // 总股本
+	LlCircuShare      float64 // 流通盘
+	LlTotalShare      float64 // 总股本
 	LlLast5Volume     int64   // 最近5日成交总量(股)
 	NEPS              float32 // 每股收益
 	LlTotalProperty   float64 // 总资产
 	LlFlowProperty    int64   // 流动资产
-	NAVPS             int32   // 每股净值
-	LlMainIncoming    int64   // 主营业务收入
-	LlMainProfit      int64   // 主营业务利润
+	NAVPS             float64 // 每股净值
+	LlMainIncoming    float64 // 主营业务收入
+	LlMainProfit      float64 // 主营业务利润
 	LlTotalProfit     int64   // 利润总额
 	LlNetProfit       int64   // 净利润
 	NHolders          int32   // 股东总数
 	NReportDate       int32   // 发布日期
 	NCurrentRatio     int32   // 流通比率
 	NQuickMovingRatio int32   // 速动比例
+	// 后加
+	NEUndisProfit      float32 // 每股未分配利润
+	NFlowLiab          float32 // 流动负债
+	NTotalLiabilities  float32 // 负债总计
+	NTotalHolderEquity float32 // 股东权益合计
+	NCapitalReserve    float32 // 资本公积金
+	NIncomeInvestments float32 // 投资收益
 }
 
 // 静态数据
@@ -88,6 +95,13 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 			NReportDate:       v.NReportDate,
 			NCurrentRatio:     v.NCurrentRatio,
 			NQuickMovingRatio: v.NQuickMovingRatio,
+
+			NEUndisProfit:      v.NEUndisProfit,
+			NFlowLiab:          v.NFlowLiab,
+			NTotalLiabilities:  v.NTotalLiabilities,
+			NTotalHolderEquity: v.NTotalHolderEquity,
+			NCapitalReserve:    v.NCapitalReserve,
+			NIncomeInvestments: v.NIncomeInvestments,
 		}
 		biny := TagStockStatic{ //入文件的结构
 			NSID:              v.NSID,
@@ -111,6 +125,13 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 			NReportDate:       v.NReportDate,
 			NCurrentRatio:     v.NCurrentRatio,
 			NQuickMovingRatio: v.NQuickMovingRatio,
+
+			NEUndisProfit:      v.NEUndisProfit,
+			NFlowLiab:          v.NFlowLiab,
+			NTotalLiabilities:  v.NTotalLiabilities,
+			NTotalHolderEquity: v.NTotalHolderEquity,
+			NCapitalReserve:    v.NCapitalReserve,
+			NIncomeInvestments: v.NIncomeInvestments,
 		}
 
 		//转PB

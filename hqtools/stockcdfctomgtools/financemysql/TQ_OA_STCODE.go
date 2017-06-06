@@ -26,7 +26,7 @@ type FcSecuNameTab struct {
 func (this *FcSecuNameTab) GetSecuNmList(sess *dbr.Session) ([]*FcSecuNameTab, error) {
 
 	var data []*FcSecuNameTab
-	_, err := sess.Select("*").From("TQ_OA_STCODE").
+	_, err := sess.Select("EXCHANGE,SETYPE,SECODE,COMPCODE,LISTSTATUS,SYMBOL,SECURITYID,SENAME,SESNAME,SEENGNAME,SESPELL,CUR").From("TQ_OA_STCODE").
 		Where("EXCHANGE in ('001002','001003') and SETYPE in('101') AND LISTSTATUS =1 and ISVALID =1").
 		OrderBy("SYMBOL").LoadStructs(&data)
 	return data, err
@@ -36,7 +36,7 @@ func (this *FcSecuNameTab) GetSecuNmList(sess *dbr.Session) ([]*FcSecuNameTab, e
 func (this *FcSecuNameTab) GetExponentList(sess *dbr.Session) ([]*FcSecuNameTab, error) {
 
 	var data []*FcSecuNameTab
-	_, err := sess.Select("*").From("TQ_OA_STCODE").
+	_, err := sess.Select("EXCHANGE,SETYPE,SECODE,COMPCODE,LISTSTATUS,SYMBOL,SECURITYID,SENAME,SESNAME,SEENGNAME,SESPELL,CUR").From("TQ_OA_STCODE").
 		Where("SETYPE ='701' AND (SYMBOL LIKE '399%' OR SYMBOL LIKE '000%') AND LISTSTATUS =1 and ISVALID =1").
 		OrderBy("SYMBOL").LoadStructs(&data)
 	return data, err
