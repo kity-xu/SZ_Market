@@ -7,7 +7,8 @@ import (
 // 数据对象名称：TQ_FIN_PROINDICDATA    中文名称：衍生财务指标（产品表）
 
 type TQ_FIN_PROINDICDATA struct {
-	CURRENTRT dbr.NullFloat64 `db:"CURRENTRT"` //  流动比率
+	UPPS      dbr.NullFloat64 `db:"UPPS"`      // 每股未分配利润
+	CURRENTRT dbr.NullFloat64 `db:"CURRENTRT"` // 流动比率
 	QUICKRT   dbr.NullFloat64 `db:"QUICKRT"`   // 速动比率
 }
 

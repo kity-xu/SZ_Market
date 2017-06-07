@@ -13,7 +13,7 @@ import (
 	"haina.com/share/logging"
 
 	"github.com/gocraft/dbr"
-	dkfm "haina.com/market/hqtools/dklinetools/financemysql"
+	//dkfm "haina.com/market/hqtools/dklinetools/financemysql"
 	stf "haina.com/market/hqtools/staticdatafctomgtools/financemysql"
 	fms "haina.com/market/hqtools/stockcdfctomgtools/financemysql"
 )
@@ -21,8 +21,9 @@ import (
 const (
 	// 服务器mongodb://user:passwd@ip:port/db_name
 	//URL = "mongodb://hgs:xnX9^tsx7!4W@172.16.1.59:57017/hgs"
+	URL = "127.0.0.1:57017/hgs"
 	// 本地用
-	URL                  = "192.168.18.200:27017"
+	//URL                  = "192.168.18.200:27017"
 	GLOBAL_SECRITY_TABLE = "basic_staticdata_table" // 证券静态数据monogoDb库
 )
 
@@ -37,27 +38,35 @@ type SjsHqFile struct {
 }
 
 type TagStockStatic struct {
-	NSID              int32   `bson:"nSID"`              // 证券ID
-	SzSType           string  `bson:"szSType"`           // 证券类型
-	SzStatus          string  `bson:"szStatus"`          // 证券状态
-	NListDate         int32   `bson:"nListDate"`         // 上市日期
-	NLastTradeDate    int32   `bson:"nLastTradeDate"`    // 最近正常交易日期
-	NDelistDate       int32   `bson:"nDelistDate"`       // 退市日期
-	LlCircuShare      int64   `bson:"llCircuShare"`      // 流通盘
-	LlTotalShare      int64   `bson:"llTotalShare"`      // 总股本
-	LlLast5Volume     int64   `bson:"llLast5Volume"`     // 最近5日成交总量(股)
-	NEPS              float64 `bson:"nEPS"`              // 每股收益
-	LlTotalProperty   float64 `bson:"llTotalProperty"`   // 总资产
-	LlFlowProperty    int64   `bson:"llFlowProperty"`    // 流动资产
-	NAVPS             int32   `bson:"nAVPS"`             // 每股净值
-	LlMainIncoming    int64   `bson:"llMainIncoming"`    // 主营业务收入
-	LlMainProfit      int64   `bson:"llMainProfit"`      // 主营业务利润
-	LlTotalProfit     int64   `bson:"llTotalProfit"`     // 利润总额
-	LlNetProfit       int64   `bson:"llNetProfit"`       // 净利润
-	NHolders          int32   `bson:"nHolders"`          // 股东总数
-	NReportDate       int32   `bson:"nReportDate"`       // 发布日期
-	NCurrentRatio     int32   `bson:"nCurrentRatio"`     // 流通比率
-	NQuickMovingRatio int32   `bson:"nQuickMovingRatio"` // 速动比例
+	NSID              int32  `bson:"nSID"`              // 证券ID
+	SzSType           string `bson:"szSType"`           // 证券类型
+	SzStatus          string `bson:"szStatus"`          // 证券状态
+	NListDate         int32  `bson:"nListDate"`         // 上市日期
+	NLastTradeDate    int32  `bson:"nLastTradeDate"`    // 最近正常交易日期
+	NDelistDate       int32  `bson:"nDelistDate"`       // 退市日期
+	LlCircuShare      int64  `bson:"llCircuShare"`      // 流通盘
+	LlTotalShare      int64  `bson:"llTotalShare"`      // 总股本
+	LlLast5Volume     int64  `bson:"llLast5Volume"`     // 最近5日成交总量(股)
+	NEPS              int32  `bson:"nEPS"`              // 每股收益
+	LlTotalProperty   int64  `bson:"llTotalProperty"`   // 总资产
+	LlFlowProperty    int64  `bson:"llFlowProperty"`    // 流动资产
+	NAVPS             int32  `bson:"nAVPS"`             // 每股净值
+	LlMainIncoming    int64  `bson:"llMainIncoming"`    // 主营业务收入
+	LlMainProfit      int64  `bson:"llMainProfit"`      // 主营业务利润
+	LlTotalProfit     int64  `bson:"llTotalProfit"`     // 利润总额
+	LlNetProfit       int64  `bson:"llNetProfit"`       // 净利润
+	NHolders          int32  `bson:"nHolders"`          // 股东总数
+	NReportDate       int32  `bson:"nReportDate"`       // 发布日期
+	NCurrentRatio     int32  `bson:"nCurrentRatio"`     // 流通比率
+	NQuickMovingRatio int32  `bson:"nQuickMovingRatio"` // 速动比例
+
+	NEUndisProfit      int32 `bson:"nEUndisProfit"`      // 每股未分配利润
+	NFlowLiab          int32 `bson:"nFlowLiab"`          // 流动负债
+	NTotalLiabilities  int32 `bson:"nTotalLiabilities"`  // 负债总计
+	NTotalHolderEquity int32 `bson:"nTotalHolderEquity"` // 股东权益合计
+	NCapitalReserve    int32 `bson:"nCapitalReserve"`    // 资本公积金
+	NIncomeInvestments int32 `bson:"nIncomeInvestments"` // 投资收益
+
 }
 
 // 整理静态数据放到monogoDB中
@@ -113,8 +122,8 @@ func StockTreatingData(sess *dbr.Session) {
 			}
 		}
 		// 转换证券代码
-		swi := basinfo.EXCHANGE.String
-		sym := basinfo.SYMBOL.String
+		swi := item.EXCHANGE.String
+		sym := item.SYMBOL.String
 		switch swi {
 		case "001002":
 			i, err := strconv.Atoi("100" + sym)
@@ -129,12 +138,24 @@ func StockTreatingData(sess *dbr.Session) {
 				logging.Info("sting 转 int 32 err %v", err)
 			}
 		}
-		tss.SzSType = basinfo.SETYPE.String
-		tss.SzStatus = basinfo.LISTSTATUS.String
+		tss.SzSType = item.SETYPE.String
+		tss.SzStatus = item.LISTSTATUS.String
 		lde, err := strconv.Atoi(basinfo.LISTDATE.String)
 		tss.NListDate = int32(lde)
 		dse, err := strconv.Atoi(basinfo.DELISTDATE.String)
 		tss.NDelistDate = int32(dse)
+
+		// 查询股本结构变化
+		sharch, err := new(stf.TQ_SK_SHARESTRUCHG).GetSingleInfo(sess, item.COMPCODE.String)
+
+		if err != nil {
+			logging.Info("查询股本结构 error")
+		} else {
+
+			tss.LlTotalShare = int64(sharch.TOTALSHARE.Float64 * 10000)
+			tss.LlCircuShare = int64(sharch.CIRCSKAMT.Float64 * 10000)
+		}
+
 		// 根据公司内码获取股东信息
 		shdn, errs := new(stf.TQ_SK_SHAREHOLDERNUM).GetSingleInfo(sess, item.COMPCODE.String)
 
@@ -145,10 +166,6 @@ func StockTreatingData(sess *dbr.Session) {
 				logging.Info("查询股东信息err %v", errs)
 			}
 		} else {
-			cira, err := strconv.Atoi(shdn.CIRCSKAAMT.String)
-			tss.LlCircuShare = int64(cira)
-			tosa, err := strconv.Atoi(shdn.TOTALSHARE.String)
-			tss.LlTotalShare = int64(tosa)
 			tost, err := strconv.Atoi(shdn.TOTALSHAMT.String)
 			tss.NHolders = int32(tost)
 			if err != nil {
@@ -156,9 +173,9 @@ func StockTreatingData(sess *dbr.Session) {
 			}
 		}
 
-		// 根据公司内码查询股票历史信息
-		dklinfo, err := new(dkfm.Stock).GetSKTList5FC(sess, item.SECODE.String)
-		if err != nil {
+		// 根据公司内码查询股票历史信息   五日交易量 最近交易日期暂时默认为零
+		//dklinfo, err := new(dkfm.Stock).GetSKTList5FC(sess, item.SECODE.String)
+		/*if err != nil {
 			if err == dbr.ErrNotFound {
 				logging.Info("查询股票历史信息未找到数据 %v", err)
 			} else {
@@ -172,21 +189,27 @@ func StockTreatingData(sess *dbr.Session) {
 			}
 			vol5 += int(dkl.VOL.Int64)
 		}
-		tss.LlLast5Volume = int64(vol5)
-		// 查询公司业绩报表填充 每股收益和总资产
+		*/
+		tss.NLastTradeDate = 0
+		tss.LlLast5Volume = 0
+		// 查询一般企业利润
 		tspe, err := new(stf.TQ_FIN_PROINCSTATEMENTNEW).GetSingleInfo(sess, item.COMPCODE.String)
 
 		if err != nil {
 			if err == dbr.ErrNotFound {
-				logging.Info("查询公司业绩报表信息未找到数据 %v", err)
+				logging.Info("查询一般企业利润未找到数据 %v", err)
 			} else {
-				logging.Info("查询公司业绩报表信息出错 error %v", err)
+				logging.Info("查询一般企业利润出错 error %v", err)
 			}
 		}
-		tss.NEPS = tspe.BASICEPS.Float64
+		tss.NEPS = int32(tspe.BASICEPS.Float64 * 10000)
 		tss.LlTotalProfit = int64(tspe.TOTPROFIT.Float64)
 		tss.LlNetProfit = int64(tspe.NETPROFIT.Float64)
 		tss.NReportDate = int32(tspe.PUBLISHDATE.Int64)
+
+		tss.LlMainIncoming = int64(tspe.BIZINCO.Float64)
+		tss.LlMainProfit = int64(tspe.PERPROFIT.Float64)
+		tss.NIncomeInvestments = int32(tspe.INVEINCO.Float64)
 		// 上市公司业绩快报 填充总资产
 		tspce, err := new(stf.TQ_SK_PERFORMANCE).GetSingleInfo(sess, item.COMPCODE.String)
 
@@ -197,7 +220,8 @@ func StockTreatingData(sess *dbr.Session) {
 				logging.Info("查询上市公司业绩快报信息出错 error %v", err)
 			}
 		}
-		tss.LlTotalProperty = tspce.TOTASSET.Float64
+		tss.NTotalHolderEquity = int32(tspce.TOTSHAREQUI.Float64 * 10000)
+
 		//查询一般企业资产负债信息 填充流动资产
 		tfp, err := new(stf.TQ_FIN_PROBALSHEETNEW).GetSingleInfo(sess, item.COMPCODE.String)
 
@@ -208,20 +232,14 @@ func StockTreatingData(sess *dbr.Session) {
 				logging.Info("查询一般企业资产负债信息出错 error %v", err)
 			}
 		}
+		tss.LlTotalProperty = int64(tfp.TOTASSET.Float64)
 		tss.LlFlowProperty = int64(tfp.TOTCURRASSET.Float64)
-		tss.NAVPS = int32(int64(tss.LlTotalProperty) / tss.LlTotalShare) // 总资产/总股本计算得到
-		// 查询行业财务指标信息 填充主营业收入和利润
-		tfi, err := new(stf.TQ_SK_BUSIINFO).GetSingleInfo(sess, item.COMPCODE.String)
+		tss.NFlowLiab = int32(tfp.TOTALCURRLIAB.Float64)
+		tss.NTotalLiabilities = int32(tfp.TOTLIAB.Float64)
+		tss.NCapitalReserve = int32(tfp.CAPISURP.Float64)
+		// 每股净值= 总资产除以总股本得到
+		tss.NAVPS = int32((tss.LlTotalProperty / tss.LlTotalShare) * 10000)
 
-		if err != nil {
-			if err == dbr.ErrNotFound {
-				logging.Info("%v查询行业财务指标信息未找到数据 %v", sym, err)
-			} else {
-				logging.Info("查询行业财务指标信息出错 error %v", err)
-			}
-		}
-		tss.LlMainIncoming = int64(tfi.TCOREBIZINCOME.Float64)
-		tss.LlMainProfit = int64(tfi.TCOREBIZPROFIT.Float64)
 		// 查询衍生财务指标信息 流动比率和速动比率
 		tfpr, err := new(stf.TQ_FIN_PROINDICDATA).GetSingleInfo(sess, item.COMPCODE.String)
 
@@ -232,8 +250,9 @@ func StockTreatingData(sess *dbr.Session) {
 				logging.Info("查询衍生财务指标信息出错 error %v", err)
 			}
 		}
-		tss.NCurrentRatio = int32(tfpr.CURRENTRT.Float64)
-		tss.NQuickMovingRatio = int32(tfpr.QUICKRT.Float64)
+		tss.NCurrentRatio = int32(tfpr.CURRENTRT.Float64 * 10000)
+		tss.NQuickMovingRatio = int32(tfpr.QUICKRT.Float64 * 10000)
+		tss.NEUndisProfit = int32(tfpr.UPPS.Float64 * 10000)
 
 		_, err = mgo_collection.Upsert(bson.M{"nSID": tss.NSID}, &tss) // nSID存在时更新，不存在时插入，此语句效率较慢
 		if err != nil {
