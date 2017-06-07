@@ -171,7 +171,7 @@ func (this TradeEveryTime) GetTradeEveryTimeObj(req *pro.RequestTradeEveryTime) 
 			SID:     req.SID,
 			Total:   int32(slen),
 			Begin:   req.Begin,
-			Num:     req.Num,
+			Num:     0,
 			DTRList: nil,
 		}, nil
 	}
@@ -215,7 +215,7 @@ func (this TradeEveryTime) GetTradeEveryTimeObj(req *pro.RequestTradeEveryTime) 
 		SID:     req.SID,
 		Total:   int32(slen),
 		Begin:   req.Begin,
-		Num:     req.Num,
+		Num:     int32(len(rows)),
 		DTRList: rows,
 	}, nil
 
