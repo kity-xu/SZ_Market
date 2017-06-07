@@ -44,8 +44,8 @@
         </config>
     </session>
     <redisStore>
-	    <!--<addr>192.168.18.200:6379</addr>  -->
-        <addr>47.93.102.171:61380</addr>
+	    <addr>192.168.18.200:6379</addr>
+       <!-- <addr>47.93.102.171:61380</addr>-->
         <auth>8dc40c2c4598ae5a</auth>
         <db>0</db>
         <timeout>3</timeout> 

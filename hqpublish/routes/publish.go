@@ -21,6 +21,9 @@ func RegPublish(rg *gin.RouterGroup) {
 	// 证券快照
 	rg.POST("/snap", publish.NewStockSnapshot().POST)
 
+	//排序
+	rg.POST("/sort", publish.NewSort().POST)
+
 	//市场、证券信息、股票代码表
 	rg.POST("/sntab", security.NewSecurityTable().POST) //默认pb模式
 	rg.POST("/sn", security.NewSecurityInfo().POST)     //默认pb模式

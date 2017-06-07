@@ -42,7 +42,7 @@ func (this *HisMinLine) PayloadHisMinLine(req *protocol.RequestHisMinK) (*protoc
 	var tmpTime, count, day, sid int32
 	var kinfos []*protocol.KInfo
 
-	for i := len(table.List) - 1; i > 0; i-- {
+	for i := len(table.List) - 1; i >= 0; i-- {
 		if tmpTime == 0 {
 			tmpTime = table.List[i].NTime / 10000
 			kinfos = append(kinfos, table.List[i])
