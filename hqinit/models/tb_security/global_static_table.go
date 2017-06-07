@@ -31,11 +31,11 @@ type TagStockStatic struct {
 
 	// 后加
 	NEUndisProfit      int32 `bson:"nEUndisProfit"`      // 每股未分配利润
-	NFlowLiab          int32 `bson:"nFlowLiab"`          // 流动负债
-	NTotalLiabilities  int32 `bson:"nTotalLiabilities"`  // 负债总计
-	NTotalHolderEquity int32 `bson:"nTotalHolderEquity"` // 股东权益合计
-	NCapitalReserve    int32 `bson:"nCapitalReserve"`    // 资本公积金
-	NIncomeInvestments int32 `bson:"nIncomeInvestments"` // 投资收益
+	NFlowLiab          int64 `bson:"nFlowLiab"`          // 流动负债
+	NTotalLiabilities  int64 `bson:"nTotalLiabilities"`  // 负债总计
+	NTotalHolderEquity int64 `bson:"nTotalHolderEquity"` // 股东权益合计
+	NCapitalReserve    int64 `bson:"nCapitalReserve"`    // 资本公积金
+	NIncomeInvestments int64 `bson:"nIncomeInvestments"` // 投资收益
 }
 
 //股票代码表

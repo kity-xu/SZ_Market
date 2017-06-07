@@ -43,11 +43,11 @@ type TagStockStatic struct {
 	NQuickMovingRatio int32   // 速动比例
 	// 后加
 	NEUndisProfit      int32 // 每股未分配利润
-	NFlowLiab          int32 // 流动负债
-	NTotalLiabilities  int32 // 负债总计
-	NTotalHolderEquity int32 // 股东权益合计
-	NCapitalReserve    int32 // 资本公积金
-	NIncomeInvestments int32 // 投资收益
+	NFlowLiab          int64 // 流动负债
+	NTotalLiabilities  int64 // 负债总计
+	NTotalHolderEquity int64 // 股东权益合计
+	NCapitalReserve    int64 // 资本公积金
+	NIncomeInvestments int64 // 投资收益
 }
 
 // 静态数据

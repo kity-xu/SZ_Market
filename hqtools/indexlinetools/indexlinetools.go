@@ -19,9 +19,9 @@ func main() {
 	logging.SetLogModel(true, false)
 	logging.Info("begin..")
 	// 查询finance数据库历史指数K线数据
-	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
+	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
 	// 服务器用
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
+	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
 	if err != nil {
 		logging.Debug("mysql onn", err)
 	}
@@ -42,14 +42,14 @@ func main() {
 		}
 
 		if item.EXCHANGE.String == "001002" {
-			var addstr = "/opt/develop/hgs/filestore/hqdatax/sh/100" + item.SYMBOL.String
-			//var addstr = "E:/hqdata/sh/100" + item.SYMBOL.String
+			//var addstr = "/opt/develop/hgs/filestore/hqdata/sh/100" + item.SYMBOL.String
+			var addstr = "E:/hqdata/sh/100" + item.SYMBOL.String
 			WriteFileInfo(addstr, index, "100"+item.SYMBOL.String)
 		}
 		// 001003 深圳交易市场
 		if item.EXCHANGE.String == "001003" {
-			var addstr = "/opt/develop/hgs/filestore/hqdatax/sz/200" + item.SYMBOL.String
-			//var addstr = "E:/hqdata/sz/200" + item.SYMBOL.String
+			//var addstr = "/opt/develop/hgs/filestore/hqdata/sz/200" + item.SYMBOL.String
+			var addstr = "E:/hqdata/sz/200" + item.SYMBOL.String
 			WriteFileInfo(addstr, index, "200"+item.SYMBOL.String)
 		}
 	}
