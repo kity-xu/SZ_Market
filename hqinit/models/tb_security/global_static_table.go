@@ -66,6 +66,14 @@ func GetSecurityStaticTableFromMG() *[]*TagStockStatic {
 		tssc.NReportDate = ite.NReportDate
 		tssc.NCurrentRatio = ite.NCurrentRatio
 		tssc.NQuickMovingRatio = ite.NQuickMovingRatio
+
+		tssc.NEUndisProfit = ite.NEUndisProfit
+		tssc.NFlowLiab = ite.NFlowLiab
+		tssc.NTotalLiabilities = ite.NTotalLiabilities
+		tssc.NTotalHolderEquity = ite.NTotalHolderEquity
+		tssc.NCapitalReserve = ite.NCapitalReserve
+		tssc.NIncomeInvestments = ite.NIncomeInvestments
+
 		tags = append(tags, &tssc)
 	}
 	logging.Debug("lenght of security static data tables:%v", len(tags))

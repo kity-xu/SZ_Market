@@ -14,13 +14,13 @@ func Update(cfg *config.AppConfig) {
 	start := time.Now()
 
 	//股票代码表
-	security.UpdateSecurityCodeTable()
+	//security.UpdateSecurityCodeTable()
 
 	//市场代码表及证券基本数据
-	security.UpdateSecurityTable(cfg)
+	//security.UpdateSecurityTable(cfg)
 
 	//指数基本数据
-	security.UpdateIndexTable(cfg)
+	//security.UpdateIndexTable(cfg)
 
 	//证券静态数据
 	security.UpdateSecurityStaticInfo(cfg)
