@@ -3,6 +3,7 @@
 *.log
 *.exe
 *.bak
+*.gz
 .idea/
 
 finance/finance
