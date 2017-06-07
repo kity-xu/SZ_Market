@@ -63,3 +63,9 @@ const (
 	REDISKEY_SECURITY_HMIN30 = "hq:st:hmin30:%d" ///<证券30分钟K线(参数：sid)
 	REDISKEY_SECURITY_HMIN60 = "hq:st:hmin60:%d" ///<证券60分钟K线(参数：sid)
 )
+
+//排序
+const (
+	REDISKEY_SORT_KDAY_H = "hq:sort:%d:%d" ///<排序结果(顺序，参数：证券组id,字段id) (calc写入)
+
+)
