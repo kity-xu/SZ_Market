@@ -3,8 +3,10 @@ package publish
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
+	"sync"
 
 	ctrl "haina.com/market/hqpublish/controllers"
 	. "haina.com/market/hqpublish/models"
@@ -12,11 +14,15 @@ import (
 
 	pro "ProtocolBuffer/projects/hqpublish/go/protocol"
 
+	"time"
+
 	hsgrr "haina.com/share/garyburd/redigo/redis"
 	"haina.com/share/logging"
 )
 
 var (
+	_ = ctrl.MakeRespDataByBytes
+	_ = errors.New
 	_ = fmt.Println
 	_ = hsgrr.Bytes
 	_ = logging.Info
@@ -29,8 +35,6 @@ type TradeEveryTime struct {
 	Model `db:"-"`
 }
 
-//const REDISKEY_SECURITY_TRADE = "hq:st:trade:%d" ///<证券分笔成交数据(参数：sid) (calc写入)
-
 func NewTradeEveryTime() *TradeEveryTime {
 	return &TradeEveryTime{
 		Model: Model{
@@ -39,186 +43,180 @@ func NewTradeEveryTime() *TradeEveryTime {
 	}
 }
 
-func (this TradeEveryTime) GetTradeEveryTimeJson(req *pro.RequestTradeEveryTime) ([]byte, error) {
-	key := fmt.Sprintf(this.CacheKey, req.SID)
+var tradeet sync.Mutex
 
-	// 全部
-	if req.Begin == 0 && req.Num == 0 {
-		if bs, err := GetCacheJson(key); err == nil {
-			return bs, nil
-		}
-	}
-
-	cache, store, err := this.GetTradeEveryTimeObj(req)
-	if cache != nil {
-		j, err := ctrl.MakeRespJson(200, cache)
-		if err != nil {
-			return nil, err
-		}
-		return j, nil
-	}
-	if store != nil {
-		go this.SaveToCache(key, store)
-		j, err := ctrl.MakeRespJson(200, this.NewPayloadTradeEveryTime(req, nil))
-		if err != nil {
-			return nil, err
-		}
-		return j, nil
-	}
-
-	go this.SaveToCache(key, nil)
-	return nil, err
+func LockTradeet() {
+	tradeet.Lock()
+}
+func UnlockTradeet() {
+	tradeet.Unlock()
 }
 
-func (this TradeEveryTime) GetTradeEveryTimePB(req *pro.RequestTradeEveryTime) ([]byte, error) {
-	key := fmt.Sprintf(this.CacheKey, req.SID)
-
-	// 全部
-	if req.Num == 0 {
-		if bs, err := GetCachePB(key); err == nil {
-			return bs, nil
-		}
-	}
-
-	cache, store, err := this.GetTradeEveryTimeObj(req)
-	if cache != nil {
-		j, err := ctrl.MakeRespDataByPB(200, pro.HAINA_PUBLISH_CMD_ACK_TRADEDT, cache)
-		if err != nil {
-			return nil, err
-		}
-		return j, nil
-	}
-	if store != nil {
-		go this.SaveToCache(key, store)
-		p, err := ctrl.MakeRespDataByPB(200, pro.HAINA_PUBLISH_CMD_ACK_TRADEDT, this.NewPayloadTradeEveryTime(req, nil))
-		if err != nil {
-			return nil, err
-		}
-		return p, nil
-	}
-
-	go this.SaveToCache(key, nil)
-	return nil, err
+type TradeetSentinel struct {
+	SyncFlag  bool
+	Timestamp int64
+	RWLock    *sync.RWMutex
 }
 
-// 第一个返回参数：从缓存Redis里拿到的符合条件的应答Payload对象
-// 第二个返回参数：从数据Redis里拿到的所有分钟K线Payload对象(后续直接用于缓存)
-func (this TradeEveryTime) GetTradeEveryTimeObj(req *pro.RequestTradeEveryTime) (*pro.PayloadTradeEveryTime, *pro.PayloadTradeEveryTime, error) {
-	obj, err := this.GetCacheTradeEveryTimeObj(req)
-	if err == nil {
-		return obj, nil, nil
+func NewTradeetSentinel() *TradeetSentinel {
+	return &TradeetSentinel{
+		Timestamp: time.Now().Unix(),
+		RWLock:    &sync.RWMutex{},
 	}
-	obj, err = this.GetStoreTradeEveryTimeObj(req)
-	if err == nil {
-		return nil, obj, nil
+}
+func getNowTradeetSentinel(sid int32) *TradeetSentinel {
+	LockTradeet()
+	defer UnlockTradeet()
+
+	t, ok := TradeetMap[sid]
+	if ok {
+		fmt.Printf("get trade every time sentinel %x\n", t)
+		return t
 	}
-	return nil, nil, err
+
+	fmt.Printf("new trade every time sentinel %x\n", t)
+	t = NewTradeetSentinel()
+	TradeetMap[sid] = t
+
+	return t
 }
 
-// 从缓存中获取 PayloadTradeEveryTime 对象
-func (this TradeEveryTime) GetCacheTradeEveryTimeObj(req *pro.RequestTradeEveryTime) (*pro.PayloadTradeEveryTime, error) {
-	key := fmt.Sprintf(this.CacheKey, req.SID)
-	bs, err := GetCache(key)
+var TradeetMap map[int32]*TradeetSentinel = make(map[int32]*TradeetSentinel, 5000)
+
+// 将分笔成交数据同步到缓存
+// 返回值 int
+//   >0 本次同步到缓存的条数
+//   =0 缓存和数据redis一致，本次没有进行同步
+//   -1 redis缓存错误不可用
+//   -2 redis数据错误，没有数据
+func (this TradeEveryTime) SyncTradeEveryTimeRecord(sid int32) (int, error) {
+	key := fmt.Sprintf(this.CacheKey, sid)
+
+	t := getNowTradeetSentinel(sid)
+
+	t.RWLock.RLock()
+	defer t.RWLock.RUnlock()
+
+	t.SyncFlag = false
+
+	clen, err := RedisCache.Llen(key) // 出错时返回值 clen = -1
 	if err != nil {
-		return nil, err
-	}
-
-	// cache hit
-	ls, err := this.Decode(bs)
-	if err != nil {
-		return nil, err
-	}
-
-	kls := make([]*pro.TradeEveryTimeRecord, 0, 250)
-	for _, k := range ls {
-		if k.NSn >= uint32(req.Begin) {
-			kls = append(kls, k)
+		if err != hsgrr.ErrNil {
+			logging.Warning("RedisCache not available: %v", err)
+			return -1, err
+		} else {
+			logging.Info("RedisCache no such key %s", key)
+			clen = 0
 		}
 	}
-	return &pro.PayloadTradeEveryTime{
-		Num: 0,
-	}, nil
-}
-
-func (this TradeEveryTime) GetStoreTradeEveryTimeObj(req *pro.RequestTradeEveryTime) (*pro.PayloadTradeEveryTime, error) {
-	key := fmt.Sprintf(this.CacheKey, req.SID)
-
-	var ls []string
-
-	kls := make([]*pro.TradeEveryTimeRecord, 0, 5000)
 	slen, err := RedisStore.Llen(key)
-	clen, err := RedisCache.Llen(key)
-	fmt.Printf("%s Store len %d, Cache len %d\n", key, slen, clen)
-
-	if clen < 0 {
-		ls, err = RedisStore.LRange(key, 0, -1)
-		if err == nil {
-			for _, v := range ls {
-				RedisCache.Rpush(key, []byte(v))
-			}
-		}
-	} else if clen < slen {
-		ls, err = RedisStore.LRange(key, clen, slen)
-		if err == nil {
-			for _, v := range ls {
-				RedisCache.Rpush(key, []byte(v))
-			}
-		}
-	}
-	slen, err = RedisStore.Llen(key)
-	clen, err = RedisCache.Llen(key)
-	fmt.Printf("%s Store len %d, Cache len %d\n", key, slen, clen)
-
-	//	RedisCache.Do("expire", key, 10000)
 	if err != nil {
-		logging.Warning("1 %v", err)
+		logging.Error("RedisStore: %v", err)
+		return -2, err
+	}
+	fmt.Printf("%s Store len %d, Cache len %d\n", key, slen, clen)
+
+	if slen == clen {
+		return 0, nil
+	} else if slen < clen {
+		RedisCache.Del(key)
+	}
+
+	ls, err := RedisStore.LRange(key, clen, slen-1)
+
+	go func() {
+		t.RWLock.Lock()
+		defer t.RWLock.Unlock()
+
+		t.SyncFlag = true
+		for _, v := range ls {
+			RedisCache.Rpush(key, []byte(v))
+		}
+		logging.Info("sid %d trade Sync TradeEveryTimeRecord done", sid)
+		fmt.Printf("func %s Store len %d, Cache len %d\n", key, slen, clen)
+		t.Timestamp = time.Now().Unix()
+		t.SyncFlag = false
+	}()
+
+	fmt.Printf("---- %s Store len %d, Cache len %d\n", key, slen, clen)
+	return slen - clen, nil
+}
+
+func (this TradeEveryTime) GetTradeEveryTimeJson(req *pro.RequestTradeEveryTime) ([]byte, error) {
+	payload, err := this.GetTradeEveryTimeObj(req)
+	if err != nil {
 		return nil, err
 	}
-	if len(ls) == 0 {
-		logging.Warning("redis no such %s", key)
-		return nil, ERROR_INVALID_DATA
+	return ctrl.MakeRespJson(200, payload)
+}
+func (this TradeEveryTime) GetTradeEveryTimePB(req *pro.RequestTradeEveryTime) ([]byte, error) {
+	payload, err := this.GetTradeEveryTimeObj(req)
+	if err != nil {
+		return nil, err
 	}
+	return ctrl.MakeRespDataByPB(200, pro.HAINA_PUBLISH_CMD_ACK_TRADEET, payload)
+}
+
+func (this TradeEveryTime) GetTradeEveryTimeObj(req *pro.RequestTradeEveryTime) (*pro.PayloadTradeEveryTime, error) {
+
+	key := fmt.Sprintf(this.CacheKey, req.SID)
+
+	slen, err := RedisStore.Llen(key)
+	if err != nil {
+		logging.Error("%v", err)
+		return nil, err
+	}
+	if slen == 0 {
+		return &pro.PayloadTradeEveryTime{
+			SID:     req.SID,
+			Total:   int32(slen),
+			Begin:   req.Begin,
+			Num:     req.Num,
+			DTRList: nil,
+		}, nil
+	}
+
+	bgn, end := 0, -1
+	if req.Begin > 0 {
+		bgn = int(req.Begin)
+	}
+	if req.Num > 0 {
+		end = int(req.Begin + req.Num - 1)
+	} else if req.Num <= 0 {
+		end = -1
+	}
+
+	if end >= slen {
+		end = slen - 1 // 本次最后一根 list 索引
+	}
+
+	fmt.Printf("begin %d, num %d\n", bgn, end)
+
+	ls, err := RedisStore.LRange(key, bgn, end)
+	if err != nil {
+		logging.Error("%v", err)
+		return nil, err
+	}
+
+	rows := make([]*pro.TradeEveryTimeRecord, 0, 5000)
 
 	for _, v := range ls {
-		k := &pro.TradeEveryTimeRecord{}
-		buffer := bytes.NewBuffer([]byte(v))
-		if err := binary.Read(buffer, binary.LittleEndian, k); err != nil && err != io.EOF {
+		trade := &pro.TradeEveryTimeRecord{}
+		bufer := bytes.NewBuffer([]byte(v))
+		if err := binary.Read(bufer, binary.LittleEndian, trade); err != nil && err != io.EOF {
+			logging.Error("%v", err)
 			return nil, err
 		}
-		kls = append(kls, k)
+		rows = append(rows, trade)
 	}
+	logging.Info("get sid %d trade every time done", req.SID)
 
 	return &pro.PayloadTradeEveryTime{
-		SID:   req.SID,
-		Begin: 0,
-		Num:   int32(len(kls)),
+		SID:     req.SID,
+		Total:   int32(slen),
+		Begin:   req.Begin,
+		Num:     req.Num,
+		DTRList: rows,
 	}, nil
-}
 
-// 存放到Cache前进行编码
-func (this TradeEveryTime) Encode(klist []*pro.TradeEveryTimeRecord) ([]byte, error) {
-	return nil, nil
-}
-
-// 从Cache取出后进行解码
-func (this TradeEveryTime) Decode(bs []byte) ([]*pro.TradeEveryTimeRecord, error) {
-	return nil, nil
-}
-
-func (this TradeEveryTime) SaveToCache(key string, obj *pro.PayloadTradeEveryTime) {
-}
-
-func (this TradeEveryTime) NewPayloadTradeEveryTime(req *pro.RequestTradeEveryTime, klist []*pro.TradeEveryTimeRecord) *pro.PayloadTradeEveryTime {
-	if req == nil || klist == nil {
-		return nil
-	}
-	kls := make([]*pro.TradeEveryTimeRecord, 0, 5000)
-	for _, k := range klist {
-		if k.NSn >= uint32(req.Begin) {
-			kls = append(kls, k)
-		}
-	}
-	return &pro.PayloadTradeEveryTime{
-		Num: 0,
-	}
 }

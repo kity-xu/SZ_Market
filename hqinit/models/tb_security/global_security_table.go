@@ -26,6 +26,7 @@ func GetSecurityInfoTableFromMG() *[]*TagSecurityInfo {
 	var secus []*TagSecurityInfo
 
 	TagI := new(servers.TagSecurityInfo).GetStockInfo("s2")
+
 	for _, ite := range TagI {
 		var tsi TagSecurityInfo
 		tsi.NSID = ite.NSID
