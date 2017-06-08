@@ -36,4 +36,7 @@ func RegPublish(rg *gin.RouterGroup) {
 	rg.POST("/tradeet", publish.NewTradeEveryTime().POST)
 	//最近分笔成交 逆序
 	rg.POST("/tradeetnow", publish.NewTradeEveryTimeNow().POST)
+
+	// 信息栏 -zxw
+	rg.POST("/information", publish.NewInformationBar().POST)
 }
