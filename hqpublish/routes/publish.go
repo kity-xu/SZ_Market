@@ -32,6 +32,8 @@ func RegPublish(rg *gin.RouterGroup) {
 	//历史K线
 	rg.POST("/kline", kline.NewKline().POST) //默认pb模式
 
-	//分笔成交正序
+	//分笔成交 正序
 	rg.POST("/tradeet", publish.NewTradeEveryTime().POST)
+	//最近分笔成交 逆序
+	rg.POST("/tradeetnow", publish.NewTradeEveryTimeNow().POST)
 }

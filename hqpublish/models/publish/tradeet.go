@@ -190,7 +190,7 @@ func (this TradeEveryTime) GetTradeEveryTimeObj(req *pro.RequestTradeEveryTime) 
 		end = slen - 1 // 本次最后一根 list 索引
 	}
 
-	fmt.Printf("begin %d, num %d\n", bgn, end)
+	logging.Info("tradeet %d list range[%d,%d]", req.SID, bgn, end)
 
 	ls, err := RedisStore.LRange(key, bgn, end)
 	if err != nil {
@@ -209,7 +209,7 @@ func (this TradeEveryTime) GetTradeEveryTimeObj(req *pro.RequestTradeEveryTime) 
 		}
 		rows = append(rows, trade)
 	}
-	logging.Info("get sid %d trade every time done", req.SID)
+	logging.Info("tradeet %d get list range[%d,%d] trade data done.", req.SID, bgn, end)
 
 	return &pro.PayloadTradeEveryTime{
 		SID:     req.SID,
