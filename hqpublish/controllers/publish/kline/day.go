@@ -46,7 +46,7 @@ func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHi
 		logging.Debug("err:%v", err.Error())
 	}
 	if !over {
-		//logging.Debug("Create new kline...")
+		logging.Info("Create new kline...")
 		//if models.GetCurrentTimeHM()%10000 < 1530 {
 		switch redisKey {
 		case publish.REDISKEY_SECURITY_HDAY:

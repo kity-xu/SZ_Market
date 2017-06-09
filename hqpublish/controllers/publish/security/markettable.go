@@ -18,6 +18,44 @@ func NewSecurityTable() *SecurityTable {
 	return &SecurityTable{}
 }
 
+//A 股市场代码表
+func (this *SecurityTable) Get(c *gin.Context) {
+	replayfmt := c.Query(models.CONTEXT_FORMAT)
+	if len(replayfmt) == 0 {
+		replayfmt = "pb" // 默认
+	}
+
+	switch replayfmt {
+	case "json":
+		this.GetJson(c)
+	case "pb":
+		this.GetPB(c)
+	default:
+		return
+	}
+}
+
+func (this *SecurityTable) GetJson(c *gin.Context) {
+	table, err := security.NewSecurityNameTable().GetSecurityTableAStock()
+	if err != nil {
+		logging.Error("post json %v", err)
+		WriteJson(c, 40002, nil)
+		return
+	}
+	WriteJson(c, 200, table)
+}
+
+func (this *SecurityTable) GetPB(c *gin.Context) {
+	table, err := security.NewSecurityNameTable().GetSecurityTableAStock()
+	if err != nil {
+		logging.Error("%v", err)
+		WriteDataErrCode(c, 40002)
+		return
+	}
+	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_MARKET_SECURITY, table)
+}
+
+//单市场股票代码表
 func (this *SecurityTable) POST(c *gin.Context) {
 	replayfmt := c.Query(models.CONTEXT_FORMAT)
 	if len(replayfmt) == 0 {

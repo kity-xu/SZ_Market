@@ -6,6 +6,7 @@ import (
 
 var (
 	ERROR_REQUEST_PARAM    = errors.New("request param error")
+	ERROR_REDIS_DATE_NULL  = errors.New("redis date is null")
 	ERROR_REDIS_LIST_NULL  = errors.New("redis list is null")
 	ERROR_KLINE_BEGIN_TIME = errors.New("error's kline begin time")
 	ERROR_KLINE_DATA_NULL  = errors.New("kline data is null")
@@ -29,10 +30,11 @@ const (
 )
 
 const (
-	REDISKEY_MARKET_SECURITY_TABLE = "hq:market:sts:%d" ///<证券市场代码表(参数：MarketID)  (hq-init写入)
-	REDISKEY_SECURITY_NAME_ID      = "hq:st:name:%d"    ///<证券代码(参数：sid) (hq-init写入)
-	REDISKEY_SECURITY_NAME_CODE    = "hq:st:name:%s"    ///<证券代码(参数：scode) (hq-init写入)
-	REDISKEY_SECURITY_STATIC       = "hq:st:static:%d"  ///<证券静态数据(参数：sid) (hq-init写入)
+	REDISKEY_MARKET_SECURITY_TABLE_ASTOCK = "hq:market:sts:%s" ///A股市场
+	REDISKEY_MARKET_SECURITY_TABLE        = "hq:market:sts:%d" ///<证券市场代码表(参数：MarketID)  (hq-init写入)
+	REDISKEY_SECURITY_NAME_ID             = "hq:st:name:%d"    ///<证券代码(参数：sid) (hq-init写入)
+	REDISKEY_SECURITY_NAME_CODE           = "hq:st:name:%s"    ///<证券代码(参数：scode) (hq-init写入)
+	REDISKEY_SECURITY_STATIC              = "hq:st:static:%d"  ///<证券静态数据(参数：sid) (hq-init写入)
 )
 
 /// 证券快照

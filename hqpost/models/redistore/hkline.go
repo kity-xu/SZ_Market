@@ -189,8 +189,8 @@ func (this *HKLine) UpdateYearKLineToRedis(sid int32, today *protocol.KInfo) err
 	}
 }
 
-//Update
-func (this *HKLine) LSetHisKLine(sid int32, latest *protocol.KInfo) error {
+//Append today kline
+func (this *HKLine) AppendTodayLine(sid int32, latest *protocol.KInfo) error {
 	key := fmt.Sprintf(this.CacheKey, sid)
 
 	data, err := proto.Marshal(latest)
@@ -198,7 +198,7 @@ func (this *HKLine) LSetHisKLine(sid int32, latest *protocol.KInfo) error {
 		logging.Error("%v", err.Error())
 		return err
 	}
-	err = redis.LSet(key, 0, data)
+	err = redis.Lpush(key, data)
 	return err
 }
 

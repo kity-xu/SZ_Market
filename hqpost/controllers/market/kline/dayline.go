@@ -132,8 +132,8 @@ func (this *Security) DayLine() {
 				return
 			}
 
-			//更新redis
-			if err := rstore.LSetHisKLine(sid, today); err != nil {
+			//追加redis
+			if err := rstore.AppendTodayLine(sid, today); err != nil {
 				logging.Error("%v", err.Error())
 				return
 			}

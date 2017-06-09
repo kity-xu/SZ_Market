@@ -45,7 +45,7 @@ func (this *Sort) PostJson(c *gin.Context) {
 	}
 	logging.Info("Request %+v", req)
 
-	reply, err := publish.NewSort(publish.REDISKEY_SORT_KDAY_H).GetSortByFieldID(&req)
+	reply, err := publish.NewSort(publish.REDISKEY_SORT_KDAY_H).GetPayloadSort(&req)
 	if err != nil {
 		logging.Error("%v", err)
 		WriteJson(c, 40002, nil)
@@ -64,7 +64,7 @@ func (this *Sort) PostPB(c *gin.Context) {
 	}
 	logging.Info("Request %+v", req)
 
-	reply, err := publish.NewSort(publish.REDISKEY_SORT_KDAY_H).GetSortByFieldID(&req)
+	reply, err := publish.NewSort(publish.REDISKEY_SORT_KDAY_H).GetPayloadSort(&req)
 	if err != nil {
 		logging.Error("%v", err.Error())
 		WriteDataErrCode(c, 40002)
