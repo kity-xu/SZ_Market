@@ -19,7 +19,7 @@ func NewSecurityTable() *SecurityTable {
 }
 
 //A 股市场代码表
-func (this *SecurityTable) Get(c *gin.Context) {
+func (this *SecurityTable) GET(c *gin.Context) {
 	replayfmt := c.Query(models.CONTEXT_FORMAT)
 	if len(replayfmt) == 0 {
 		replayfmt = "pb" // 默认
@@ -52,7 +52,7 @@ func (this *SecurityTable) GetPB(c *gin.Context) {
 		WriteDataErrCode(c, 40002)
 		return
 	}
-	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_MARKET_SECURITY, table)
+	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_MARKET_SECURITY_ASTOCK, table)
 }
 
 //单市场股票代码表

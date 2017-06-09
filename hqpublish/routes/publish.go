@@ -24,7 +24,9 @@ func RegPublish(rg *gin.RouterGroup) {
 	//排序
 	rg.POST("/sort", publish.NewSort().POST)
 
-	//市场、证券信息、股票代码表
+	//A股市场代码表、市场代码表、证券基本信息、股票静态数据
+	rg.GET("/sntab/astock", security.NewSecurityTable().GET) //默认pb模式
+
 	rg.POST("/sntab", security.NewSecurityTable().POST) //默认pb模式
 	rg.POST("/sn", security.NewSecurityInfo().POST)     //默认pb模式
 	rg.POST("/ssta", security.NewSecurityStatic().POST) //默认pb模式
