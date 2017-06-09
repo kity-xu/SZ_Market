@@ -13,13 +13,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type InformationBar struct{}
+type InfoBar struct{}
 
-func NewInformationBar() *InformationBar {
-	return &InformationBar{}
+func NewInfoBar() *InfoBar {
+	return &InfoBar{}
 }
 
-func (this *InformationBar) POST(c *gin.Context) {
+func (this *InfoBar) POST(c *gin.Context) {
 	replayfmt := c.Query(models.CONTEXT_FORMAT)
 	if len(replayfmt) == 0 {
 		replayfmt = "pb" // 默认
@@ -35,7 +35,7 @@ func (this *InformationBar) POST(c *gin.Context) {
 	}
 }
 
-func (this *InformationBar) PostJson(c *gin.Context) {
+func (this *InfoBar) PostJson(c *gin.Context) {
 	var req protocol.RequestSnapshot
 
 	req.SID = 100000001 // 上证指数
@@ -71,7 +71,7 @@ func (this *InformationBar) PostJson(c *gin.Context) {
 	WriteJson(c, 200, payload)
 }
 
-func (this *InformationBar) PostPB(c *gin.Context) {
+func (this *InfoBar) PostPB(c *gin.Context) {
 	var req protocol.RequestSnapshot
 
 	req.SID = 100000001 // 上证指数
