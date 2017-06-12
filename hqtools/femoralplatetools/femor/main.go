@@ -39,12 +39,16 @@ type SerINfo struct {
 }
 
 func main() {
-	lib.CheckDir("E:/hqfile/")
-	_, err := controllers.OpenFile("E:/hqfile/securitiesplate.xml")
+	lib.CheckDir("/opt/hqfile/block/")
+	//	lib.CheckDir("E:/hqfile/")
+	_, err := controllers.OpenFile("/opt/hqfile/block/securitiesplate.xml")
+	//	_, err := controllers.OpenFile("E:/hqfile/securitiesplate.xml")
 	if err != nil {
 		logging.Info("创建文件失败！")
 	}
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
+	// 服务器用
+	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
+	//	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
 	if err != nil {
 		logging.Debug("mysql onn", err)
 	}
@@ -125,5 +129,7 @@ func main() {
 	headerBytes := []byte(xml.Header)
 	//拼接XML头和实际XML内容
 	xmlOutPutData := append(headerBytes, output...)
-	ioutil.WriteFile("E:/hqfile/securitiesplate.xml", xmlOutPutData, os.ModeAppend)
+
+	ioutil.WriteFile("/opt/hqfile/block/securitiesplate.xml", xmlOutPutData, os.ModeAppend) // 服务器用
+	//	ioutil.WriteFile("E:/hqfile/securitiesplate.xml", xmlOutPutData, os.ModeAppend)
 }
