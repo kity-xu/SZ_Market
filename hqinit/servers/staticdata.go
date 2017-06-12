@@ -3,6 +3,7 @@ package servers
 import (
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/LindsayBradford/go-dbf/godbf"
 	_ "github.com/go-sql-driver/mysql"
@@ -12,7 +13,13 @@ import (
 	"github.com/gocraft/dbr"
 	stf "haina.com/market/hqinit/models/fcmysql"
 	//	dkfm "haina.com/market/hqtools/dklinetools/financemysql"
+	"bufio"
+	"io"
+	"strings"
+
 	fms "haina.com/market/hqtools/stockcdfctomgtools/financemysql"
+
+	"github.com/axgle/mahonia"
 )
 
 type SjsHqFile struct {
@@ -60,9 +67,9 @@ type TagStockStatic struct {
 func (this *TagStockStatic) GetStaticDataList() []*TagStockStatic {
 
 	// FC数据库连接
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
+	//	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
 	// 服务器用
-	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
+	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
 	if err != nil {
 		logging.Debug("mysql onn", err)
 	} else {
@@ -70,11 +77,12 @@ func (this *TagStockStatic) GetStaticDataList() []*TagStockStatic {
 	}
 	sess := conn.NewSession(nil)
 
-	// 个股
-	return StockTreatingData(sess)
+	tatic := StockTreatingData(sess)
 
-	// 解析沪深市场证券信息文档
-	//AnalysisFileUpMongodb() //解析实时文件用
+	// 把静态数据传到文件解析进行比对校验
+
+	return AnalysisFileUpMongodb(tatic)
+
 }
 
 // 处理个股静态数据
@@ -243,13 +251,19 @@ func StockTreatingData(sess *dbr.Session) []*TagStockStatic {
 }
 
 // 分析 沪深市场证券基本信息文件修改 静态数据
-func AnalysisFileUpMongodb() {
+func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 
+	// 获取当前日期
+	timed := time.Now().Format("20060102")
+	// 获取当前月日
+	mod := time.Now().Format("0102")
 	// 用来保存沪深所有个股
 	sjshqfiles := []*SjsHqFile{}
 
 	// 解析深证市场sjsxx.dbf文件 （证券信息库）
-	dbfTable, err := godbf.NewFromFile("E:/hqfile/sjsxx.dbf", "UTF8")
+	//	dbfTable, err := godbf.NewFromFile("E:/hqfile/"+timed+"/sz/sjsxx.dbf", "UTF8")
+	// 服务器地址
+	dbfTable, err := godbf.NewFromFile("/opt/develop/hgs/market/hqinit/data/sjsxx.dbf", "UTF8")
 	if err != nil {
 		logging.Info("==========%v", err)
 		os.Exit(1)
@@ -266,7 +280,7 @@ func AnalysisFileUpMongodb() {
 			continue
 		}
 		// 个股代码第一位为0或者3
-		if symstr[:1] == "0" || symstr[:1] == "3" {
+		if symstr[:1] == "0" || symstr[:1] == "3" { // || symstr[:1] == "2" B基金
 			// 个股代码第二位为0
 			if symstr[1:2] == "0" {
 				// 个股代码第三位为0或者2
@@ -328,40 +342,74 @@ func AnalysisFileUpMongodb() {
 			}
 		}
 	}
-	/*
-		// 上交所 证券处理
-		f, err := os.Open("E:/hqfile/cpxx0512.txt") //打开文件
-		defer f.Close()                             //打开文件出错处理
-		decoder := mahonia.NewDecoder("gbk")        // 把原来ANSI格式的文本文件里的字符，用gbk进行解码。
-		if nil == err {
-			buff := bufio.NewReader(decoder.NewReader(f)) //读入缓存
-			for {
-				var sjshqfile SjsHqFile
-				line, err := buff.ReadString('\n') //以'\n'为结束符读入一行
-				if err != nil || io.EOF == err {
-					logging.Info("reader ending", err)
-					break
-				}
-				//可以对一行进行处理
 
-				strl := strings.Split(line, "|") // 根据|切割得到数组
+	logging.Info("=====sz:%v", len(sjshqfiles))
+	// 上交所 证券处理
+	//	f, err := os.Open("E:/hqfile/" + timed + "/sh/cpxx" + mod + ".txt") //打开文件
+	// 服务器用
+	f, err := os.Open("/opt/develop/hgs/market/hqinit/static/" + timed + "/cpxx" + mod + ".txt") //打开文件
+	defer f.Close()                                                                              //打开文件出错处理
+	decoder := mahonia.NewDecoder("gbk")                                                         // 把原来ANSI格式的文本文件里的字符，用gbk进行解码。
+	if nil == err {
+		buff := bufio.NewReader(decoder.NewReader(f)) //读入缓存
+		for {
+			var sjshqfile SjsHqFile
+			line, err := buff.ReadString('\n') //以'\n'为结束符读入一行
+			if err != nil || io.EOF == err {
+				logging.Info("reader ending!")
+				break
+			}
+			//可以对一行进行处理
 
-				// ES 股票
-				if strings.TrimSpace(strl[7]) == "ES" && strings.TrimSpace(strl[8]) == "ASH" {
-					nsid, err := strconv.Atoi("200" + strings.TrimSpace(strl[0]))
-					if err != nil {
-						logging.Info("这个%v证券代码转换in32 error", strl[0])
-					}
-					// 解析上交所 cpxx0512文档 只有证券代码可以利用
-					sjshqfile.NSID = int32(nsid)
-					sjshqfiles = append(sjshqfiles, &sjshqfile)
+			strl := strings.Split(line, "|") // 根据|切割得到数组
+
+			// ES 股票
+			if strings.TrimSpace(strl[7]) == "ES" && strings.TrimSpace(strl[8]) == "ASH" {
+				//				if (strings.TrimSpace(strl[0]))[0:1] == "6" {
+				//					if (strings.TrimSpace(strl[0]))[1:2] == "0" {
+				//						if (strings.TrimSpace(strl[0]))[2:3] >= "0" && (strings.TrimSpace(strl[0]))[2:3] <= "3" {
+				nsid, err := strconv.Atoi("100" + strings.TrimSpace(strl[0]))
+
+				if err != nil {
+					logging.Info("这个%v证券代码转换in32 error", strl[0])
 				}
+				// 解析上交所 cpxx0512文档 只有证券代码可以利用
+				sjshqfile.NSID = int32(nsid)
+				sjshqfiles = append(sjshqfiles, &sjshqfile)
+				//						}
+				//					}
+				//				}
+
 			}
 		}
-	*/
+	}
+	logging.Info("=====sh:%v", len(sjshqfiles))
 	// 沪深市场文档解析完成
 
-	//	for _, item := range sjshqfiles {
-	//		// 对比fc数据库中数据
-	//	}
+	// 对比沪深数据
+	for _, ite := range sjshqfiles {
+		var isis = false
+		for _, item := range tss {
+			if ite.NSID == item.NSID {
+				isis = true
+				item.SzStatus = ite.SzStatus
+				item.NListDate = ite.NListDate
+				item.LlCircuShare = ite.LlCircuShare
+				item.LlTotalShare = ite.LlTotalShare
+				item.NEPS = int32(ite.NEPS * 10000)
+				item.NAVPS = int32(ite.NAVPS * 10000)
+			}
+		}
+		if isis == false {
+			var tssc TagStockStatic
+			tssc.NSID = ite.NSID
+			tssc.SzStatus = ite.SzStatus
+			tssc.NListDate = ite.NListDate
+			tssc.LlCircuShare = ite.LlCircuShare
+			tssc.LlTotalShare = ite.LlTotalShare
+			tssc.NEPS = int32(ite.NEPS * 10000)
+			tssc.NAVPS = int32(ite.NAVPS * 10000)
+		}
+	}
+	return tss
 }
