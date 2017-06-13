@@ -98,7 +98,7 @@ func UseTradeetSentinel(sid int32) *TradeetSentinel {
 
 //------------------------------------------------------------------------------
 // 将分笔成交数据同步到缓存
-// 返回值 int
+// 返回值 int,int (cache len, store len)
 //   -1  错误，缓存redis不可用(本次后续操作跳过缓存redis)
 //   -2  错误，数据redis不可用或没有数据(返回客户端 code 40002)
 //   >=0 缓存key-list长度(llen key)，目前缓存redis和数据redis已同步一致
@@ -142,14 +142,13 @@ func SyncTradeEveryTimeRecord(sid int32) (int, error) {
 	t.RWLock.Lock()
 	t.SyncFlag = true
 	t.RWLock.Unlock()
-	{
-		for _, v := range ls {
-			RedisCache.Rpush(key, []byte(v))
-		}
-		logging.Info("sid %d trade Sync TradeEveryTimeRecord done", sid)
 
-		t.Timestamp = time.Now().Unix()
+	for _, v := range ls {
+		RedisCache.Rpush(key, []byte(v))
 	}
+	logging.Info("sid %d trade Sync TradeEveryTimeRecord done", sid)
+	t.Timestamp = time.Now().Unix()
+
 	t.RWLock.Lock()
 	t.SyncFlag = false
 	t.RWLock.Unlock()
@@ -157,31 +156,18 @@ func SyncTradeEveryTimeRecord(sid int32) (int, error) {
 	return slen, nil
 }
 
-func (this TradeEveryTime) GetTradeEveryTimeJson(req *pro.RequestTradeEveryTime) ([]byte, error) {
-	payload, err := this.GetTradeEveryTimeObj(req)
-	if err != nil {
-		return nil, err
-	}
-	return ctrl.MakeRespJson(200, payload)
-}
-func (this TradeEveryTime) GetTradeEveryTimePB(req *pro.RequestTradeEveryTime) ([]byte, error) {
-	payload, err := this.GetTradeEveryTimeObj(req)
-	if err != nil {
-		return nil, err
-	}
-	return ctrl.MakeRespDataByPB(200, pro.HAINA_PUBLISH_CMD_ACK_TRADEET, payload)
-}
 func (this TradeEveryTime) GetTradeEveryTimeObj(req *pro.RequestTradeEveryTime) (*pro.PayloadTradeEveryTime, error) {
 
 	go SyncTradeEveryTimeRecord(req.SID)
 
 	t := UseTradeetSentinel(req.SID)
-	t.RWLock.RLock()
-	defer t.RWLock.RUnlock()
 
+	t.RWLock.RLock()
 	if t.SyncFlag {
+		t.RWLock.RUnlock()
 		return this.GetPayloadTradeEveryTimeObj(RedisStore, req)
 	}
+	t.RWLock.RUnlock()
 
 	payload, err := this.GetPayloadTradeEveryTimeObj(RedisCache, req)
 	if err == nil {
