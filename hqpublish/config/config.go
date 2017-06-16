@@ -121,6 +121,7 @@ type CacheTTL struct {
 	Min30 int `xml:"hmin30"`
 	Min60 int `xml:"hmin60"`
 	Sort  int `xml:"sort"`
+	Block int `xml:"block"`
 
 	MinK         int `xml:"minK"`
 	MarketStatus int `xml:"marketStatus"`

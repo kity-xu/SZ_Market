@@ -22,6 +22,9 @@ func (this *Security) YearLine() {
 		filepath, ok := filestore.CheckFileSoteDir(single.Sid, cfg.File.Path, cfg.File.Year)
 		if !ok { //不存在，做第一次生成
 			klist = produceYearline(&single)
+			if single.today != nil {
+				klist.List = append(klist.List, single.today) //第一次生成的时候加入当天数据
+			}
 
 			//1.入文件
 			filestore.WiteHainaFileStore(filepath, klist)
@@ -33,7 +36,7 @@ func (this *Security) YearLine() {
 				}
 			}
 		} else {
-			if single.today != nil {
+			if single.today != nil { //今天的数据加入历史
 				if err = filestore.UpdateYearLineToFile(filepath, single.today); err != nil {
 					logging.Error("%v", err.Error())
 				}

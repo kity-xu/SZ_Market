@@ -116,26 +116,26 @@ func (this *Security) DayLine() {
 			dmap[v.NTime] = *v
 		}
 
-		//得到今天的k线
 		lib.GetASCStruct(&klist.List) //按时间升序排序
 
+		//得到今天的k线
 		today, e := GetTodayDayLine(sid, klist.List[len(klist.List)-1].NLastPx) //昨收价 lastPx 0
 		if e == nil && today != nil {                                           //获取当天数据没毛病
-			tm := filestore.GetDateToday()
-			date = append(date, tm)
-			dmap[tm] = *today
+			//tm := filestore.GetDateToday()	//今天的K线不加入周、月、年的计算
+			//date = append(date, tm)
+			//dmap[tm] = *today
 			sigList.today = today
 
 			//追加到文件
 			if err := filestore.AppendFile(filename, today); err != nil {
 				logging.Error("%v", err.Error())
-				return
+				continue
 			}
 
 			//追加redis
 			if err := rstore.AppendTodayLine(sid, today); err != nil {
 				logging.Error("%v", err.Error())
-				return
+				continue
 			}
 		} else {
 			//logging.Debug("获取%v当天K线信息失败...", sid)
