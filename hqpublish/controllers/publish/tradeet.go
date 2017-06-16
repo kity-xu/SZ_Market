@@ -74,7 +74,6 @@ func (this *TradeEveryTime) PostJson(c *gin.Context) {
 		return
 	}
 	WriteJson(c, 200, payload)
-
 }
 
 func (this *TradeEveryTime) PostPB(c *gin.Context) {

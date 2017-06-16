@@ -64,7 +64,7 @@ func (this TradeEveryTimeNow) GetTradeEveryTimeNowObj(req *pro.RequestTradeEvery
 		logging.Error("%v", err)
 		return nil, err
 	}
-	if slen == 0 {
+	if slen <= 0 {
 		return &pro.PayloadTradeEveryTimeNow{
 			SID:     req.SID,
 			Total:   int32(slen),
@@ -93,7 +93,6 @@ func (this TradeEveryTimeNow) GetTradeEveryTimeNowObj(req *pro.RequestTradeEvery
 
 	rows := make([]*pro.TradeEveryTimeRecord, 0, 5000)
 
-	//for _, v := range ls {
 	for i := len(ls) - 1; i > -1; i-- {
 		trade := &pro.TradeEveryTimeRecord{}
 		bufer := bytes.NewBuffer([]byte(ls[i]))
@@ -111,5 +110,4 @@ func (this TradeEveryTimeNow) GetTradeEveryTimeNowObj(req *pro.RequestTradeEvery
 		Num:     int32(len(rows)),
 		DTRList: rows,
 	}, nil
-
 }
