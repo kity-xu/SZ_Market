@@ -45,4 +45,7 @@ func RegPublish(rg *gin.RouterGroup) {
 
 	// 信息栏 -zxw
 	rg.POST("/infobar", publish.NewInfoBar().POST)
+	// 证券集合(板块) -zxw
+	rg.POST("/subset", publish.NewStockBlockSet().POST)
+
 }
