@@ -41,6 +41,25 @@ func NewTradeEveryTime() *TradeEveryTime {
 	}
 }
 
+func (this TradeEveryTime) GetTradeEveryTimeObj2(req *pro.RequestTradeEveryTime) (*pro.PayloadTradeEveryTime, error) {
+	curr := NewTraceRecord(req.SID)
+	start := req.Begin
+	stop := int32(-1)
+	if req.Num > 0 {
+		stop = req.Begin + req.Num - 1
+	}
+	if err := curr.SyncAndGetTradeRecords(int(start), int(stop)); err != nil {
+		return nil, err
+	}
+	return &pro.PayloadTradeEveryTime{
+		SID:     req.SID,
+		Total:   curr.Total,
+		Begin:   start,
+		Num:     int32(len(curr.List)),
+		DTRList: curr.List,
+	}, nil
+}
+
 func (this TradeEveryTime) GetTradeEveryTimeObj(req *pro.RequestTradeEveryTime) (*pro.PayloadTradeEveryTime, error) {
 
 	clen, cerr, slen, serr := SyncTradeEveryTimeRecord(req.SID)
@@ -55,7 +74,7 @@ func (this TradeEveryTime) GetTradeEveryTimeObj(req *pro.RequestTradeEveryTime) 
 		Num:     0,
 		DTRList: nil,
 	}
-	t := UseTradeetSentinel(req.SID)
+	t := UseTradeSentinel(req.SID)
 
 	// 当缓存Redis正在同步时,使用数据Redis
 	if t.SyncFlag {

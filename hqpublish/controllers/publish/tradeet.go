@@ -67,7 +67,7 @@ func (this *TradeEveryTime) PostJson(c *gin.Context) {
 		return
 	}
 
-	payload, err := publish.NewTradeEveryTime().GetTradeEveryTimeObj(&req)
+	payload, err := publish.NewTradeEveryTime().GetTradeEveryTimeObj2(&req)
 	if err != nil {
 		logging.Error("%v", err)
 		WriteJson(c, 40002, nil)
