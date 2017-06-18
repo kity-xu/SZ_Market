@@ -313,12 +313,18 @@ func ExpireAt(hour int, min int, sec int) time.Time {
 }
 
 func (this *TraceRecord) SyncAndGetTradeRecords(start int, stop int) error {
+	if this.Sentinel.SyncFlag {
+		logging.Info("Running in sync, use RedisStore")
+		return this.GetTradeRecordsFrom(RedisStore, start, stop)
+	}
+
 	this.Sentinel.RWLock.RLock()
 	defer this.Sentinel.RWLock.RUnlock()
 
 	clen, err := RedisCache.Llen(this.Key)
 	if err != nil && err == hsgrr.ErrNil {
 		// 缓存出错不可用
+		logging.Info("RedisCache error, use RedisStore")
 		return this.GetTradeRecordsFrom(RedisStore, start, stop)
 	}
 
@@ -328,6 +334,7 @@ func (this *TraceRecord) SyncAndGetTradeRecords(start int, stop int) error {
 	}
 
 	if slen == clen {
+		logging.Info("RedisStore and RedisCache is the same, use RedisCache")
 		return this.GetTradeRecordsFrom(RedisCache, start, stop)
 	} else if slen < clen {
 		clen = 0
@@ -341,7 +348,6 @@ func (this *TraceRecord) SyncAndGetTradeRecords(start int, stop int) error {
 	if serr != nil {
 		return serr
 	}
-	fmt.Println(len(ls))
 
 	if slen < clen {
 		go this.SafeSyncTraceRecord(true, ls)
@@ -349,64 +355,70 @@ func (this *TraceRecord) SyncAndGetTradeRecords(start int, stop int) error {
 		go this.SafeSyncTraceRecord(false, ls)
 	}
 
-	logging.Info("mark !!!!!!!!!!!!!!!!!!!!!!!!")
-	if stop == -1 { // 到结束
-		if start <= clen {
-			logging.Info("mark !!!!!!!!!!!!!!!!!!!!!!!!")
-			goto merge
-		} else {
-			logging.Info("mark !!!!!!!!!!!!!!!!!!!!!!!!")
-			goto only_from_cache
-		}
-	} else {
-		if stop <= clen {
-			logging.Info("mark !!!!!!!!!!!!!!!!!!!!!!!!")
-			goto only_from_cache
-		} else if start < clen && clen < stop {
-			logging.Info("mark !!!!!!!!!!!!!!!!!!!!!!!!")
-			goto merge
-		} else if start > clen {
-			logging.Info("mark !!!!!!!!!!!!!!!!!!!!!!!!")
-			goto only_from_store
-		} else {
-			// 此处如何写，思索中
-		}
+	if stop == -1 {
+		// 到结束
+		stop = slen
 	}
-	logging.Info("mark !!!!!!!!!!!!!!!!!!!!!!!!")
+	n := start
+	m := stop
+	c := clen
+	s := slen
+
+	switch {
+	case n < c && m < c:
+		goto from_cache
+	case n >= c && m >= c: // from ls
+		goto from_store
+	case n < c && m >= c:
+		goto merge_cast
+	default:
+		logging.Fatal("exception condition...")
+		return this.GetTradeRecordsFrom(RedisStore, start, stop)
+	}
 
 	return nil
 
-only_from_cache:
+from_cache:
 	{
-		cls, err := RedisCache.LRange(this.Key, start, stop)
+		// 从缓存Redis取数据
+		logging.Info("from cache get list[n m]=[%d %d], clen=%d, slen=%d\n", n, m, c, s)
+		cls, err := RedisCache.LRange(this.Key, start, stop) //redis list: lrange key n m包含m,区别于go slice[n:m]不包含m
 		if err != nil {
 			return err
 		}
 		this.Total = int32(clen)
 		return this.StringsToTradeRecordss(cls)
 	}
-only_from_store:
+from_store:
 	{
-		//cls, err := RedisStore.LRange(this.Key, start, stop)
-		cls := ls[start:stop]
-		this.Total = int32(slen)
+		// 从数据Redis取数据, 复用ls切片
+		logging.Info("from store get list[n m]=[%d %d], clen=%d, slen=%d\n", n, m, c, s)
+		n = n - c
+		m = m - c + 1 // 切片的后置下标不包含m,故+1
+		if m > len(ls) {
+			m = len(ls)
+		}
+		cls := ls[n:m]           // 切片的后置下标不包含m
+		this.Total = int32(slen) // 本次请求时交易总条数
 		return this.StringsToTradeRecordss(cls)
 	}
-merge:
+merge_cast:
 	{
 		// 需要从数据Redis和缓存Redis各取一部分数据
-		cls, err := RedisCache.LRange(this.Key, start, clen)
+		logging.Info("merge cast get list[n m]=[%d %d], clen=%d, slen=%d\n", n, m, c, s)
+		cls, err := RedisCache.LRange(this.Key, n, c-1)
 		if err != nil {
 			return err
 		}
-		sls, err := RedisStore.LRange(this.Key, clen+1, stop)
-		if err != nil {
-			return err
+		n = 0
+		m = m - c + 1
+		if m > len(ls) {
+			m = len(ls)
 		}
+		sls := ls[n:m]
 		cls = append(cls, sls...)
 		this.Total = int32(slen)
 		return this.StringsToTradeRecordss(cls)
-
 	}
 	return nil
 }
@@ -435,6 +447,10 @@ func (this *TraceRecord) StringToTradeRecords(v *string) (*pro.TradeEveryTimeRec
 }
 
 func (this TraceRecord) SyncTradeRecords(del bool, ls []string) error {
+	this.Sentinel.SyncFlag = true
+	defer func() {
+		this.Sentinel.SyncFlag = false
+	}()
 	if del {
 		return RedisCache.Del(this.Key)
 	}
@@ -451,6 +467,7 @@ func (this TraceRecord) SyncTradeRecords(del bool, ls []string) error {
 
 	_, err := RedisCache.Llen(this.Key)
 	if err != nil {
+		logging.Warning("sync trade: %v", err)
 		return err
 	}
 	return nil
@@ -490,4 +507,23 @@ func (this *TraceRecord) SafeGetTradeRecordsFrom(r *redis.RedisPool, start int, 
 	this.Sentinel.RWLock.RLock()
 	defer this.Sentinel.RWLock.RUnlock()
 	return this.SafeGetTradeRecordsFrom(r, start, stop)
+}
+
+//==============================================================================
+// 存PB版
+type TraceRecordObj struct {
+	Sid      int32
+	Key      string
+	Sentinel *TradeSentinel
+	Total    int32                      // 返回的当前交易数量
+	Obj      *pro.PayloadTradeEveryTime // 返回的成交记录
+}
+
+func NewTraceRecordObj(sid int32) *TraceRecordObj {
+	t := UseTradeSentinel(sid)
+	return &TraceRecordObj{
+		Sid:      sid,
+		Key:      fmt.Sprintf(TradeCacheKey, sid),
+		Sentinel: t,
+	}
 }
