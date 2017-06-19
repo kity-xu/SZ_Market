@@ -205,6 +205,9 @@ func ReadHainaFileStore(filename string) (*protocol.KInfoTable, error) {
 
 //binary 形式
 func WiteHainaFileStore(filepath string, ktable *protocol.KInfoTable) error {
+	if len(ktable.List) < 1 {
+		return errors.New("The history is nill..")
+	}
 	buffer := new(bytes.Buffer)
 
 	for _, v := range ktable.List {

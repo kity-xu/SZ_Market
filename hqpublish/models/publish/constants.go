@@ -68,8 +68,9 @@ const (
 
 //排序
 const (
-	REDISKEY_SORT_KDAY_H = "hq:sort:%d:%d" ///<排序结果(顺序，参数：证券组id,字段id) (calc写入)
-
+	REDISKEY_SORT_KDAY_H = "hq:sort:%d:%d"    ///<排序结果(顺序，参数：证券组id,字段id) (calc写入)
+	REDISKEY_BLOCK       = "hq:init:bk:%d"    ///板块
+	REDISKEY_ELEMENT     = "hq:init:bk:%d:%d" ///成份股
 )
 
 // 证券集合(板块)

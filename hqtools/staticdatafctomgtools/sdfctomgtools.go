@@ -21,9 +21,9 @@ import (
 const (
 	// 服务器mongodb://user:passwd@ip:port/db_name
 	//URL = "mongodb://hgs:xnX9^tsx7!4W@172.16.1.59:57017/hgs"
-	URL = "127.0.0.1:57017/hgs"
+	//URL = "127.0.0.1:57017/hgs"
 	// 本地用
-	//URL                  = "192.168.18.200:27017"
+	URL                  = "192.168.18.200:27017"
 	GLOBAL_SECRITY_TABLE = "basic_staticdata_table" // 证券静态数据monogoDb库
 )
 

@@ -27,32 +27,34 @@ const (
 )
 
 type TagStockSortInfo struct {
-	NSID         int32                   //SID
-	NLastPx      int32                   //最新价
-	NOpenPx      int32                   //开盘价
-	NHighPx      int32                   //最高价
-	NLowPx       int32                   //最低价
-	LlVolume     int64                   ///< 成交量
-	LlValue      int64                   ///< 总成交额(*10000)
-	NPxChgRatio  int32                   ///< 涨幅
-	NPxAmplitude int32                   //振幅
-	NPxChg       int32                   //涨跌
-	NPE          int32                   //市盈（动）
-	NPB          int32                   //市净（动）
-	NLiangbi     int32                   //量比
-	NWeibi       int32                   //委比
-	LlMarketVal  int64                   //总市值
-	LlFlowVal    int64                   //流通市值
-	NAveBidPx    int32                   //委买均价
-	NAveOfferPx  int32                   //委卖均价
-	LlBidVol     int64                   //委买总量
-	LlOfferVol   int64                   //委卖总量
-	NBid1Px      int32                   //买一价
-	NOffer1Px    int32                   //卖一价
-	LlBid1Vol    int64                   //买一量
-	LlOffer1Vol  int64                   //卖一量
-	SzSName      [SECURITY_NAME_LEN]byte //证券代码名称
-	SzIndusCode  [INDUSTRY_CODE_LEN]byte ///< 行业代码
+	NSID              int32                   //SID
+	NLastPx           int32                   //最新价
+	NOpenPx           int32                   //开盘价
+	NHighPx           int32                   //最高价
+	NLowPx            int32                   //最低价
+	LlVolume          int64                   ///< 成交量
+	LlValue           int64                   ///< 总成交额(*10000)
+	NPxChgRatio       int32                   ///< 涨幅
+	NPxAmplitude      int32                   //振幅
+	NPxChg            int32                   //涨跌
+	NPE               int32                   //市盈（动）
+	NPB               int32                   //市净（动）
+	NLiangbi          int32                   //量比
+	NWeibi            int32                   //委比
+	LlMarketVal       int64                   //总市值
+	LlFlowVal         int64                   //流通市值
+	NAveBidPx         int32                   //委买均价
+	NAveOfferPx       int32                   //委卖均价
+	LlBidVol          int64                   //委买总量
+	LlOfferVol        int64                   //委卖总量
+	NBid1Px           int32                   //买一价
+	NOffer1Px         int32                   //卖一价
+	LlBid1Vol         int64                   //买一量
+	LlOffer1Vol       int64                   //卖一量
+	LlValueOfInFlow   int64                   //资金流入额(*10000)
+	SzSName           [SECURITY_NAME_LEN]byte //证券代码名称
+	SzIndusCode       [INDUSTRY_CODE_LEN]byte ///< 行业代码
+	NPxChgRatioIn5Min int32                   ///5分钟涨跌幅(*10000)
 }
 
 type Sort struct {
@@ -93,32 +95,34 @@ func (this *Sort) GetSortByFieldID(req *protocol.RequestSort) (*protocol.RedisSo
 			return nil, err
 		}
 		info := &protocol.TagStockSortInfo{
-			NSID:         v.NSID,
-			NLastPx:      v.NLastPx,
-			NOpenPx:      v.NOpenPx,
-			NHighPx:      v.NHighPx,
-			NLowPx:       v.NLowPx,
-			LlVolume:     v.LlVolume,
-			LlValue:      v.LlValue,
-			NPxChgRatio:  v.NPxChgRatio,
-			NPxAmplitude: v.NPxAmplitude,
-			NPxChg:       v.NPxChg,
-			NPE:          v.NPE,
-			NPB:          v.NPB,
-			NLiangbi:     v.NLiangbi,
-			NWeibi:       v.NWeibi,
-			LlMarketVal:  v.LlMarketVal,
-			LlFlowVal:    v.LlFlowVal,
-			NAveBidPx:    v.NAveBidPx,
-			NAveOfferPx:  v.NAveOfferPx,
-			LlBidVol:     v.LlBidVol,
-			LlOfferVol:   v.LlOfferVol,
-			NBid1Px:      v.NBid1Px,
-			NOffer1Px:    v.NOffer1Px,
-			LlBid1Vol:    v.LlBid1Vol,
-			LlOffer1Vol:  v.LlOffer1Vol,
-			SzSName:      byte40ToString(v.SzSName),
-			SzIndusCode:  byte8ToString(v.SzIndusCode),
+			NSID:              v.NSID,
+			NLastPx:           v.NLastPx,
+			NOpenPx:           v.NOpenPx,
+			NHighPx:           v.NHighPx,
+			NLowPx:            v.NLowPx,
+			LlVolume:          v.LlVolume,
+			LlValue:           v.LlValue,
+			NPxChgRatio:       v.NPxChgRatio,
+			NPxAmplitude:      v.NPxAmplitude,
+			NPxChg:            v.NPxChg,
+			NPE:               v.NPE,
+			NPB:               v.NPB,
+			NLiangbi:          v.NLiangbi,
+			NWeibi:            v.NWeibi,
+			LlMarketVal:       v.LlMarketVal,
+			LlFlowVal:         v.LlFlowVal,
+			NAveBidPx:         v.NAveBidPx,
+			NAveOfferPx:       v.NAveOfferPx,
+			LlBidVol:          v.LlBidVol,
+			LlOfferVol:        v.LlOfferVol,
+			NBid1Px:           v.NBid1Px,
+			NOffer1Px:         v.NOffer1Px,
+			LlBid1Vol:         v.LlBid1Vol,
+			LlOffer1Vol:       v.LlOffer1Vol,
+			LlValueOfInFlow:   v.LlValueOfInFlow,
+			SzSName:           byte40ToString(v.SzSName),
+			SzIndusCode:       byte8ToString(v.SzIndusCode),
+			NPxChgRatioIn5Min: v.NPxChgRatioIn5Min,
 		}
 		table.List = append(table.List, info)
 	}
@@ -174,7 +178,7 @@ func (this *Sort) GetPayloadSort(req *protocol.RequestSort) (*protocol.PayloadSo
 				return nil, err
 			}
 
-			swapFB(original) //逆序排序
+			swapSort(original) //逆序排序
 			//入 redis cache
 			data, err := proto.Marshal(original)
 			if err != nil {
@@ -215,7 +219,7 @@ func byte40ToString(src [40]byte) string {
 	var des []byte
 
 	for _, v := range src {
-		if v == '\u0000' {
+		if v == '\u0000' || v == '0' {
 			break
 		}
 		des = append(des, v)
@@ -227,7 +231,7 @@ func byte8ToString(src [8]byte) string {
 	var des []byte
 
 	for _, v := range src {
-		if v == '\u0000' {
+		if v == '\u0000' || v == '0' {
 			break
 		}
 		des = append(des, v)
@@ -235,8 +239,19 @@ func byte8ToString(src [8]byte) string {
 	return string(des)
 }
 
+func byte12ToString(src [12]byte) string {
+	var ss []byte
+	for _, v := range src {
+		if v == '0' || v == '\u0000' {
+			break
+		}
+		ss = append(ss, v)
+	}
+	return string(ss)
+}
+
 //首尾交换未知
-func swapFB(table *protocol.RedisSortTable) {
+func swapSort(table *protocol.RedisSortTable) {
 	lengh := len(table.List)
 
 	for i := 0; i < lengh; i++ {

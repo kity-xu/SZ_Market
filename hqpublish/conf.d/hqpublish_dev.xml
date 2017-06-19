@@ -65,7 +65,7 @@
 	     <addr>47.94.16.69:60000</addr>  
         <auth>T_vYzoqa0Qn7Pa4T</auth>
         <db>0</db>
-        <timeout>3</timeout> 
+        <timeout>7</timeout> 
     </redisCache>
 	<fileStore>
 		<path>E:/opt/develop/store/kline</path>
@@ -97,7 +97,8 @@
         
         <minK>30</minK>                 <!-- 分钟k线 分时线 -->
         <marketStatus>3</marketStatus> 	<!-- 市场状态 -->
-		<sort>3</sort>
+		<sort>3</sort>					<!-- 排序； 单位（秒） -->
+		<block>930</block>			    <!-- 板块； 9:30 -->
     </cacheTTL>
 	
 </configuration>

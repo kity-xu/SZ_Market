@@ -17,6 +17,8 @@ import (
 	"io"
 	"strings"
 
+	//	"haina.com/market/hqinit/config"
+
 	fms "haina.com/market/hqtools/stockcdfctomgtools/financemysql"
 
 	"github.com/axgle/mahonia"
@@ -66,10 +68,11 @@ type TagStockStatic struct {
 // 整理静态数据放到monogoDB中
 func (this *TagStockStatic) GetStaticDataList() []*TagStockStatic {
 
+	//	var cfg *config.AppConfig
 	// FC数据库连接
-	//	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
+	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
 	// 服务器用
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
+	//conn, err := dbr.Open(cfg.MysqlStore.MysqlN, cfg.MysqlStore.Source, nil)
 	if err != nil {
 		logging.Debug("mysql onn", err)
 	} else {
@@ -261,7 +264,7 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 	sjshqfiles := []*SjsHqFile{}
 
 	// 解析深证市场sjsxx.dbf文件 （证券信息库）
-	//	dbfTable, err := godbf.NewFromFile("E:/hqfile/"+timed+"/sz/sjsxx.dbf", "UTF8")
+	//dbfTable, err := godbf.NewFromFile("E:/hqfile/"+timed+"/sz/sjsxx.dbf", "UTF8")
 	// 服务器地址
 	dbfTable, err := godbf.NewFromFile("/opt/develop/hgs/market/hqinit/data/sjsxx.dbf", "UTF8")
 	if err != nil {
@@ -345,7 +348,7 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 
 	logging.Info("=====sz:%v", len(sjshqfiles))
 	// 上交所 证券处理
-	//	f, err := os.Open("E:/hqfile/" + timed + "/sh/cpxx" + mod + ".txt") //打开文件
+	//f, err := os.Open("E:/hqfile/" + timed + "/sh/cpxx" + mod + ".txt") //打开文件
 	// 服务器用
 	f, err := os.Open("/opt/develop/hgs/market/hqinit/static/" + timed + "/cpxx" + mod + ".txt") //打开文件
 	defer f.Close()                                                                              //打开文件出错处理
@@ -409,7 +412,9 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 			tssc.LlTotalShare = ite.LlTotalShare
 			tssc.NEPS = int32(ite.NEPS * 10000)
 			tssc.NAVPS = int32(ite.NAVPS * 10000)
+			tss = append(tss, &tssc)
 		}
+
 	}
 	return tss
 }

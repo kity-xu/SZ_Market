@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strconv"
+	//	"strconv"
 
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
@@ -158,26 +158,26 @@ func main() {
 				si.Name = sitem.SENAME.String
 				serl = append(serl, si)
 
-				var bi protocol.StockBlock
+				//				var bi protocol.StockBlock
 
-				bi.BoardCode = boar1ji.BOARDCODE.String
-				bi.BoardName = boar1ji.BOARDNAME.String
-				bi.KeyCode = boar2ji.KEYCODE.String
-				bi.KeyName = boar2ji.KEYNAME.String
+				//				bi.BoardCode = boar1ji.BOARDCODE.String
+				//				bi.BoardName = boar1ji.BOARDNAME.String
+				//				bi.KeyCode = boar2ji.KEYCODE.String
+				//				bi.KeyName = boar2ji.KEYNAME.String
 
-				nsid, err := strconv.Atoi(si.Nsid)
-				if err != nil {
-					logging.Info("证券id类型转换 error:%v", err)
-				}
-				bi.Snid = int32(nsid)
-				bi.SName = sitem.SENAME.String
+				//				nsid, err := strconv.Atoi(si.Nsid)
+				//				if err != nil {
+				//					logging.Info("证券id类型转换 error:%v", err)
+				//				}
+				//				bi.Snid = int32(nsid)
+				//				bi.SName = sitem.SENAME.String
 
-				//转PB
-				data, err := proto.Marshal(&bi)
-				if err != nil {
-					logging.Error("Encode protocbuf of week Line error...%v", err.Error())
-					return
-				}
+				//				//转PB
+				//				data, err := proto.Marshal(&bi)
+				//				if err != nil {
+				//					logging.Error("Encode protocbuf of week Line error...%v", err.Error())
+				//					return
+				//				}
 
 				//key := fmt.Sprintf("hq:init:bk:%s:%s:%s", boar1ji.BOARDCODE.String, boar2ji.KEYCODE.String, si.Nsid)
 				//c.Do("SET", key, data)

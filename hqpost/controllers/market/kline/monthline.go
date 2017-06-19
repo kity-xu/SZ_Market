@@ -23,7 +23,10 @@ func (this *Security) MonthLine() {
 		)
 		filepath, ok := filestore.CheckFileSoteDir(single.Sid, cfg.File.Path, cfg.File.Month)
 		if !ok { //不存在，做第一次生成
-			klist = produceMonthline(&single) //klist已包含当天的数据了
+			klist = produceMonthline(&single)
+			if single.today != nil {
+				klist.List = append(klist.List, single.today) //第一次生成的时候加入当天数据
+			}
 
 			//1.入文件
 			filestore.WiteHainaFileStore(filepath, klist)
@@ -36,7 +39,7 @@ func (this *Security) MonthLine() {
 				}
 			}
 		} else {
-			if single.today != nil {
+			if single.today != nil { //今天的数据加入历史
 				if err = filestore.UpdateMonthLineToFile(filepath, single.today); err != nil {
 					logging.Error("%v", err.Error())
 				}

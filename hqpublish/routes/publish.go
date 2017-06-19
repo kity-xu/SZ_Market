@@ -24,6 +24,10 @@ func RegPublish(rg *gin.RouterGroup) {
 	//排序
 	rg.POST("/sort", publish.NewSort().POST)
 
+	//板块及板块成分
+	rg.POST("/block", publish.NewStockBlock().POST)
+	rg.POST("/element", publish.NewStockElement().POST)
+
 	//A股市场代码表、市场代码表、证券基本信息、股票静态数据
 	rg.GET("/sntab/astock", security.NewSecurityTable().GET) //默认pb模式
 
