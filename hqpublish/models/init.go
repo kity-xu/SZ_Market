@@ -2,6 +2,8 @@ package models
 
 import (
 	"haina.com/market/hqpublish/config"
+	"haina.com/share/logging"
+	"haina.com/share/models"
 )
 
 var (
@@ -12,6 +14,14 @@ var (
 func init() {
 
 	cfg := config.Default(APP_PID)
+
+	//初始化 MySQL 配置
+	err := models.Init(cfg.Db.DriverName, cfg.Db.DataSource)
+	if err != nil {
+		logging.Fatal(err)
+		return
+	}
+
 	FStore = &cfg.File
 	TTL = &cfg.TTL
 
