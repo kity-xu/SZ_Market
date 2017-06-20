@@ -47,7 +47,9 @@ func RegPublish(rg *gin.RouterGroup) {
 	rg.POST("/infobar", publish.NewInfoBar().POST)
 	// 证券集合(板块) -zxw
 	rg.POST("/subset", publish.NewStockBlockSet().POST)
-	// 公告信息 -zxw
-	rg.POST("/notice", publish.NewNoticeInfo().POST)
+	// 公告信息集合 -zxw
+	rg.POST("/hisevent", publish.NewNoticeInfo().POST)
+	// 单条公告信息
+	rg.POST("/hiseventid", publish.NewHisEvent().POST)
 
 }

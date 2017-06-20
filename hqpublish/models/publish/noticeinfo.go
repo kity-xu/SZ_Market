@@ -1,4 +1,4 @@
-// 公告信息
+// 公告信息集合
 package publish
 
 import (
@@ -16,7 +16,7 @@ func NewNoticeinfoL() *NoticeinfoL {
 	return &NoticeinfoL{}
 }
 
-// 公告信息
+// 公告信息集合
 func (this *NoticeinfoL) GetNoticeInfoL(req *protocol.RequestNoticeInfo) (*protocol.PayloadNoticeInfo, error) {
 
 	var psb protocol.PayloadNoticeInfo
@@ -37,10 +37,10 @@ func (this *NoticeinfoL) GetNoticeInfoL(req *protocol.RequestNoticeInfo) (*proto
 	psb.SID = req.SID
 	psb.Num = int32(len(noif))
 	for _, ite := range noif {
-		var noti protocol.NoticeInfoB
+		var noti protocol.NoticeInfoSet
+		noti.NNoticeID = ite.ID
 		noti.NDeclardate = ite.DECLAREDATE
 		noti.SzHeadline = ite.ANNTITLE.String
-		noti.SzWebtake = ite.ANNTEXT.String
 		noti.SzNoticeType = ite.ANNTYPE.String
 		isif := ite.LEVEL1.String
 		if len(isif) < 1 {

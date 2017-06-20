@@ -12,10 +12,11 @@ const (
 
 type TQ_SK_ANNOUNCEMT struct {
 	Model       `db:"-" `
+	ID          int32          // 公告ID
 	DECLAREDATE int32          // 公告日期
 	ANNTITLE    dbr.NullString // 公告标题
-	ANNTEXT     dbr.NullString // 公告内容
 	ANNTYPE     dbr.NullString // 全文类型
+	ANNTEXT     dbr.NullString // 公告内容
 	LEVEL1      dbr.NullString // 一级分类
 
 }
@@ -32,7 +33,7 @@ func NewTQ_SK_ANNOUNCEMT() *TQ_SK_ANNOUNCEMT {
 func (this *TQ_SK_ANNOUNCEMT) GetNoticeInfo(ccode string) ([]*TQ_SK_ANNOUNCEMT, error) {
 	var tsa []*TQ_SK_ANNOUNCEMT
 
-	bulid := this.Db.Select("ANNTYPE,DECLAREDATE,ANNTITLE,ANNTEXT,LEVEL1").
+	bulid := this.Db.Select("ID,ANNTYPE,DECLAREDATE,ANNTITLE,LEVEL1").
 		From(this.TableName).
 		Where("COMPCODE='" + ccode + "'").
 		Where("ISVALID=1").
@@ -45,4 +46,20 @@ func (this *TQ_SK_ANNOUNCEMT) GetNoticeInfo(ccode string) ([]*TQ_SK_ANNOUNCEMT, 
 		return tsa, err
 	}
 	return tsa, err
+}
+
+func (this *TQ_SK_ANNOUNCEMT) GetHisEvent(heid string) (*TQ_SK_ANNOUNCEMT, error) {
+	var tsa TQ_SK_ANNOUNCEMT
+	bulid := this.Db.Select("ID,ANNTYPE,DECLAREDATE,ANNTITLE,ANNTEXT,LEVEL1").
+		From(this.TableName).
+		Where("ID='" + heid + "'").
+		Where("ISVALID=1")
+
+	_, err := this.SelectWhere(bulid, nil).LoadStructs(&tsa)
+
+	if err != nil {
+		logging.Debug("%v", err)
+		return &tsa, err
+	}
+	return &tsa, err
 }
