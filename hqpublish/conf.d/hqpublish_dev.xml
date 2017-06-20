@@ -62,10 +62,11 @@
         <timeout>3</timeout> 
     </redisStore>
     <redisCache>
-	     <addr>47.94.16.69:60000</addr>  
+         <addr>47.94.16.69:60000</addr>  
+<!--	    <addr>192.168.18.200:7379</addr>-->
         <auth>T_vYzoqa0Qn7Pa4T</auth>
-        <db>0</db>
-        <timeout>7</timeout> 
+        <db>7</db>
+        <timeout>3</timeout> 
     </redisCache>
 	<fileStore>
 		<path>E:/opt/develop/store/kline</path>

@@ -67,13 +67,14 @@ func (this *TradeEveryTimeNow) PostJson(c *gin.Context) {
 		return
 	}
 
-	js, err := publish.NewTradeEveryTimeNow().GetTradeEveryTimeNowJson(&req)
+	payload, err := publish.NewTradeEveryTimeNow().GetTradeEveryTimeNowObj(&req)
 	if err != nil {
 		logging.Error("%v", err)
 		WriteJson(c, 40002, nil)
 		return
 	}
-	WriteDataJson(c, js)
+	WriteJson(c, 200, payload)
+
 }
 
 func (this *TradeEveryTimeNow) PostPB(c *gin.Context) {
@@ -90,11 +91,11 @@ func (this *TradeEveryTimeNow) PostPB(c *gin.Context) {
 		return
 	}
 
-	data, err := publish.NewTradeEveryTimeNow().GetTradeEveryTimeNowPB(&req)
+	payload, err := publish.NewTradeEveryTimeNow().GetTradeEveryTimeNowObj(&req)
 	if err != nil {
 		logging.Error("%v", err)
 		WriteDataErrCode(c, 40002)
 		return
 	}
-	WriteDataBinary(c, data)
+	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_TRADEETNOW, payload)
 }
