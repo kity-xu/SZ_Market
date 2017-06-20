@@ -41,3 +41,14 @@ func (this *FcSecuNameTab) GetExponentList(sess *dbr.Session) ([]*FcSecuNameTab,
 		OrderBy("SYMBOL").LoadStructs(&data)
 	return data, err
 }
+
+// 根据 str 查询证券信息
+func (this *FcSecuNameTab) GetComCodeList(sess *dbr.Session, str string) ([]FcSecuNameTab, error) {
+	var code []FcSecuNameTab
+	_, err := sess.Select("*").From("TQ_OA_STCODE").
+		Where("ISVALID =1").
+		Where("SETYPE=101").
+		Where("SECODE in (" + str + ")").
+		OrderBy("SECODE").LoadStructs(&code)
+	return code, err
+}

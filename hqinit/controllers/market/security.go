@@ -25,6 +25,9 @@ func Update(cfg *config.AppConfig) {
 	//证券静态数据
 	security.UpdateSecurityStaticInfo(cfg)
 
+	// 板块信息
+	security.UpdateStockBlockSet(cfg)
+
 	end := time.Now()
 	logging.Info("Update Kline historical data successed, and running time:%v", end.Sub(start))
 

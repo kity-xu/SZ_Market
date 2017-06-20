@@ -23,6 +23,15 @@ func (this *TQ_COMP_BOARDMAP) GetBoardmapList(sess *dbr.Session) ([]TQ_COMP_BOAR
 	return boa, err
 }
 
+// 查询一级板块 入 redis
+func (this *TQ_COMP_BOARDMAP) GetBoardmapRedis(sess *dbr.Session) ([]TQ_COMP_BOARDMAP, error) {
+	var boa []TQ_COMP_BOARDMAP
+	_, err := sess.Select("*").From("TQ_COMP_BOARDMAP").
+		Where("BOARDCODE in('1102','1105','1109') and ISVALID =1").
+		LoadStructs(&boa)
+	return boa, err
+}
+
 // 二级板块
 func (this *TQ_COMP_BOARDMAP) GetBoardmap2List(sess *dbr.Session, bocode string) ([]TQ_COMP_BOARDMAP, error) {
 	var boa []TQ_COMP_BOARDMAP
