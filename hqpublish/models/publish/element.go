@@ -50,7 +50,7 @@ func (this *Element) GetBlockElementReply(req *protocol.RequestElement) (*protoc
 	logging.Debug("--------%v", len(elms.List))
 
 	//-------------------------------------排序结果数据-------------------------------------------------------//
-	dkey := fmt.Sprintf("hq:sort:2:%d", req.FieldID)
+	dkey := fmt.Sprintf("hq:sort:2:%d", absInt32(req.FieldID))
 	data, err := RedisStore.GetBytes(dkey)
 	if err != nil {
 		logging.Debug("%v", err.Error())

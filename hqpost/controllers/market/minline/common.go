@@ -81,9 +81,7 @@ func AppendFile(sid int32, name string, kinfo *[]*protocol.KInfo) error {
 		}
 	}
 
-	//date := GetDateToday() % 1000000
 	for _, v := range *kinfo {
-		//v.NTime = date*10000 + v.NTime //	计算端加年月日时间
 		if err := binary.Write(buffer, binary.LittleEndian, v); err != nil {
 			logging.Error("%v", err.Error())
 			return err

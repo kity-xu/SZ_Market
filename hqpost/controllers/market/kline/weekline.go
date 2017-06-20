@@ -25,7 +25,7 @@ func (this *Security) WeekLine() {
 		if !ok { //不存在，做第一次生成
 			klist = produceWeeprotocol(&single)
 			if single.today != nil {
-				klist.List = append(klist.List, single.today) //第一次生成的时候加入当天数据
+				filestore.MaybeBelongAWeek(klist, single.today) //第一次生成的时候 如果同属一周加入当天数据
 			}
 
 			//1.入文件
@@ -71,7 +71,6 @@ func produceWeeprotocol(single *SingleSecurity) *protocol.KInfoTable {
 			AvgPxTotal uint32
 		)
 		for i, day = range week { //每一天
-			//logging.Debug("day:%v---single.SigStock[day]:%v", day, single.SigStock[day])
 			stockday := single.SigStock[day]
 			if tmp.NHighPx < stockday.NHighPx || tmp.NHighPx == 0 { //最高价
 				tmp.NHighPx = stockday.NHighPx

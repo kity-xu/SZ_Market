@@ -275,3 +275,58 @@ func CheckFileSoteDir(sid int32, hnpath, name string) (string, bool) {
 	}
 	return filename, true
 }
+
+//判断今天与历史最新是否同属一周（wk 线做第一次生成时使用）
+func MaybeBelongAWeek(klist *protocol.KInfoTable, today *protocol.KInfo) {
+	if len(klist.List) < 1 {
+		logging.Info("%v no historical week data...", today.NSID)
+		klist.List = append(klist.List, today)
+		return
+	}
+	var kinfo = *(klist.List)[len(klist.List)-1]
+
+	b1, _ := DateAdd(kinfo.NTime) //找到该日期所在周日的那天
+	b2, _ := DateAdd(today.NTime)
+
+	if b1.Equal(b2) { //同属一周
+		result := compareKInfo(&kinfo, today)
+		klist.List[len(klist.List)-1] = &result
+	} else { //不属于同周
+		klist.List = append(klist.List, today)
+	}
+	return
+}
+
+func MaybeBelongAMonth(klist *protocol.KInfoTable, today *protocol.KInfo) {
+	if len(klist.List) < 1 {
+		logging.Info("%v no historical month data...", today.NSID)
+		klist.List = append(klist.List, today)
+		return
+	}
+	var kinfo = *(klist.List)[len(klist.List)-1]
+
+	if kinfo.NTime/100 == today.NTime/100 { //同年
+		result := compareKInfo(&kinfo, today)
+		klist.List[len(klist.List)-1] = &result
+	} else {
+		klist.List = append(klist.List, today)
+	}
+	return
+}
+
+func MaybeBelongAYear(klist *protocol.KInfoTable, today *protocol.KInfo) {
+	if len(klist.List) < 1 {
+		logging.Info("%v no historical year data...", today.NSID)
+		klist.List = append(klist.List, today)
+		return
+	}
+	var kinfo = *(klist.List)[len(klist.List)-1]
+
+	if kinfo.NTime/10000 == today.NTime/10000 { //同年
+		result := compareKInfo(&kinfo, today)
+		klist.List[len(klist.List)-1] = &result
+	} else {
+		klist.List = append(klist.List, today)
+	}
+	return
+}

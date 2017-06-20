@@ -51,7 +51,7 @@ type TagStockSortInfo struct {
 	NOffer1Px         int32                   //卖一价
 	LlBid1Vol         int64                   //买一量
 	LlOffer1Vol       int64                   //卖一量
-	LlValueOfInFlow   int64                   //资金流入额(*10000)
+	LlValueOfInFlow   int64                   //资金净流入额(*10000)
 	SzSName           [SECURITY_NAME_LEN]byte //证券代码名称
 	SzIndusCode       [INDUSTRY_CODE_LEN]byte ///< 行业代码
 	NPxChgRatioIn5Min int32                   ///5分钟涨跌幅(*10000)

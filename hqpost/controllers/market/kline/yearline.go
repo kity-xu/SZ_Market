@@ -23,7 +23,7 @@ func (this *Security) YearLine() {
 		if !ok { //不存在，做第一次生成
 			klist = produceYearline(&single)
 			if single.today != nil {
-				klist.List = append(klist.List, single.today) //第一次生成的时候加入当天数据
+				filestore.MaybeBelongAYear(klist, single.today) //第一次生成的时候 如果同属一年加入当天数据
 			}
 
 			//1.入文件

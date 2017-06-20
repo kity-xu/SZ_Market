@@ -7,7 +7,7 @@ import (
 
 	. "haina.com/market/hqpost/controllers"
 	"haina.com/market/hqpost/controllers/market/kline"
-	"haina.com/market/hqpost/controllers/market/minline"
+	//	"haina.com/market/hqpost/controllers/market/minline"
 
 	"haina.com/market/hqpost/config"
 	"haina.com/market/hqpost/models/redistore"
@@ -29,18 +29,18 @@ func Update(cfg *config.AppConfig) {
 	//K线
 	security.DayLine()
 	security.WeekLine()
-	security.MonthLine()
-	security.YearLine()
+	//security.MonthLine()
+	//security.YearLine()
 	//--------------------------------------------------/
 
 	//----------------------分钟线-----------------------/
-	min := minline.NewMinKline(sids, cfg)
-	// 分钟线
-	min.HMinLine_1()
-	min.HMinLine_5()
-	min.HMinLine_15()
-	min.HMinLine_30()
-	min.HMinLine_60()
+	//	min := minline.NewMinKline(sids, cfg)
+	//	// 分钟线
+	//	min.HMinLine_1()
+	//	min.HMinLine_5()
+	//	min.HMinLine_15()
+	//	min.HMinLine_30()
+	//	min.HMinLine_60()
 
 	end := time.Now()
 	logging.Info("Update Kline historical data successed, and running time:%v", end.Sub(start))

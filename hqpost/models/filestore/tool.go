@@ -76,7 +76,7 @@ func compareKInfo(tmp *protocol.KInfo, today *protocol.KInfo) protocol.KInfo {
 
 	swap.NSID = tmp.NSID
 	swap.NTime = tmp.NTime
-	swap.NPreCPx = tmp.NPreCPx
+	swap.NPreCPx = today.NPreCPx
 	swap.NOpenPx = tmp.NOpenPx
 	if tmp.NHighPx > today.NHighPx {
 		swap.NHighPx = tmp.NHighPx

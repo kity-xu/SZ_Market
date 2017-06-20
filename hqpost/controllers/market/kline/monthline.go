@@ -25,7 +25,7 @@ func (this *Security) MonthLine() {
 		if !ok { //不存在，做第一次生成
 			klist = produceMonthline(&single)
 			if single.today != nil {
-				klist.List = append(klist.List, single.today) //第一次生成的时候加入当天数据
+				filestore.MaybeBelongAMonth(klist, single.today) //第一次生成的时候 如果同属一月加入当天数据
 			}
 
 			//1.入文件
