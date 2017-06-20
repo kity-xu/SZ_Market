@@ -42,6 +42,7 @@ func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
 
 	// s1 个股+指数   s2 个股  s3 指数
 	if sty == "s1" {
+		codes = nil
 		secNm1, err := new(fcm.FcSecuNameTab).GetSecuNmList(sess)
 		if err != nil {
 			logging.Info("个股查询finance出错 %v", err)
@@ -57,20 +58,22 @@ func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
 
 	}
 	if sty == "s2" {
-		secNm1, err := new(fcm.FcSecuNameTab).GetSecuNmList(sess)
+		codes = nil
+		secNm3, err := new(fcm.FcSecuNameTab).GetSecuNmList(sess)
 		if err != nil {
 			logging.Info("个股查询finance出错 %v", err)
 		}
 		// 处理个股
-		TreatingData(secNm1)
+		TreatingData(secNm3)
 	}
 	if sty == "s3" {
-		secNm2, err := new(fcm.FcSecuNameTab).GetExponentList(sess)
+		codes = nil
+		secNm4, err := new(fcm.FcSecuNameTab).GetExponentList(sess)
 		if err != nil {
 			logging.Info("指数查询finance出错 %v", err)
 		}
 		// 指数处理
-		TreatingData(secNm2)
+		TreatingData(secNm4)
 	}
 	logging.Info("stockinfo End==")
 	return codes
