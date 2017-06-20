@@ -111,7 +111,7 @@ func (this *StockBlockBase) GetStockBlockBase(req *protocol.RequestStockBlockBas
 				tbhi.NBlockID = stb.NBlockID
 				tbhi.SzBlockName = strings.Replace(string(ite.SzBlockName[:]), "\u0000", "", -1)
 				tbhi.NAveChgRate = ite.NAveChgRate
-				tbhi.LVolume = ite.LlVolume
+				tbhi.LlVolume = ite.LlVolume
 				tbhi.LlValue = ite.LlValue
 				tbhi.SzSName = strings.Replace(string(ite.SzSName[:]), "\u0000", "", -1)
 				tbhi.NNum = ite.NNum
