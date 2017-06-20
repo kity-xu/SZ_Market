@@ -58,12 +58,11 @@ func NewTraceRecord(sid int32) *TraceRecord {
 }
 
 //------------------------------------------------------------------------------
-// 读写锁版
 // RedisCache 缓存成交记录list(和RedisStore一致)
 type TradeSentinel struct {
 	Timestamp time.Time     // 最后同步时间戳
 	SyncFlag  bool          // true/false:正在同步/完成同步
-	RWLock    *sync.RWMutex // 读写锁
+	RWLock    *sync.RWMutex // 保护RedisCache读写
 }
 
 type TradeMap map[int32]*TradeSentinel
@@ -106,189 +105,6 @@ func UseTradeSentinel(sid int32) *TradeSentinel {
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-// 将分笔成交数据同步到缓存
-// 返回参数
-//  第一组 int err  缓存 list 长度 和 Redis 错误
-//  第二组 int err  数据 list 长度 和 Redis 错误
-// 返回值说明 int
-//   -1  错误（如果缓存redis不可用，后续操作跳过缓存redis)
-//    0  this.Key-list长度为0 或 不存在该 this.Key
-//   >0  this.Key-list长度值
-func SyncTradeEveryTimeRecord(sid int32) (int, error, int, error) {
-	key := fmt.Sprintf(TradeCacheKey, sid)
-	t := UseTradeSentinel(sid)
-	slen, serr := RedisStore.Llen(key)
-	if t.SyncFlag {
-		fmt.Printf("%s in sync\n", key)
-		return 0, nil, slen, serr
-	} else {
-		fmt.Printf("%s no sync\n", key)
-	}
-
-	t.RWLock.RLock()
-	defer t.RWLock.RUnlock()
-
-	clen, cerr := RedisCache.Llen(key) // Llen 出错时 返回 clen = -1
-	switch {
-	case cerr != nil && cerr != hsgrr.ErrNil: // 因缓存Redis不可用，跳过同步
-		logging.Error("RedisCache: %v", cerr)
-		return clen, cerr, slen, serr
-	case serr != nil: // 没有数据或数据源Redis不可用
-		logging.Error("RedisStore: %v", serr)
-		return clen, cerr, slen, serr
-	}
-	fmt.Printf("%s Store len %d, Cache len %d\n", key, slen, clen)
-
-	if slen == clen {
-		return clen, nil, slen, nil
-	}
-
-	// 同步 RedisStore 到 RedisCache
-	now := time.Now()
-	del := false // 缓存删除标志
-	nowhm := now.Hour()*100 + now.Minute()
-
-	switch {
-	case slen < clen:
-		fallthrough
-	case 900 < nowhm && nowhm < 930: // 从9:30以后开始缓存
-		del = true // 清除缓存
-		clen = 0   // 全部同步
-		break
-	}
-
-	// 9:00 ~ 9:25 之间，以数据Redis为准
-	if nowhm > 900 && nowhm < 925 {
-		return 0, nil, slen, nil
-	}
-
-	if clen < 0 {
-		clen = 0
-	}
-	ls, serr := RedisStore.LRange(key, clen, slen-1)
-	if serr != nil {
-		return clen, nil, slen, serr
-	}
-
-	t.SyncFlag = true
-
-	go func() {
-		logging.Info(">>> ready t. sync %s ... ", key)
-		t.RWLock.Lock()
-		defer func() {
-			t.SyncFlag = false
-			t.RWLock.Unlock()
-		}()
-
-		if del {
-			RedisCache.Del(key)
-		}
-
-		start := time.Now()
-		logging.Info(">>> sync %s start... ", key)
-		RedisCache.Do("MULTI", "")
-		for _, v := range ls {
-			RedisCache.Rpush(key, []byte(v))
-		}
-		RedisCache.Do("EXPIREAT", key, ExpireAt(9, 25, 0).Unix()) // 缓存Redis key设置9:25自动删除
-		RedisCache.Do("EXEC", "")
-		t.Timestamp = time.Now()
-		logging.Info(">>> sync %s finish, rows %d took %v", key, slen-clen, t.Timestamp.Sub(start))
-	}()
-
-	return clen, nil, slen, nil
-}
-
-//------------------------------------------------------------------------------
-// 老函数
-func (this *TraceRecord) SyncTradeEveryTimeRecord(sid int32) (int, error, int, error) {
-	slen, serr := RedisStore.Llen(this.Key)
-	if this.Sentinel.SyncFlag {
-		fmt.Printf("%s in sync\n", this.Key)
-		return 0, nil, slen, serr
-	} else {
-		fmt.Printf("%s no sync\n", this.Key)
-	}
-
-	this.Sentinel.RWLock.RLock()
-	defer this.Sentinel.RWLock.RUnlock()
-
-	// Llen 出错时 返回 clen = -1
-	clen, cerr := RedisCache.Llen(this.Key)
-	switch {
-	case cerr != nil && cerr != hsgrr.ErrNil:
-		// 因缓存Redis不可用，跳过同步
-		logging.Error("RedisCache: %v", cerr)
-		return clen, cerr, slen, serr
-	case serr != nil:
-		// 没有数据或数据源Redis不可用
-		logging.Error("RedisStore: %v", serr)
-		return clen, cerr, slen, serr
-	}
-	fmt.Printf("%s Store len %d, Cache len %d\n", this.Key, slen, clen)
-
-	if slen == clen {
-		return clen, nil, slen, nil
-	}
-
-	// 同步 RedisStore 到 RedisCache
-	now := time.Now()
-	del := false                           // 缓存删除标志
-	nowhm := now.Hour()*100 + now.Minute() // 当前时间时分形式 例如 9:25 925
-
-	switch {
-	case slen < clen:
-		fallthrough
-	case 900 < nowhm && nowhm < 930: // 从9:30以后开始缓存
-		del = true // 清除缓存
-		clen = 0   // 同步所有
-		break
-	}
-
-	// 9:00 ~ 9:25 之间，以数据Redis为准
-	if nowhm > 900 && nowhm < 925 {
-		return 0, nil, slen, nil
-	}
-
-	if clen < 0 {
-		clen = 0
-	}
-	ls, serr := RedisStore.LRange(this.Key, clen, slen-1)
-	if serr != nil {
-		return clen, nil, slen, serr
-	}
-
-	this.Sentinel.SyncFlag = true
-
-	go func() {
-		logging.Info(">>> ready this.Sentinel. sync %s ... ", this.Key)
-		this.Sentinel.RWLock.Lock()
-		defer func() {
-			this.Sentinel.SyncFlag = false
-			this.Sentinel.RWLock.Unlock()
-		}()
-
-		if del {
-			RedisCache.Del(this.Key)
-		}
-
-		start := time.Now()
-		logging.Info(">>> sync %s start... ", this.Key)
-		RedisCache.Do("MULTI", "")
-		for _, v := range ls {
-			RedisCache.Rpush(this.Key, []byte(v))
-		}
-		RedisCache.Do("EXPIREAT", this.Key, ExpireAt(9, 25, 0).Unix()) // 缓存Redis key设置9:25自动删除
-		RedisCache.Do("EXEC", "")
-		this.Sentinel.Timestamp = time.Now()
-		logging.Info(">>> sync %s finish, rows %d took %v", this.Key, slen-clen, this.Sentinel.Timestamp.Sub(start))
-	}()
-
-	return clen, nil, slen, nil
-}
-
-//------------------------------------------------------------------------------
-
 func GetLocalTime(year int, month int, day int, hour int, min int, sec int) time.Time {
 	local, _ := time.LoadLocation("Local")
 	v := fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, min, sec)
@@ -333,10 +149,12 @@ func (this *TraceRecord) SyncAndGetTradeRecords(start int, stop int) error {
 		return err
 	}
 
+	clear := false
 	if slen == clen {
 		logging.Info("RedisStore and RedisCache is the same, use RedisCache")
 		return this.GetTradeRecordsFrom(RedisCache, start, stop)
 	} else if slen < clen {
+		clear = true
 		clen = 0
 	}
 
@@ -349,15 +167,11 @@ func (this *TraceRecord) SyncAndGetTradeRecords(start int, stop int) error {
 		return serr
 	}
 
-	if slen < clen {
-		go this.SafeSyncTraceRecord(true, ls)
-	} else {
-		go this.SafeSyncTraceRecord(false, ls)
-	}
+	go this.SafeSyncTraceRecord(clear, ls)
 
 	if stop == -1 {
 		// 到结束
-		stop = slen
+		stop = slen // redis 包含stop, slice 不包含stop
 	}
 	n := start
 	m := stop
@@ -381,7 +195,7 @@ func (this *TraceRecord) SyncAndGetTradeRecords(start int, stop int) error {
 from_cache:
 	{
 		// 从缓存Redis取数据
-		logging.Info("from cache get list[n m]=[%d %d], clen=%d, slen=%d\n", n, m, c, s)
+		logging.Info("Get from Cache list[n m]=[%d %d], clen=%d, slen=%d\n", n, m, c, s)
 		cls, err := RedisCache.LRange(this.Key, start, stop) //redis list: lrange key n m包含m,区别于go slice[n:m]不包含m
 		if err != nil {
 			return err
@@ -392,7 +206,7 @@ from_cache:
 from_store:
 	{
 		// 从数据Redis取数据, 复用ls切片
-		logging.Info("from store get list[n m]=[%d %d], clen=%d, slen=%d\n", n, m, c, s)
+		logging.Info("Get from Store list[n m]=[%d %d], clen=%d, slen=%d\n", n, m, c, s)
 		n = n - c
 		m = m - c + 1 // 切片的后置下标不包含m,故+1
 		if m > len(ls) {
@@ -405,7 +219,7 @@ from_store:
 merge_cast:
 	{
 		// 需要从数据Redis和缓存Redis各取一部分数据
-		logging.Info("merge cast get list[n m]=[%d %d], clen=%d, slen=%d\n", n, m, c, s)
+		logging.Info("Get merge CaSt list[n m]=[%d %d], clen=%d, slen=%d\n", n, m, c, s)
 		cls, err := RedisCache.LRange(this.Key, n, c-1)
 		if err != nil {
 			return err
@@ -446,12 +260,12 @@ func (this *TraceRecord) StringToTradeRecords(v *string) (*pro.TradeEveryTimeRec
 	return trade, nil
 }
 
-func (this TraceRecord) SyncTradeRecords(del bool, ls []string) error {
+func (this TraceRecord) SyncTradeRecords(clear bool, ls []string) error {
 	this.Sentinel.SyncFlag = true
 	defer func() {
 		this.Sentinel.SyncFlag = false
 	}()
-	if del {
+	if clear {
 		return RedisCache.Del(this.Key)
 	}
 	start := time.Now()
@@ -472,10 +286,10 @@ func (this TraceRecord) SyncTradeRecords(del bool, ls []string) error {
 	}
 	return nil
 }
-func (this TraceRecord) SafeSyncTraceRecord(del bool, ls []string) error {
+func (this TraceRecord) SafeSyncTraceRecord(clear bool, ls []string) error {
 	this.Sentinel.RWLock.Lock()
 	defer this.Sentinel.RWLock.Unlock()
-	return this.SyncTradeRecords(del, ls)
+	return this.SyncTradeRecords(clear, ls)
 }
 
 func (this *TraceRecord) GetTradeRecordsFrom(r *redis.RedisPool, start int, stop int) error {

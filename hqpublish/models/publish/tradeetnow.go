@@ -18,6 +18,7 @@ import (
 )
 
 var (
+	_ = GetCache
 	_ = ctrl.MakeRespDataByBytes
 	_ = errors.New
 	_ = fmt.Println
@@ -40,19 +41,20 @@ func NewTradeEveryTimeNow() *TradeEveryTimeNow {
 	}
 }
 
-func (this TradeEveryTimeNow) GetTradeEveryTimeNowJson(req *pro.RequestTradeEveryTimeNow) ([]byte, error) {
-	payload, err := this.GetTradeEveryTimeNowObj(req)
-	if err != nil {
+// 未开发完善
+func (this TradeEveryTimeNow) GetTradeEveryTimeNowObj2(req *pro.RequestTradeEveryTimeNow) (*pro.PayloadTradeEveryTimeNow, error) {
+	curr := NewTraceRecord(req.SID)
+	start := -req.Num
+	stop := int32(-1)
+	if err := curr.SyncAndGetTradeRecords(int(start), int(stop)); err != nil {
 		return nil, err
 	}
-	return ctrl.MakeRespJson(200, payload)
-}
-func (this TradeEveryTimeNow) GetTradeEveryTimeNowPB(req *pro.RequestTradeEveryTimeNow) ([]byte, error) {
-	payload, err := this.GetTradeEveryTimeNowObj(req)
-	if err != nil {
-		return nil, err
-	}
-	return ctrl.MakeRespDataByPB(200, pro.HAINA_PUBLISH_CMD_ACK_TRADEETNOW, payload)
+	return &pro.PayloadTradeEveryTimeNow{
+		SID:     req.SID,
+		Total:   curr.Total,
+		Num:     int32(len(curr.List)),
+		DTRList: curr.List,
+	}, nil
 }
 
 func (this TradeEveryTimeNow) GetTradeEveryTimeNowObj(req *pro.RequestTradeEveryTimeNow) (*pro.PayloadTradeEveryTimeNow, error) {
