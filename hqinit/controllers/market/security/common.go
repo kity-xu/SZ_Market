@@ -160,10 +160,14 @@ func HainaSecurityType(nsid, stype string) (string, error) {
 		return "", errors.New("其他尚未实现的金融产品类型...")
 	}
 
-	if nsid[3] == '3' { //创业板
+	if nsid[3] == '3' && nsid[4] == '0' && nsid[5] >= '0' && nsid[5] <= '9' { //创业板
 		result[3] = SECURITY_TYPE_CYB
 	} else {
-		result[3] = SECURITY_TYPE_ZB
+		if nsid[3] == '0' && nsid[4] == '0' && nsid[5] >= '2' && nsid[5] <= '4' {
+			result[3] = SECURITY_TYPE_ZXB
+		} else {
+			result[3] = SECURITY_TYPE_ZB
+		}
 	}
 	return string(result), nil
 }

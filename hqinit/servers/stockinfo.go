@@ -32,7 +32,7 @@ func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
 
 	// 获取沪深股票信息
 	logging.Info("stockinfo begin==")
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
+	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
 	// 服务器用
 	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(127.0.0.1:3306)/finchina?charset=utf8", nil)
 	if err != nil {
@@ -126,6 +126,7 @@ func TreatingData(secNm []*fcm.FcSecuNameTab) {
 		}
 
 		tsi.SzSType = item.SETYPE.String
+
 		tsi.SzStatus = item.LISTSTATUS.String
 		tsi.SzSymbol = item.SYMBOL.String
 		tsi.SzISIN = item.SECURITYID.String

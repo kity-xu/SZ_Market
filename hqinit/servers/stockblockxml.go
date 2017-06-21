@@ -127,7 +127,7 @@ func (this *StockBlockXML) CreateStockblockXML() {
 	//拼接XML头和实际XML内容
 	xmlOutPutData := append(headerBytes, output...)
 
-	ioutil.WriteFile("/opt/develop/hqs/filestore/security/securitiesplate.xml", xmlOutPutData, os.ModeAppend) // 服务器用
+	ioutil.WriteFile("/opt/develop/hgs/filestore/security/securitiesplate.xml", xmlOutPutData, os.ModeAppend) // 服务器用
 	//ioutil.WriteFile("E:/hqfile/securitiesplate.xml", xmlOutPutData, os.ModeAppend)
 	logging.Info("stockblock xml end ...")
 }

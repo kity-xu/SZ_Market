@@ -79,5 +79,5 @@ func (this *NoticeInfo) PostPB(c *gin.Context) {
 		WriteDataErrCode(c, 40002)
 		return
 	}
-	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_HISEVENT, data)
+	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_NOTICEINFO, data)
 }

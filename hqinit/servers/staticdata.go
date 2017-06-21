@@ -19,8 +19,6 @@ import (
 
 	//	"haina.com/market/hqinit/config"
 
-	fms "haina.com/market/hqtools/stockcdfctomgtools/financemysql"
-
 	"github.com/axgle/mahonia"
 )
 
@@ -70,7 +68,7 @@ func (this *TagStockStatic) GetStaticDataList() []*TagStockStatic {
 
 	//	var cfg *config.AppConfig
 	// FC数据库连接
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
+	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
 	// 服务器用
 	//conn, err := dbr.Open(cfg.MysqlStore.MysqlN, cfg.MysqlStore.Source, nil)
 	if err != nil {
@@ -92,7 +90,7 @@ func (this *TagStockStatic) GetStaticDataList() []*TagStockStatic {
 func StockTreatingData(sess *dbr.Session) []*TagStockStatic {
 	var tsd []*TagStockStatic
 	// 获取沪深股票信息
-	secNm, err := new(fms.FcSecuNameTab).GetSecuNmList(sess)
+	secNm, err := new(stf.FcSecuNameTab).GetSecuNmList(sess)
 
 	if err != nil {
 		logging.Info("查询finance出错 %v", err)

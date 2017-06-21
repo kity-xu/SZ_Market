@@ -11,9 +11,9 @@ import (
 
 func UpdateStockBlockSet(cfg *config.AppConfig) {
 
-	lib.CheckDir("/opt/develop/hqs/filestore/security/")
+	lib.CheckDir("/opt/develop/hgs/filestore/security/")
 	//lib.CheckDir("E:/hqfile/")
-	_, err := controllers.OpenFile("/opt/develop/hqs/filestore/security/securitiesplate.xml")
+	_, err := controllers.OpenFile("/opt/develop/hgs/filestore/security/securitiesplate.xml")
 	//_, err := controllers.OpenFile("E:/hqfile/securitiesplate.xml")
 
 	if err != nil {
