@@ -41,7 +41,7 @@ func NewTradeEveryTimeNow() *TradeEveryTimeNow {
 	}
 }
 
-// 未开发完善
+// 未完善
 func (this TradeEveryTimeNow) GetTradeEveryTimeNowObj2(req *pro.RequestTradeEveryTimeNow) (*pro.PayloadTradeEveryTimeNow, error) {
 	curr := NewTraceRecord(req.SID)
 	start := -req.Num

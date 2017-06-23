@@ -52,4 +52,6 @@ func RegPublish(rg *gin.RouterGroup) {
 	// 单条公告信息
 	rg.POST("/hiseventid", publish.NewHisEvent().POST)
 
+	// 除权除息
+	rg.POST("/xrxd", publish.NewXRXD().POST)
 }

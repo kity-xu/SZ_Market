@@ -15,10 +15,11 @@ import (
 
 	hsgrr "haina.com/share/garyburd/redigo/redis"
 	"haina.com/share/logging"
-	//	"haina.com/share/store/redis"
+	"haina.com/share/store/redis"
 )
 
 var (
+	_ = redis.Init
 	_ = GetCache
 	_ = ctrl.MakeRespDataByBytes
 	_ = errors.New
