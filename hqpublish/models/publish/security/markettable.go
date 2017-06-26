@@ -6,7 +6,6 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	. "haina.com/market/hqpublish/models"
-	"haina.com/market/hqpublish/models/publish"
 	"haina.com/share/logging"
 	. "haina.com/share/models"
 )
@@ -18,7 +17,7 @@ type SecurityNameTable struct {
 func NewSecurityNameTable() *SecurityNameTable {
 	return &SecurityNameTable{
 		Model: Model{
-			CacheKey: publish.REDISKEY_MARKET_SECURITY_TABLE,
+			CacheKey: REDISKEY_MARKET_SECURITY_TABLE,
 		},
 	}
 }
@@ -29,7 +28,7 @@ func (this *SecurityNameTable) GetSecurityTableAStock() (*protocol.PayloadMarket
 }
 
 func (this *SecurityNameTable) getSecurityTableAStockFromeCache() (*protocol.PayloadMarketSecurityNameTable, error) {
-	key := fmt.Sprintf(publish.REDISKEY_MARKET_SECURITY_TABLE_ASTOCK, "astock")
+	key := fmt.Sprintf(REDISKEY_MARKET_SECURITY_TABLE_ASTOCK, "astock")
 	var market = &protocol.PayloadMarketSecurityNameTable{}
 
 	bs, err := GetCache(key)
