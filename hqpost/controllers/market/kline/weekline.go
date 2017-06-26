@@ -29,7 +29,9 @@ func (this *Security) WeekLine() {
 			}
 
 			//1.入文件
-			filestore.WiteHainaFileStore(filepath, klist)
+			if err = filestore.WiteHainaFileStore(filepath, klist); err != nil {
+				logging.Error("%v", err.Error())
+			}
 
 			//redis做第一次生成
 			for _, v := range klist.List {
@@ -62,7 +64,9 @@ func produceWeeprotocol(single *SingleSecurity) *protocol.KInfoTable {
 	var klist protocol.KInfoTable
 
 	for _, week := range *single.WeekDays { //每一周
-		//logging.Debug("Week:%v", week)
+		if single.Sid == 100000001 {
+			logging.Debug("Week:%v", week)
+		}
 		tmp := protocol.KInfo{}
 
 		var (
@@ -128,8 +132,6 @@ func (this *Security) GetAllSecurityDayList() {
 				dates = append(dates, date)
 			}
 		}
-
-		wday = append(wday, dates)
 		secs[i].WeekDays = &wday
 	}
 }
