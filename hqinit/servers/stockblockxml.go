@@ -53,7 +53,7 @@ func (this *StockBlockXML) CreateStockblockXML() {
 	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
 	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
 	if err != nil {
-		logging.Debug("mysql onn", err)
+		logging.Debug("mysql conn", err)
 	}
 	sess := conn.NewSession(nil)
 

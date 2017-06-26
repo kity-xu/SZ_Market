@@ -52,5 +52,5 @@ func RegPublish(rg *gin.RouterGroup) {
 	// 单条公告信息 -zxw
 	rg.POST("/hiseventid", publish.NewHisEvent().POST)
 	// 个股详情 移动端 -zxw
-	rg.POST("/persdetail")
+	rg.POST("/persdetail", publish.NewPerSDetail().POST)
 }

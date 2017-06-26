@@ -80,5 +80,5 @@ func (this *PerSDetail) PostPB(c *gin.Context) {
 		WriteDataErrCode(c, 40002)
 		return
 	}
-	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_SUBSET, data)
+	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_PERSDETAIL, data)
 }
