@@ -45,6 +45,24 @@ func (this *Kline) PostJson(c *gin.Context) {
 	}
 	logging.Info("Request Data: %+v", request)
 
+	this.HandleHisKJson(c, request)
+}
+
+func (this *Kline) PostPB(c *gin.Context) {
+	var request = &protocol.RequestHisK{}
+
+	code, err := RecvAndUnmarshalPB(c, 1024, request)
+	if err != nil {
+		logging.Error("post pb %v", err)
+		WriteJson(c, code, nil)
+		return
+	}
+	logging.Info("Request Data: %+v", request)
+
+	this.HandleHisKPB(c, request)
+}
+
+func (this *Kline) HandleHisKJson(c *gin.Context, request *protocol.RequestHisK) {
 	switch protocol.HAINA_KLINE_TYPE(request.Type) {
 	case protocol.HAINA_KLINE_TYPE_KDAY:
 		this.DayJson(c, request)
@@ -76,20 +94,9 @@ func (this *Kline) PostJson(c *gin.Context) {
 	default:
 		logging.Error("Invalid parameter 'Type'...")
 	}
-
 }
 
-func (this *Kline) PostPB(c *gin.Context) {
-	var request = &protocol.RequestHisK{}
-
-	code, err := RecvAndUnmarshalPB(c, 1024, request)
-	if err != nil {
-		logging.Error("post pb %v", err)
-		WriteJson(c, code, nil)
-		return
-	}
-	logging.Info("Request Data: %+v", request)
-
+func (this *Kline) HandleHisKPB(c *gin.Context, request *protocol.RequestHisK) {
 	switch protocol.HAINA_KLINE_TYPE(request.Type) {
 	case protocol.HAINA_KLINE_TYPE_KDAY:
 		this.DayPB(c, request)
@@ -122,5 +129,4 @@ func (this *Kline) PostPB(c *gin.Context) {
 		logging.Error("Invalid parameter 'Type'...")
 
 	}
-
 }

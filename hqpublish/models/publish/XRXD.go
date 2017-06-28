@@ -16,7 +16,6 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"haina.com/market/hqpublish/models/fcmysql"
 	hsgrr "haina.com/share/garyburd/redigo/redis"
 	"haina.com/share/logging"
 	"haina.com/share/store/redis"
@@ -72,116 +71,108 @@ func (this XRXD) Decode(lsbin []string) ([]*pro.KInfo, error) {
 	return ls, nil
 }
 
-type Factor struct {
-	BEGINDATE int     //起始日期VARCHAR(8) 	           本次除权因子的有效起始日期（即实际上的除权除息日）
-	ENDDATE   int     //截止日期VARCHAR(8)              本次除权因子的有效截止日期（当尚无下一次除权因素的具体日期前，为19000101）
-	XDY       float64 //当次除权因子NUMERIC(32,19)	   本次除权日，因分红送股转增等因素，依照除权前后价值不变动的原则计算的当次除权的折价因子
-	LTDXDY    float64 //逆推累积除权因子NUMERIC(29,16)   以当前最新一天交易价格为标准，计算每次时间区间的累积除权因子，既每天实际交易价格与逆推复权价格之间的比值关系
-	THELTDXDY float64 //顺推累计除权因子NUMERIC(29,16)   以上市第一天为标准，计算每次时间区间的累积除权因子，既顺推复权价格与每天实际交易价格与之间的比值关系
-}
-
 type FactorGroup struct {
-	Fa Factor
+	Fa pro.Factor
 	Ls []*pro.KInfo
 }
 
 func (this XRXD) ErrDataInvalid(fields string, sid int32, secode string) error {
-	return errors.New(fmt.Sprintf("finchina TQ_SK_XDRY fields[%s] invalid by sid[%d], sid[%d]", "BEGINDATE", sid, secode))
+	return errors.New(fmt.Sprintf("finchina TQ_SK_XDRY fields[%s] invalid by sid[%d], sid[%d]", "NBeginDate", sid, secode))
 }
 
-// 从财汇数据库获取 *股票除权因子*
-func (this XRXD) GetReferFactors(sid int32) ([]*Factor, error) {
-	real_sid := sid % 1000000
-	secode, err := fcmysql.NewTQ_OA_STCODE().GetSecode(fmt.Sprintf("%d", real_sid))
-	if err != nil {
-		logging.Error("%v", err)
-		return nil, err
-	}
-	fc, err := fcmysql.NewTQ_SK_XDRY().GetFactorsBySecode(secode)
-	if err != nil {
-		logging.Error("%v", err)
-		return nil, err
-	}
-	frows := make([]*Factor, 0, 100)
-	for _, v := range fc {
-		switch {
-		case !v.BEGINDATE.Valid:
-			return nil, this.ErrDataInvalid("BEGINDATE", sid, secode)
-		case !v.ENDDATE.Valid:
-			return nil, this.ErrDataInvalid("ENDDATE", sid, secode)
-		case !v.XDY.Valid:
-			return nil, this.ErrDataInvalid("XDY", sid, secode)
-		case !v.LTDXDY.Valid:
-			return nil, this.ErrDataInvalid("LTDXDY", sid, secode)
-		case !v.THELTDXDY.Valid:
-			return nil, this.ErrDataInvalid("THELTDXDY", sid, secode)
+// 二分查找
+func (this XRXD) LocationBinaryKLine(req *pro.RequestXRXD, rows []*pro.KInfo) int {
+	// 下标小->大  时间大->小
+	n0, ni := 0, len(rows)-1
+	m := 0
+	for n0 <= ni {
+		m = (n0 + ni) >> 1
+		if rows[m].NTime > req.TimeIndex {
+			n0 = m + 1
+		} else if rows[m].NTime < req.TimeIndex {
+			ni = m - 1
+		} else {
+			return m
 		}
-		newf := Factor{
-			BEGINDATE: int(v.BEGINDATE.Int64),
-			ENDDATE:   int(v.ENDDATE.Int64),
-			XDY:       v.XDY.Float64,
-			LTDXDY:    v.LTDXDY.Float64,
-			THELTDXDY: v.THELTDXDY.Float64,
-		}
-		frows = append(frows, &newf)
 	}
-	if len(frows) == 0 {
-		return nil, errors.New(fmt.Sprintf("finchina TQ_SK_XDRY no datas by %d", sid))
-	}
-	if frows[len(frows)-1].ENDDATE == 19000101 {
-		frows[len(frows)-1].ENDDATE = 99999999
-	}
-	return frows, nil
+	fmt.Printf("n0 %d ni %d m %d\n", n0, ni, m)
+	return -1
 }
-
-// After the right to recover
-// 后复权计算前准备
-// 获取后复权范围内K线列表
-// 徐晓东写入的日K线使用的是redis list lpush的插入模式，时间大->小 下标小->大
-func (this XRXD) GetBeforeRightRecoverKList(req *pro.RequestXRXD, rows []*pro.KInfo) ([]*pro.KInfo, error) {
-	g := make([]*pro.KInfo, 0, 500)
-	index := -1
-	for n, v := range rows {
-		if req.TimeIndex >= v.NTime {
-			fmt.Println("find Before point", v)
-			index = n
-			break
-		}
-	}
-
+func (this XRXD) LocationKLine(req *pro.RequestXRXD, rows []*pro.KInfo) int {
+	// 找时间点K线
+	index := this.LocationBinaryKLine(req, rows)
 	if index != -1 {
-		n := index
-		m := index + int(req.Num)
-		if m > len(rows) {
-			m = len(rows)
-		}
-		g = append(g, rows[n:m]...)
+		fmt.Printf("req time %d is found with index %d: %+v\n", req.TimeIndex, index, rows[index])
+		return index
 	}
-	return g, nil
+	fmt.Printf("req time %d is no found\n", req.TimeIndex)
+
+	// 按条件找范围内第一根时间点K线
+	if req.Direct == 0 {
+		// 时间轴减小<-方向向左, but K线的存储模式是 下标小->大 时间大->小
+		for n := len(rows) - 1; n > -1; n-- {
+			//fmt.Printf("0 1 n %d - %+v\n", n, *rows[n])
+			if req.TimeIndex <= rows[n].NTime {
+				//fmt.Printf("0 2 n %d\n", n)
+				if req.TimeIndex == rows[n].NTime {
+					return n
+				} else {
+					return n + 1
+				}
+			}
+		}
+	} else {
+		// 向右->时间轴增大
+		for n, v := range rows {
+			//fmt.Printf("1 1 n %d - %+v\n", n, *v)
+			if req.TimeIndex >= v.NTime {
+				//fmt.Printf("1 2 n %d\n", n)
+				if req.TimeIndex == v.NTime {
+					return n
+				} else {
+					return n - 1
+				}
+			}
+		}
+	}
+	return -1
 }
 
-// Before the right to recover
-// 前复权计算前准备
-// 获取前复权范围内K线列表
-func (this XRXD) GetAfterRightRecoverKList(req *pro.RequestXRXD, rows []*pro.KInfo) ([]*pro.KInfo, error) {
-	g := make([]*pro.KInfo, 0, 500)
-	index := -1
-	for n := len(rows) - 1; n > -1; n-- {
-		if req.TimeIndex <= rows[n].NTime {
-			index = n
-			break
-		}
+func (this XRXD) GetRangeKList(req *pro.RequestXRXD, rows []*pro.KInfo) ([]*pro.KInfo, error) {
+
+	n := this.LocationKLine(req, rows)
+	if n == -1 {
+		return nil, nil
+		fmt.Printf("GetRangeKList req time %d no found\n", req.TimeIndex)
 	}
 
-	if index != -1 {
-		for c, n := int32(0), index; n > -1 && c < req.Num; c, n = c+1, n-1 {
-			g = append(g, rows[n])
+	if req.Direct == 0 {
+		if n != -1 {
+			if req.Num > 0 {
+				m := n + int(req.Num)
+				if m > len(rows) {
+					m = len(rows)
+				}
+				return rows[n:m], nil
+			}
+			return rows[n:], nil
+		}
+	} else {
+		if n != -1 {
+			if req.Num > 0 {
+				m := n + 1 - int(req.Num)
+				if m < 0 {
+					m = 0
+				}
+				return rows[m : n+1], nil
+			}
+			return rows[:n+1], nil
 		}
 	}
-	return g, nil
+	return nil, nil
 }
 
-func (this XRXD) ReverseFactors(s []*Factor) {
+func (this XRXD) ReverseFactors(s []*pro.Factor) {
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
 		s[i], s[j] = s[j], s[i]
 	}
@@ -192,55 +183,53 @@ func (this XRXD) ReverseKList(s []*pro.KInfo) {
 	}
 }
 
+func (this XRXD) CalcBeforeRightRecoverKLine(k *pro.KInfo, factor float64) {
+	//fmt.Println("Before Right calc origin", factor, k)
+	k.NOpenPx = int32(float64(k.NOpenPx) / factor) // 开盘价
+	k.NHighPx = int32(float64(k.NHighPx) / factor) // 最高价
+	k.NLowPx = int32(float64(k.NLowPx) / factor)   // 最低价
+	k.NLastPx = int32(float64(k.NLastPx) / factor) // 收盘价(最新价)
+	//fmt.Println("Before Right calc result", factor, k)
+}
+func (this XRXD) CalcAfterRightRecoverKLine(k *pro.KInfo, factor float64) {
+	//fmt.Println("Before Right calc origin", factor, k)
+	k.NOpenPx = int32(float64(k.NOpenPx) * factor) // 开盘价
+	k.NHighPx = int32(float64(k.NHighPx) * factor) // 最高价
+	k.NLowPx = int32(float64(k.NLowPx) * factor)   // 最低价
+	k.NLastPx = int32(float64(k.NLastPx) * factor) // 收盘价(最新价)
+	//fmt.Println("Before Right calc result", factor, k)
+}
+
 // 把前复权K线和除权因子进行关联分组
-func (this XRXD) GroupBeforeRightRecoverKList(fs []*Factor, rows []*pro.KInfo) ([]*FactorGroup, error) {
+func (this XRXD) GroupRightRecoverKList(fs []*pro.Factor, rows []*pro.KInfo) ([]*FactorGroup, error) {
 	if len(fs) == 0 || len(rows) == 0 {
 		return nil, nil
 	}
 
-	fmt.Printf("k %03d %+v\n", 0, rows[0])
-	fmt.Printf("k %03d %+v\n", len(rows)-1, rows[len(rows)-1])
+	//	fmt.Printf("k %03d %+v\n", 0, rows[0])
+	//	fmt.Printf("k %03d %+v\n", len(rows)-1, rows[len(rows)-1])
 
-	// 从数据库取出来的除权因子数组是 下标小->大 时间小->大
-	// 这里反转一下, 符合rows的方向  下标小->大 时间大->小
-	this.ReverseFactors(fs)
-
-	// 计算应使用的除权因子区间 // 下标左值
+	// 计算应使用的除权因子区间
+	// 下标左值
 	bgn := 0
 	for n, v := range fs {
 		k := rows[0]
-		if int32(v.BEGINDATE) <= k.NTime && int32(v.ENDDATE) >= k.NTime {
+		if int32(v.NBeginDate) <= k.NTime && int32(v.NEndDate) >= k.NTime {
 			bgn = n
 			break
 		}
 	}
-	// 计算应使用的除权因子区间 // 下标右值
+	// 计算应使用的除权因子区间
+	// 下标右值
 	end := len(fs) - 1
 	for n := len(fs) - 1; n > -1; n-- {
 		k := rows[len(rows)-1]
-		if int32(fs[n].BEGINDATE) <= k.NTime && int32(fs[n].ENDDATE) >= k.NTime {
+		if int32(fs[n].NBeginDate) <= k.NTime && int32(fs[n].NEndDate) >= k.NTime {
 			end = n
 			break
 		}
 	}
-	fmt.Println("----------------原有除权因子")
-	for n, v := range fs {
-		fmt.Printf("f %03d %+v\n", n, *v)
-	}
-	fmt.Printf("bgn end %d %d\n", bgn, end)
-	fmt.Println("----------------范围内除权因子")
-	nowfs := fs[bgn : end+1]
-	for n, v := range nowfs {
-		fmt.Printf("f %03d %+v\n", n, *v)
-	}
-	fmt.Println("----------------")
 
-	// //debug show k line list
-	//	for n, v := range rows {
-	//		fmt.Println("k", n, v)
-	//	}
-
-	fmt.Println("-------创建除权分组")
 	// 创建分组
 	var fgs []*FactorGroup
 	for n := bgn; n <= end; n++ {
@@ -249,18 +238,14 @@ func (this XRXD) GroupBeforeRightRecoverKList(fs []*Factor, rows []*pro.KInfo) (
 			Ls: make([]*pro.KInfo, 0, 200),
 		}
 		fgs = append(fgs, fg)
-		fmt.Println("f", n, fg)
 	}
 
-	fmt.Println("-------除权分组 <- K线分组")
 	s1 := 0
 	for _, v := range fgs {
 		m := s1
 		for ; m < len(rows); m++ {
 			k := rows[m]
-			if k.NTime < int32(v.Fa.BEGINDATE) || k.NTime > int32(v.Fa.ENDDATE) {
-				fmt.Println("k find", m, k)
-				fmt.Println("f", *v, "append rows[", s1, ":", m, "]")
+			if k.NTime < int32(v.Fa.NBeginDate) || k.NTime > int32(v.Fa.NEndDate) {
 				break
 			}
 		}
@@ -270,89 +255,78 @@ func (this XRXD) GroupBeforeRightRecoverKList(fs []*Factor, rows []*pro.KInfo) (
 			break
 		}
 	}
-
-	//debug show factor group data
-	for n, v := range fgs {
-		fmt.Println("f", n, v.Fa, "k len", len(v.Ls))
-		if len(v.Ls) > 0 {
-			for n, v := range v.Ls {
-				fmt.Println("  k", n, *v)
-			}
-		}
-		fmt.Println("---------------")
-	}
-
 	return fgs, nil
 }
-
 func (this XRXD) CalcBeforeRightRecoverKList(fgs []*FactorGroup) {
+	if fgs == nil || len(fgs) == 0 {
+		return
+	}
 	for _, v := range fgs {
-		factor := v.Fa
 		for _, k := range v.Ls {
-			a := k.NPreCPx
-			k.NPreCPx = int32(float64(k.NPreCPx) / 10000 / factor.LTDXDY * 10000)
-			fmt.Printf("%d .... %d, factor %f\n", a, k.NPreCPx, factor.LTDXDY)
+			this.CalcBeforeRightRecoverKLine(k, v.Fa.DfLTDXDY)
 		}
 	}
 }
 func (this XRXD) CalcAfterRightRecoverKList(fgs []*FactorGroup) {
-}
-
-// 把后复权K线和除权因子进行关联分组
-func (this XRXD) GroupAfterRightRecoverKList(fs []*Factor, rows []*pro.KInfo) ([]*FactorGroup, error) {
-	if len(fs) == 0 || len(rows) == 0 {
-		return nil, nil
+	if fgs == nil || len(fgs) == 0 {
+		return
 	}
-	fmt.Printf("k %03d %+v\n", 0, rows[0])
-	fmt.Printf("k %03d %+v\n", len(rows)-1, rows[len(rows)-1])
-	for n, v := range fs {
-		fmt.Printf("%d %+v\n", n, v)
+	for _, v := range fgs {
+		for _, k := range v.Ls {
+			this.CalcAfterRightRecoverKLine(k, v.Fa.DfTHELTDXDY)
+		}
 	}
-	return nil, nil
 }
 
 // 将K线根据除权数据的日期进行分组, 一组K线属于一条除权数据
-func (this XRXD) FactorGroupOp(req *pro.RequestXRXD, fs []*Factor, rows []*pro.KInfo) ([]*FactorGroup, error) {
-	var fg []*FactorGroup // *Factor([]*KInfo), 即每一个除权数据包含一组K线
+func (this XRXD) FactorGroupOp(req *pro.RequestXRXD, fs []*pro.Factor, rows []*pro.KInfo) ([]*FactorGroup, error) {
+	var fg []*FactorGroup // *Factor([]*KInfo), 即每一个复权因子关联一组K线
 	var kg []*pro.KInfo   // 根据条件计算出来的需要参与除权除息计算的合法K线切片
-	var err error
-	if req.Direct == 0 {
-		if kg, err = this.GetBeforeRightRecoverKList(req, rows); err != nil {
-			logging.Error("%v", err)
-			return nil, err
-		}
-		if fg, err = this.GroupBeforeRightRecoverKList(fs, kg); err != nil {
-			logging.Error("%v", err)
-			return nil, err
-		}
+	//var err error
 
-		if len(fg) > 0 {
-			this.CalcBeforeRightRecoverKList(fg)
+	kg, err := this.GetRangeKList(req, rows)
+	if err != nil {
+		logging.Error("%v", err)
+	}
+	// 从数据库取出来的除权因子数组是 下标小->大 时间小->大
+	// 从Redis取出来的K线数据数组是  下标小->大 时间大->小
+	// 这里反转一下K线数组, 使其符合：下标小->大 时间小->大
+	this.ReverseKList(kg)
+
+	//  // debug show
+	//	for n, v := range kg {
+	//		fmt.Printf("for GetRange %02d %+v\n", n, v)
+	//	}
+
+	if req.Method == 1 {
+		if fg, err = this.GroupRightRecoverKList(fs, kg); err != nil {
+			logging.Error("%v", err)
+			return nil, err
 		}
+		this.CalcBeforeRightRecoverKList(fg)
+	} else if req.Method == 2 {
+		if fg, err = this.GroupRightRecoverKList(fs, kg); err != nil {
+			logging.Error("%v", err)
+			return nil, err
+		}
+		this.CalcAfterRightRecoverKList(fg)
 	} else {
-		if kg, err = this.GetAfterRightRecoverKList(req, rows); err != nil {
-			logging.Error("%v", err)
-			return nil, err
+		g1 := &FactorGroup{
+			Ls: make([]*pro.KInfo, 0, 200),
 		}
-		if fg, err = this.GroupAfterRightRecoverKList(fs, kg); err != nil {
-			logging.Error("%v", err)
-			return nil, err
-		}
+		g1.Ls = append(g1.Ls, kg...)
+		fg = append(fg, g1)
 	}
 	if fg == nil {
 		return nil, nil
 	}
-
-	//	//debug show
-	//	for _, v := range kg {
-	//		fmt.Println(v)
-	//	}
 
 	return fg, nil
 }
 
 func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 	key := fmt.Sprintf(this.CacheKey, req.SID)
+
 	lsbin, err := RedisStore.LRange(key, 0, -1)
 	if err != nil {
 		logging.Error("%v", err)
@@ -360,24 +334,16 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 	}
 
 	// 获取除权因子列表
-	fcs, err := this.GetReferFactors(req.SID)
+	fcs, err := NewFactor().GetReferFactors(req.SID)
 	if err != nil {
 		return nil, err
 	}
-
-	//	for _, v := range fcs {
-	//		fmt.Println(*v)
-	//	}
 
 	// 解码
 	ls, err := this.Decode(lsbin)
 	if err != nil {
 		return nil, err
 	}
-
-	//	for n, v := range ls {
-	//		fmt.Println(n, v)
-	//	}
 
 	fgs, err := this.FactorGroupOp(req, fcs, ls)
 	if err != nil {
@@ -393,13 +359,21 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 		}, nil
 	}
 
-	//return nil, errors.New(fmt.Sprintf("For debug error suspend"))
+	result_ls := make([]*pro.KInfo, 0, 1024)
+	for _, v := range fgs {
+		result_ls = append(result_ls, v.Ls[:]...)
+	}
+
+	begin := int32(0)
+	if len(result_ls) > 0 {
+		begin = result_ls[0].NTime
+	}
 
 	return &pro.PayloadXRXD{
 		SID:   req.SID,
 		Total: int32(len(ls)),
-		Begin: req.TimeIndex,
-		Num:   int32(len(ls)),
-		KList: ls,
+		Begin: begin,
+		Num:   int32(len(result_ls)),
+		KList: result_ls,
 	}, nil
 }
