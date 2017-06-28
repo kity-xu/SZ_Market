@@ -92,6 +92,7 @@ type AppConfig struct {
 	Session    SessionSetting `xml:"session"`
 	Settings   AppSettings    `xml:"appSettings"`
 	Log        LogServer      `xml:"logServer"`
+	Catalog    FileCatalog    `xml:"filecatalog"`
 }
 type FileStore struct {
 	Path  string `xml:"path"`
