@@ -24,6 +24,9 @@ func RegPublish(rg *gin.RouterGroup) {
 	//排序
 	rg.POST("/sort", publish.NewSort().POST)
 
+	//资金流向
+	rg.POST("/fundflow", publish.NewFundflow().POST)
+
 	//板块及板块成分
 	rg.POST("/block", publish.NewStockBlock().POST)
 	rg.POST("/element", publish.NewStockElement().POST)
@@ -49,8 +52,10 @@ func RegPublish(rg *gin.RouterGroup) {
 	rg.POST("/subset", publish.NewStockBlockSet().POST)
 	// 公告信息集合 -zxw
 	rg.POST("/hisevent", publish.NewNoticeInfo().POST)
-	// 单条公告信息
+	// 单条公告信息 -zxw
 	rg.POST("/hiseventid", publish.NewHisEvent().POST)
+	// 个股详情 移动端 -zxw
+	rg.POST("/persdetail", publish.NewPerSDetail().POST)
 
 	// 除权除息
 	rg.POST("/xrxd", publish.NewXRXD().POST)

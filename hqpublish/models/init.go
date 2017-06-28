@@ -9,6 +9,7 @@ import (
 var (
 	FStore *config.FileStore
 	TTL    *config.CacheTTL
+	FCat   *config.FileCatalog
 )
 
 func init() {
@@ -24,6 +25,7 @@ func init() {
 
 	FStore = &cfg.File
 	TTL = &cfg.TTL
+	FCat = &cfg.Catalog
 
 	// 初始化 Redis 配置
 	InitRedisFrame(&cfg.RedisCache, &cfg.Redis)

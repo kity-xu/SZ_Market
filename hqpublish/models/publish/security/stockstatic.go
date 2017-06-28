@@ -9,7 +9,6 @@ import (
 	"github.com/golang/protobuf/proto"
 	. "haina.com/market/hqpublish/models"
 
-	"haina.com/market/hqpublish/models/publish"
 	"haina.com/share/logging"
 )
 
@@ -20,7 +19,7 @@ type SecurityStatic struct {
 func NewSecurityStatic() *SecurityStatic {
 	return &SecurityStatic{
 		Model: Model{
-			CacheKey: publish.REDISKEY_SECURITY_STATIC,
+			CacheKey: REDISKEY_SECURITY_STATIC,
 		},
 	}
 }

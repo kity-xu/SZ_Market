@@ -9,8 +9,15 @@ import (
 	"github.com/golang/protobuf/proto"
 	. "haina.com/market/hqpublish/models"
 
-	"haina.com/market/hqpublish/models/publish"
 	"haina.com/share/logging"
+)
+
+const (
+	REDISKEY_MARKET_SECURITY_TABLE_ASTOCK = "hq:market:sts:%s" ///A股市场
+	REDISKEY_MARKET_SECURITY_TABLE        = "hq:market:sts:%d" ///<证券市场代码表(参数：MarketID)  (hq-init写入)
+	REDISKEY_SECURITY_NAME_ID             = "hq:st:name:%d"    ///<证券代码(参数：sid) (hq-init写入)
+	REDISKEY_SECURITY_NAME_CODE           = "hq:st:name:%s"    ///<证券代码(参数：scode) (hq-init写入)
+	REDISKEY_SECURITY_STATIC              = "hq:st:static:%d"  ///<证券静态数据(参数：sid) (hq-init写入)
 )
 
 type SecurityInfo struct {
@@ -20,7 +27,7 @@ type SecurityInfo struct {
 func NewSecurityInfo() *SecurityInfo {
 	return &SecurityInfo{
 		Model: Model{
-			CacheKey: publish.REDISKEY_SECURITY_NAME_ID,
+			CacheKey: REDISKEY_SECURITY_NAME_ID,
 		},
 	}
 }

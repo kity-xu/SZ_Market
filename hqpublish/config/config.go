@@ -92,6 +92,7 @@ type AppConfig struct {
 	Session    SessionSetting `xml:"session"`
 	Settings   AppSettings    `xml:"appSettings"`
 	Log        LogServer      `xml:"logServer"`
+	Catalog    FileCatalog    `xml:"filecatalog"`
 }
 type FileStore struct {
 	Path  string `xml:"path"`
@@ -106,6 +107,11 @@ type FileStore struct {
 	Min15 string `xml:"hmin15"`
 	Min30 string `xml:"hmin30"`
 	Min60 string `xml:"hmin60"`
+}
+
+// 公告附件目录 url地址
+type FileCatalog struct {
+	Url string `xml:"url"`
 }
 
 type CacheTTL struct {

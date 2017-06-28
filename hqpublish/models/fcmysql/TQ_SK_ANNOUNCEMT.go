@@ -11,13 +11,14 @@ const (
 )
 
 type TQ_SK_ANNOUNCEMT struct {
-	Model       `db:"-" `
-	ID          int32          // 公告ID
-	DECLAREDATE int32          // 公告日期
-	ANNTITLE    dbr.NullString // 公告标题
-	ANNTYPE     dbr.NullString // 全文类型
-	ANNTEXT     dbr.NullString // 公告内容
-	LEVEL1      dbr.NullString // 一级分类
+	Model        `db:"-" `
+	ID           int32          // 公告ID
+	ANNOUNCEMTID dbr.NullString // 对应目录id
+	DECLAREDATE  int32          // 公告日期
+	ANNTITLE     dbr.NullString // 公告标题
+	ANNTYPE      dbr.NullString // 全文类型
+	ANNTEXT      dbr.NullString // 公告内容
+	LEVEL1       dbr.NullString // 一级分类
 
 }
 

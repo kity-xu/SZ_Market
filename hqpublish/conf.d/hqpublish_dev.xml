@@ -82,7 +82,9 @@
 		<hmin30>hmin30.dat</hmin30>
 		<hmin60>hmin60.dat</hmin60>
 	</fileStore>
-	
+	<filecatalog>
+		<url>http://47.93.102.171/</url>
+	</filecatalog>
 	<cacheTTL>                          <!--   单位秒     -->
         <day>3600</day>                 <!--   60*60*1   -->
         <week>43200</week>              <!--   60*60*12  -->

@@ -4,7 +4,9 @@ package publish
 import (
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
 	"strconv"
+	"strings"
 
+	. "haina.com/market/hqpublish/models"
 	"haina.com/market/hqpublish/models/fcmysql"
 	"haina.com/share/logging"
 )
@@ -31,7 +33,19 @@ func (this *HisEventinfo) GetHisevent(req *protocol.RequestHisevent) (*protocol.
 	noti.NHiseventID = req.HiseventID
 	noti.NDeclardate = hsi.DECLAREDATE
 	noti.SzHeadline = hsi.ANNTITLE.String
-	noti.SzWebtake = hsi.ANNTEXT.String
+	// 如果公告内容等于 “公告内容详见附件” 需查询公告目录表
+	anncmt, err := fcmysql.NewTQ_OA_ANNTFILE().GetAnntfile(hid)
+	if err != nil {
+		logging.Info("查询公告目录 error %v", err)
+	}
+	if hsi.ANNTEXT.String == "公告内容详见附件" {
+		str := strings.Replace(anncmt.FILELINK.String, `\`, "/", -1)
+		urlstr := FCat.Url + str
+		noti.SzWebtake = urlstr
+	} else {
+		noti.SzWebtake = hsi.ANNTEXT.String
+	}
+	noti.SzAcsyType = anncmt.FILEEXTNAME.String
 	noti.SzNoticeType = hsi.ANNTYPE.String
 	isif := hsi.LEVEL1.String
 	if len(isif) < 1 {
@@ -124,7 +138,6 @@ func (this *HisEventinfo) GetHisevent(req *protocol.RequestHisevent) (*protocol.
 		noti.NWhether = 11
 
 	}
-	logging.Info("----------")
 
 	return &noti, nil
 }

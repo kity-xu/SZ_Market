@@ -246,6 +246,7 @@ func IsHQpostRunOver() (bool, error) {
 	}
 
 	//1530
+	logging.Debug("--dd:%v---**monment:%v", dd, monment)
 	if dd%10000 < monment%10000 { //hqpost更新完毕
 		return true, nil
 	}
