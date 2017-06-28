@@ -54,4 +54,6 @@ func RegPublish(rg *gin.RouterGroup) {
 
 	// 除权除息
 	rg.POST("/xrxd", publish.NewXRXD().POST)
+	// 复权因子
+	rg.POST("/factor", publish.NewFactor().POST)
 }
