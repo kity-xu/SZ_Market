@@ -73,6 +73,11 @@ const (
 	REDISKEY_ELEMENT     = "hq:init:bk:%d:%d" ///成份股
 )
 
+//资金流向
+const (
+	REDISKEY_FUND_FLOW = "hq:trade:min:%d" ///资金流向
+)
+
 // 证券集合(板块)
 const (
 	REDISKEY_STOCK_BLOCK      = "hq:bk:%d:*"    ///证券字段排序结果(参数：板块基础id)(calc写入)

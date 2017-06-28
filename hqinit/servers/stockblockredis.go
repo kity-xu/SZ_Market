@@ -144,6 +144,13 @@ func (this *StockBlockRedis) Block() {
 			return
 		}
 
+		//所有板块下成份股
+		keyall := fmt.Sprintf(REDISKEY_BLOCK_BOARD, protocol.REDIS_BLOCK_CLASSIFY_All, bid)
+		if _, err = c.Do("SET", keyall, data); err != nil {
+			logging.Error("%v", err.Error())
+			return
+		}
+
 		//以类型分类的板块
 		board := &protocol.Block{
 			SetID:   bid,
@@ -205,8 +212,13 @@ func (this *StockBlockRedis) Block() {
 			return
 		}
 		key := fmt.Sprintf(REDISKEY_BLOCK_BOARD, protocol.REDIS_BLOCK_CLASSIFY_Concept, bid)
-
 		if _, err = c.Do("SET", key, data); err != nil {
+			logging.Error("%v", err.Error())
+			return
+		}
+		//所有板块下成份股
+		keyall := fmt.Sprintf(REDISKEY_BLOCK_BOARD, protocol.REDIS_BLOCK_CLASSIFY_All, bid)
+		if _, err = c.Do("SET", keyall, data); err != nil {
 			logging.Error("%v", err.Error())
 			return
 		}
@@ -272,8 +284,13 @@ func (this *StockBlockRedis) Block() {
 			return
 		}
 		key := fmt.Sprintf(REDISKEY_BLOCK_BOARD, protocol.REDIS_BLOCK_CLASSIFY_Industry, bid)
-
 		if _, err = c.Do("SET", key, data); err != nil {
+			logging.Error("%v", err.Error())
+			return
+		}
+		//所有板块下成份股
+		keyall := fmt.Sprintf(REDISKEY_BLOCK_BOARD, protocol.REDIS_BLOCK_CLASSIFY_All, bid)
+		if _, err = c.Do("SET", keyall, data); err != nil {
 			logging.Error("%v", err.Error())
 			return
 		}

@@ -40,14 +40,13 @@ func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHi
 
 	models.GetASCStruct(dlines) //升序排序
 
-	//新增K线的判断   待改。。。。
 	over, err := kline.IsHQpostRunOver()
 	if err != nil {
 		logging.Debug("err:%v", err.Error())
 	}
 	if !over {
 		logging.Info("Create new kline...")
-		//if models.GetCurrentTimeHM()%10000 < 1530 {
+
 		switch redisKey {
 		case publish.REDISKEY_SECURITY_HDAY:
 			maybeAddKline(dlines)
@@ -188,6 +187,7 @@ func maybeAddKline(reply *[]*protocol.KInfo) {
 		logging.Error("PayloadHisK is null...")
 		return
 	}
+	logging.Debug("Trade_100:%v------Trade_200:%v", Trade_100, Trade_200)
 
 	today := models.GetCurrentTime()
 	if (*reply)[0].NSID/1000000 == 100 {

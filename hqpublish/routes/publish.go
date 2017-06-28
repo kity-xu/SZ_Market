@@ -24,6 +24,9 @@ func RegPublish(rg *gin.RouterGroup) {
 	//排序
 	rg.POST("/sort", publish.NewSort().POST)
 
+	//资金流向
+	rg.POST("/fundflow", publish.NewFundflow().POST)
+
 	//板块及板块成分
 	rg.POST("/block", publish.NewStockBlock().POST)
 	rg.POST("/element", publish.NewStockElement().POST)

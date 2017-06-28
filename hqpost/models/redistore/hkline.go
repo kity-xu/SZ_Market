@@ -232,7 +232,6 @@ func (this *HKLine) HQpostExecutedTime() {
 
 	tm := time.Unix(timestamp, 0)
 	ss := tm.Format("200601021504")
-	//ss := strconv.FormatInt(timestamp, 10) //int64转string
 	if err := redis.Set(this.CacheKey, []byte(ss)); err != nil {
 		logging.Error("%v", err.Error())
 	}
