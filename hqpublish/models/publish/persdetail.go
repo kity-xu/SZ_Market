@@ -66,8 +66,24 @@ func (this *PerSDetailM) GetPerSDtail(req *protocol.RequestPerSDetail) (*protoco
 			NPB:            snap.SnapInfo.NPB,                                     // 动态市净率(*10000)
 			NPE:            snap.SnapInfo.NPE,                                     // 动态市盈率(*10000)
 			LlFlowProperty: stat.SSInfo.LlFlowProperty,                            // 流动资产
+			Bid:            make([]*protocol.QuoteRecordp, 0, 5),
+			Offer:          make([]*protocol.QuoteRecordp, 0, 5),
 		},
 	}
 
+	for _, v := range snap.SnapInfo.Bid {
+		bid := &protocol.QuoteRecordp{
+			NPx:      v.NPx,
+			LlVolume: v.LlVolume,
+		}
+		pers.Psdb.Bid = append(pers.Psdb.Bid, bid)
+	}
+	for _, v := range snap.SnapInfo.Offer {
+		offer := &protocol.QuoteRecordp{
+			NPx:      v.NPx,
+			LlVolume: v.LlVolume,
+		}
+		pers.Psdb.Offer = append(pers.Psdb.Offer, offer)
+	}
 	return pers, err
 }
