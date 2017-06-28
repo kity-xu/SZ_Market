@@ -9,6 +9,7 @@ import (
 var (
 	FStore *config.FileStore
 	TTL    *config.CacheTTL
+	FCat   *config.FileCatalog
 )
 
 func init() {

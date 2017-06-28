@@ -108,6 +108,11 @@ type FileStore struct {
 	Min60 string `xml:"hmin60"`
 }
 
+// 公告附件目录 url地址
+type FileCatalog struct {
+	Url string `xml:"url"`
+}
+
 type CacheTTL struct {
 	Day   int `xml:"day"`
 	Week  int `xml:"week"`
