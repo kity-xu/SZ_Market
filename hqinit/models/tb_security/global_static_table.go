@@ -45,6 +45,7 @@ func GetSecurityStaticTableFromMG() *[]*TagStockStatic {
 	stat := new(servers.TagStockStatic).GetStaticDataList()
 	for _, ite := range stat {
 		var tssc TagStockStatic
+
 		tssc.NSID = ite.NSID
 		tssc.SzSType = ite.SzSType
 		tssc.SzStatus = ite.SzStatus

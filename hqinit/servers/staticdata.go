@@ -68,7 +68,7 @@ func (this *TagStockStatic) GetStaticDataList() []*TagStockStatic {
 
 	//	var cfg *config.AppConfig
 	// FC数据库连接
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
+	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
 	// 服务器用
 	//conn, err := dbr.Open(cfg.MysqlStore.MysqlN, cfg.MysqlStore.Source, nil)
 	if err != nil {
@@ -262,9 +262,9 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 	sjshqfiles := []*SjsHqFile{}
 
 	// 解析深证市场sjsxx.dbf文件 （证券信息库）
-	dbfTable, err := godbf.NewFromFile("E:/hqfile/20170613/sz/sjsxx.dbf", "UTF8")
+	//dbfTable, err := godbf.NewFromFile("E:/hqfile/20170613/sz/sjsxx.dbf", "UTF8")
 	// 服务器地址
-	//dbfTable, err := godbf.NewFromFile("/opt/develop/hgs/market/hqinit/sjsxx.dbf", "UTF8")
+	dbfTable, err := godbf.NewFromFile("/opt/develop/hgs/market/hqinit/sjsxx.dbf", "UTF8")
 	if err != nil {
 		logging.Info("==========%v", err)
 		os.Exit(1)
@@ -346,9 +346,9 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 
 	//logging.Info("=====sz:%v", len(sjshqfiles))
 	// 上交所 证券处理
-	f, err := os.Open("E:/hqfile/20170613/sh/cpxx" + mod + ".txt") //打开文件
+	//f, err := os.Open("E:/hqfile/20170613/sh/cpxx" + mod + ".txt") //打开文件
 	// 服务器用
-	//f, err := os.Open("/opt/develop/hgs/market/hqinit/cpxx" + mod + ".txt") //打开文件
+	f, err := os.Open("/opt/develop/hgs/market/hqinit/cpxx" + mod + ".txt") //打开文件
 	//	f, err := os.Open("/opt/develop/hgs/market/hqinit/static/" + timed + "/cpxx" + mod + ".txt") //打开文件
 	defer f.Close()                      //打开文件出错处理
 	decoder := mahonia.NewDecoder("gbk") // 把原来ANSI格式的文本文件里的字符，用gbk进行解码。
@@ -393,45 +393,46 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 		var isis = false
 		for _, item := range tss {
 			if ite.NSID == item.NSID {
-				logging.Info("==========================%v",item)
+
 				isis = true
-				item.NSID=item.NSID
-				item.SzSType=item.SzSType
-				item.SzStatus=item.SzStatus
-				
+				item.NSID = item.NSID
+				item.SzSType = item.SzSType
+				item.SzStatus = item.SzStatus
+
 				item.NListDate = ite.NListDate
-				item.NLastTradeDate=item.NLastTradeDate
-				item.NDelistDate=item.NDelistDate
-				item.LlCircuShare=item.LlCircuShare
+				item.NLastTradeDate = item.NLastTradeDate
+				item.NDelistDate = item.NDelistDate
+				item.LlCircuShare = item.LlCircuShare
 				item.LlTotalShare = item.LlTotalShare
-				item.LlLast5Volume=item.LlLast5Volume
+				item.LlLast5Volume = item.LlLast5Volume
 				item.NEPS = int32(ite.NEPS * 10000)
-				item.LlTotalProperty=item.LlTotalProperty
-				item.LlFlowProperty=item.LlFlowProperty
-				
+				item.LlTotalProperty = item.LlTotalProperty
+				item.LlFlowProperty = item.LlFlowProperty
+
 				item.NAVPS = int32(ite.NAVPS * 10000)
-				
-				item.LlMainIncoming=item.LlMainIncoming
-				item.LlMainProfit=item.LlMainProfit
-				item.LlTotalProfit=item.LlTotalProfit
-				item.LlNetProfit=item.LlNetProfit
-				item.NHolders=item.NHolders
-				item.NReportDate=item.NReportDate
-				item.NCurrentRatio=item.NCurrentRatio
-				item.NQuickMovingRatio=item.NQuickMovingRatio
-				item.NEUndisProfit=item.NEUndisProfit
-				item.NFlowLiab=item.NFlowLiab
-				item.NTotalLiabilities=item.NTotalLiabilities
-				item.NTotalHolderEquity=item.NTotalHolderEquity
-				item.NCapitalReserve=item.NCapitalReserve
-				item.NIncomeInvestments=item.NIncomeInvestments
-				
+
+				item.LlMainIncoming = item.LlMainIncoming
+				item.LlMainProfit = item.LlMainProfit
+				item.LlTotalProfit = item.LlTotalProfit
+				item.LlNetProfit = item.LlNetProfit
+				item.NHolders = item.NHolders
+				item.NReportDate = item.NReportDate
+				item.NCurrentRatio = item.NCurrentRatio
+				item.NQuickMovingRatio = item.NQuickMovingRatio
+				item.NEUndisProfit = item.NEUndisProfit
+				item.NFlowLiab = item.NFlowLiab
+				item.NTotalLiabilities = item.NTotalLiabilities
+				item.NTotalHolderEquity = item.NTotalHolderEquity
+				item.NCapitalReserve = item.NCapitalReserve
+				item.NIncomeInvestments = item.NIncomeInvestments
+
 			}
 		}
 		if isis == false {
 			var tssc TagStockStatic
 			tssc.NSID = ite.NSID
-			tssc.SzStatus ="1"
+			tssc.SzStatus = "1"
+			tssc.SzSType = "101"
 			tssc.NListDate = ite.NListDate
 			tssc.LlCircuShare = ite.LlCircuShare
 			tssc.LlTotalShare = ite.LlTotalShare

@@ -26,17 +26,16 @@ type TagSecurityInfo struct {
 }
 
 // 查询当日新股
-type BasicInfoN struct{
-	LISTDATE   string    // 上市日期
-	SYMBOL     string    // 证券代码 
+type BasicInfoN struct {
+	LISTDATE string // 上市日期
+	SYMBOL   string // 证券代码
 }
 
-
-func GetSession()*dbr.Session{
+func GetSession() *dbr.Session {
 	// 获取沪深股票信息
 	logging.Info("stockinfo begin==")
 	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
-	
+
 	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
 	if err != nil {
 		logging.Debug("mysql onn", err)
@@ -45,20 +44,19 @@ func GetSession()*dbr.Session{
 	return sess
 }
 
-
 // 获取当日新股
 func (this *BasicInfoN) GetBasiN() []*BasicInfoN {
-	sess:=GetSession()
+	sess := GetSession()
 	nbi, err := new(fcm.TQ_SK_BASICINFO).GetNewBasicinfo(sess)
-	if err!=nil{
-		logging.Info("查询当日新股 error %v",err)
+	if err != nil {
+		logging.Info("查询当日新股 error %v", err)
 	}
 	var binl []*BasicInfoN
-	for _,itb:=range nbi{
+	for _, itb := range nbi {
 		var bi BasicInfoN
-		bi.LISTDATE=itb.LISTDATE.String
-		bi.SYMBOL=itb.SYMBOL.String
-		binl=append(binl,&bi)
+		bi.LISTDATE = itb.LISTDATE.String
+		bi.SYMBOL = itb.SYMBOL.String
+		binl = append(binl, &bi)
 	}
 	return binl
 }
@@ -67,8 +65,8 @@ var codes []*TagSecurityInfo
 
 // 获取股票信息返回
 func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
-	
-	sess:=GetSession()
+
+	sess := GetSession()
 	// s1 个股+指数   s2 个股  s3 指数
 	if sty == "s1" {
 		codes = nil
@@ -110,7 +108,11 @@ func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
 
 //  处理数据插入mongoDB
 func TreatingData(secNm []*fcm.FcSecuNameTab) {
-
+	sess := GetSession()
+	bas, err := new(fcm.TQ_SK_BASICINFO).GetNewBasicinfo(sess)
+	if err != nil {
+		logging.Info("查询当日新股error %v", err)
+	}
 	for _, item := range secNm {
 
 		var tsi TagSecurityInfo
@@ -159,8 +161,21 @@ func TreatingData(secNm []*fcm.FcSecuNameTab) {
 		tsi.SzStatus = item.LISTSTATUS.String
 		tsi.SzSymbol = item.SYMBOL.String
 		tsi.SzISIN = item.SECURITYID.String
-		tsi.SzSName = item.SENAME.String
-		tsi.SzSCName = item.SESNAME.String
+
+		// 如果当日有新股 新股名字加N
+		if len(bas) > 0 {
+			for _, ibas := range bas {
+				if ibas.SYMBOL == item.SYMBOL {
+					rsn := []rune(item.SENAME.String)
+					rszs := []rune(item.SESNAME.String)
+					tsi.SzSName = "N" + string(rsn[0]) + string(rszs[1])
+					tsi.SzSCName = "N" + string(rszs[0]) + string(rszs[1])
+				}
+			}
+		} else {
+			tsi.SzSName = item.SENAME.String
+			tsi.SzSCName = item.SESNAME.String
+		}
 		tsi.SzDESC = item.SEENGNAME.String
 		tsi.SzPhonetic = item.SESPELL.String
 		tsi.SzCUR = item.CUR.String

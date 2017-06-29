@@ -26,7 +26,7 @@ func GetSecurityInfoTableFromMG() *[]*TagSecurityInfo {
 	var secus []*TagSecurityInfo
 
 	TagI := new(servers.TagSecurityInfo).GetStockInfo("s2")
-	bas := new(servers.BasicInfoN).GetBasiN()
+
 	for _, ite := range TagI {
 		var tsi TagSecurityInfo
 		tsi.NSID = ite.NSID
@@ -36,21 +36,7 @@ func GetSecurityInfoTableFromMG() *[]*TagSecurityInfo {
 		tsi.SzSCode = ite.SzSCode
 		tsi.SzSymbol = ite.SzSymbol
 		tsi.SzISIN = ite.SzISIN
-		// 如果当日有新股 新股名字加N
-		if len(bas)>0{
-			for _,ibas:=range bas{
-				if ibas.SYMBOL == ite.SzSymbol{
-					rsn:=[]rune(ite.SzSName)
-					rszs:=[]rune(ite.SzSCName)
-					tsi.SzSName="N"+string(rsn[0])+string(rszs[1])
-					tsi.SzSCName ="N"+string(rszs[0])+string(rszs[1])
-				}
-			}
-		}else{
-			tsi.SzSName = ite.SzSName
-			tsi.SzSCName = ite.SzSCName
-		}
-		
+
 		tsi.SzDESC = ite.SzDESC
 		tsi.SzPhonetic = ite.SzPhonetic
 		tsi.SzCUR = ite.SzCUR
