@@ -255,7 +255,7 @@ func StockTreatingData(sess *dbr.Session) []*TagStockStatic {
 func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 
 	// 获取当前日期
-	timed := time.Now().Format("20060102")
+	//timed := time.Now().Format("20060102")
 	// 获取当前月日
 	mod := time.Now().Format("0102")
 	// 用来保存沪深所有个股
@@ -264,7 +264,7 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 	// 解析深证市场sjsxx.dbf文件 （证券信息库）
 	//dbfTable, err := godbf.NewFromFile("E:/hqfile/"+timed+"/sz/sjsxx.dbf", "UTF8")
 	// 服务器地址
-	dbfTable, err := godbf.NewFromFile("/opt/develop/hgs/market/hqinit/data/sjsxx.dbf", "UTF8")
+	dbfTable, err := godbf.NewFromFile("/opt/develop/hgs/market/hqinit/sjsxx.dbf", "UTF8")
 	if err != nil {
 		logging.Info("==========%v", err)
 		os.Exit(1)
@@ -291,7 +291,7 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 						logging.Info("这个%v证券代码转换in32 error", symstr)
 					}
 					sjshqfile.NSID = int32(nsid)
-					sjshqfile.SzStatus, err = dbfTable.FieldValueByName(i, "XXJYZT")
+					//sjshqfile.SzStatus, err = dbfTable.FieldValueByName(i, "XXJYZT")
 					listd, err := dbfTable.FieldValueByName(i, "XXSSRQ")
 					if err != nil {
 						logging.Info("这个%v证券代码解析上市日期 error", symstr)
@@ -348,9 +348,10 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 	// 上交所 证券处理
 	//f, err := os.Open("E:/hqfile/" + timed + "/sh/cpxx" + mod + ".txt") //打开文件
 	// 服务器用
-	f, err := os.Open("/opt/develop/hgs/market/hqinit/static/" + timed + "/cpxx" + mod + ".txt") //打开文件
-	defer f.Close()                                                                              //打开文件出错处理
-	decoder := mahonia.NewDecoder("gbk")                                                         // 把原来ANSI格式的文本文件里的字符，用gbk进行解码。
+	f, err := os.Open("/opt/develop/hgs/market/hqinit/cpxx" + mod + ".txt") //打开文件
+	//	f, err := os.Open("/opt/develop/hgs/market/hqinit/static/" + timed + "/cpxx" + mod + ".txt") //打开文件
+	defer f.Close()                      //打开文件出错处理
+	decoder := mahonia.NewDecoder("gbk") // 把原来ANSI格式的文本文件里的字符，用gbk进行解码。
 	if nil == err {
 		buff := bufio.NewReader(decoder.NewReader(f)) //读入缓存
 		for {
@@ -393,7 +394,7 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 		for _, item := range tss {
 			if ite.NSID == item.NSID {
 				isis = true
-				item.SzStatus = ite.SzStatus
+				//item.SzStatus = ite.SzStatus
 				item.NListDate = ite.NListDate
 				item.LlCircuShare = ite.LlCircuShare
 				item.LlTotalShare = ite.LlTotalShare
@@ -404,7 +405,7 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 		if isis == false {
 			var tssc TagStockStatic
 			tssc.NSID = ite.NSID
-			tssc.SzStatus = ite.SzStatus
+			//tssc.SzStatus = ite.SzStatus
 			tssc.NListDate = ite.NListDate
 			tssc.LlCircuShare = ite.LlCircuShare
 			tssc.LlTotalShare = ite.LlTotalShare

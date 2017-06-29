@@ -75,8 +75,8 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 		}
 		tag := protocol.StockStatic{ //入redis的结构
 			NSID:              v.NSID,
-			SzSType:           v.SzSType,
-			SzStatus:          v.SzStatus,
+			SzSType:           stype,
+			SzStatus:          status,
 			NListDate:         v.NListDate,
 			NLastTradeDate:    v.NLastTradeDate,
 			NDelistDate:       v.NDelistDate,
