@@ -352,6 +352,7 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 	if fgs == nil {
 		return &pro.PayloadXRXD{
 			SID:   req.SID,
+			Type:  req.Type,
 			Total: int32(len(ls)),
 			Begin: req.TimeIndex,
 			Num:   0,
@@ -371,6 +372,7 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 
 	return &pro.PayloadXRXD{
 		SID:   req.SID,
+		Type:  req.Type,
 		Total: int32(len(ls)),
 		Begin: begin,
 		Num:   int32(len(result_ls)),
