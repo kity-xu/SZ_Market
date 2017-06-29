@@ -28,7 +28,7 @@ func (this *FcSecuNameTab) GetSecuNmList(sess *dbr.Session) ([]*FcSecuNameTab, e
 	var data []*FcSecuNameTab
 	_, err := sess.Select("*").From("TQ_OA_STCODE").
 		Where("EXCHANGE in ('001002','001003') and SETYPE in('101') AND LISTSTATUS =1 and ISVALID =1").
-		OrderBy("SYMBOL").LoadStructs(&data)
+		OrderBy("SYMBOL").Limit(20).LoadStructs(&data)
 	return data, err
 }
 

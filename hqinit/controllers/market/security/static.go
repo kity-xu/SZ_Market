@@ -65,6 +65,7 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 	//入文件
 	buffer := new(bytes.Buffer)
 	for _, v := range *stable {
+		fmt.Println("==============",v)
 		stype, err = HainaSecurityType(strconv.Itoa(int(v.NSID)), v.SzSType)
 		if err != nil {
 			logging.Error("%v", err.Error())

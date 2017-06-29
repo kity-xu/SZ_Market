@@ -25,21 +25,50 @@ type TagSecurityInfo struct {
 	SzIndusCode string `bson:"szIndusCode"` // 行业代码
 }
 
-var codes []*TagSecurityInfo
+// 查询当日新股
+type BasicInfoN struct{
+	LISTDATE   string    // 上市日期
+	SYMBOL     string    // 证券代码 
+}
 
-// 获取股票信息返回
-func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
 
+func GetSession()*dbr.Session{
 	// 获取沪深股票信息
 	logging.Info("stockinfo begin==")
 	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
-	// 服务器用
-	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(127.0.0.1:3306)/finchina?charset=utf8", nil)
+	
+	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
 	if err != nil {
 		logging.Debug("mysql onn", err)
 	}
 	sess := conn.NewSession(nil)
+	return sess
+}
 
+
+// 获取当日新股
+func (this *BasicInfoN) GetBasiN() []*BasicInfoN {
+	sess:=GetSession()
+	nbi, err := new(fcm.TQ_SK_BASICINFO).GetNewBasicinfo(sess)
+	if err!=nil{
+		logging.Info("查询当日新股 error %v",err)
+	}
+	var binl []*BasicInfoN
+	for _,itb:=range nbi{
+		var bi BasicInfoN
+		bi.LISTDATE=itb.LISTDATE.String
+		bi.SYMBOL=itb.SYMBOL.String
+		binl=append(binl,&bi)
+	}
+	return binl
+}
+
+var codes []*TagSecurityInfo
+
+// 获取股票信息返回
+func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
+	
+	sess:=GetSession()
 	// s1 个股+指数   s2 个股  s3 指数
 	if sty == "s1" {
 		codes = nil

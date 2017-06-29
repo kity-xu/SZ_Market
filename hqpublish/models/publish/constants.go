@@ -83,3 +83,8 @@ const (
 	REDISKEY_STOCK_BLOCK      = "hq:bk:%d:*"    ///证券字段排序结果(参数：板块基础id)(calc写入)
 	REDISKEY_STOCK_BLOCK_BASE = "hq:sort:11:%d" ///证券字段排序结果(参数：排序id)(calc写入)
 )
+
+// 资金统计
+const(
+	REDISKEY_TRADE_PRICE	= "hq:trade:price:%d"			///证券分价统计（参数：sid）（calc写入）
+)
