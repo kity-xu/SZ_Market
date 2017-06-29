@@ -42,7 +42,6 @@ func (this *PerSDetailM) GetPerSDtail(req *protocol.RequestPerSDetail) (*protoco
 	} else {
 		avgp = int32(snap.SnapInfo.LlValue / snap.SnapInfo.LlVolume)
 	}
-
 	pers := &protocol.PayloadPerSDetail{
 		SID: req.SID,
 		Psdb: &protocol.PerSDetailBase{
@@ -66,8 +65,14 @@ func (this *PerSDetailM) GetPerSDtail(req *protocol.RequestPerSDetail) (*protoco
 			NPB:            snap.SnapInfo.NPB,                                     // 动态市净率(*10000)
 			NPE:            snap.SnapInfo.NPE,                                     // 动态市盈率(*10000)
 			LlFlowProperty: stat.SSInfo.LlFlowProperty,                            // 流动资产
-			Bid:            make([]*protocol.QuoteRecordp, 0, 5),
-			Offer:          make([]*protocol.QuoteRecordp, 0, 5),
+			Bid:            make([]*protocol.QuoteRecordp, 0, 5),                  // 买五档
+			Offer:          make([]*protocol.QuoteRecordp, 0, 5),                  // 卖五档
+			NLastPx:        snap.SnapInfo.NLastPx,                                 // 最新价
+			NTime:          snap.SnapInfo.NTime,                                   // 时间 unix time
+			SzStatus:       stat.SSInfo.SzStatus,                                  // 证券状态
+			LlVolume:       snap.SnapInfo.LlVolume,                                // 成交量
+			LlTradeNum:     snap.SnapInfo.LlTradeNum,                              // 成交笔数
+			LlValue:        snap.SnapInfo.LlValue,                                 // 成交额(*10000)
 		},
 	}
 

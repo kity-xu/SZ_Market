@@ -377,7 +377,7 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 				}
 				// 解析上交所 cpxx0512文档 只有证券代码可以利用
 				sjshqfile.NSID = int32(nsid)
-				sjshqfiles = append(sjshqfiles, &sjshqfile)
+				//sjshqfiles = append(sjshqfiles, &sjshqfile)
 				//						}
 				//					}
 				//				}
