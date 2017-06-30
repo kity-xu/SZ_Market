@@ -2,7 +2,6 @@ package kline
 
 import (
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
-	"time"
 
 	"haina.com/market/hqpublish/models/publish"
 	"haina.com/share/logging"

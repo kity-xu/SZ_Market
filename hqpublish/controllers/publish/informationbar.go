@@ -117,7 +117,7 @@ func DataTreating(ind int, pst *protocol.IndexSnapshot) *protocol.Infobar {
 	if ind == 3 {
 		sname = "创业板指"
 	}
-
+	logging.Info("================%v", pst)
 	return &protocol.Infobar{
 		NSID:       pst.NSID,
 		SzSName:    sname,
