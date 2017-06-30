@@ -36,7 +36,8 @@ func GetSecurityInfoTableFromMG() *[]*TagSecurityInfo {
 		tsi.SzSCode = ite.SzSCode
 		tsi.SzSymbol = ite.SzSymbol
 		tsi.SzISIN = ite.SzISIN
-
+		tsi.SzSName = ite.SzSName
+		tsi.SzSCName = ite.SzSCName
 		tsi.SzDESC = ite.SzDESC
 		tsi.SzPhonetic = ite.SzPhonetic
 		tsi.SzCUR = ite.SzCUR

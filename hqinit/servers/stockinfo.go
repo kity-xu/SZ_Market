@@ -37,6 +37,7 @@ func GetSession() *dbr.Session {
 	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
 
 	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
+
 	if err != nil {
 		logging.Debug("mysql onn", err)
 	}
@@ -163,18 +164,19 @@ func TreatingData(secNm []*fcm.FcSecuNameTab) {
 		tsi.SzISIN = item.SECURITYID.String
 
 		// 如果当日有新股 新股名字加N
+
 		if len(bas) > 0 {
 			for _, ibas := range bas {
-				if ibas.SYMBOL == item.SYMBOL {
+				if ibas.SYMBOL.String == item.SYMBOL.String {
 					rsn := []rune(item.SENAME.String)
 					rszs := []rune(item.SESNAME.String)
 					tsi.SzSName = "N" + string(rsn[0]) + string(rszs[1])
 					tsi.SzSCName = "N" + string(rszs[0]) + string(rszs[1])
+				} else {
+					tsi.SzSName = item.SENAME.String
+					tsi.SzSCName = item.SESNAME.String
 				}
 			}
-		} else {
-			tsi.SzSName = item.SENAME.String
-			tsi.SzSCName = item.SESNAME.String
 		}
 		tsi.SzDESC = item.SEENGNAME.String
 		tsi.SzPhonetic = item.SESPELL.String

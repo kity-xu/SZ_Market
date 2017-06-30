@@ -71,7 +71,6 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 		}
 
 		buf := TagSecurityName{}
-
 		single := protocol.SecurityName{}
 		single.NMarket = int32(v.NMarket)
 		single.NSID = int32(v.NSID)
