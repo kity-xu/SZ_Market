@@ -20,7 +20,7 @@ func (this *TQ_SK_SHARESTRUCHG) GetSingleInfo(sess *dbr.Session, comc string) (T
 	var tss TQ_SK_SHARESTRUCHG
 	err := sess.Select("TOTALSHARE,CIRCAAMT,CIRCBAMT,CIRCHAMT,CIRCSKRTO,CIRCSKAMT").From("TQ_SK_SHARESTRUCHG").
 		Where("COMPCODE='" + comc + "' and  ISVALID=1").
-		OrderBy("ENDDATE DESC").
+		OrderBy("PUBLISHDATE  DESC").
 		Limit(1).
 		LoadStruct(&tss)
 	return tss, err
