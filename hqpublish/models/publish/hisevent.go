@@ -18,7 +18,7 @@ func NewHisEventinfo() *HisEventinfo {
 	return &HisEventinfo{}
 }
 
-// 公告信息集合
+// 公告信息
 func (this *HisEventinfo) GetHisevent(req *protocol.RequestHisevent) (*protocol.PayloadHisevent, error) {
 
 	// 根据证券id获取公告信息
@@ -42,10 +42,14 @@ func (this *HisEventinfo) GetHisevent(req *protocol.RequestHisevent) (*protocol.
 		str := strings.Replace(anncmt.FILELINK.String, `\`, "/", -1)
 		urlstr := FCat.Url + str
 		noti.SzWebtake = urlstr
+		// 公告内容类型
+		noti.SzAcsyType = "url"
 	} else {
 		noti.SzWebtake = hsi.ANNTEXT.String
+		// 公告内容类型
+		noti.SzAcsyType = "txt"
 	}
-	noti.SzAcsyType = anncmt.FILEEXTNAME.String
+
 	noti.SzNoticeType = hsi.ANNTYPE.String
 	isif := hsi.LEVEL1.String
 	if len(isif) < 1 {
