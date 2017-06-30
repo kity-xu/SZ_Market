@@ -33,7 +33,7 @@ type StockSnapshot struct {
 type REDIS_BIN_STOCK_SNAPSHOT struct {
 	NSID          int32           ///< 证券ID
 	NTime         int32           ///< 时间 unix time
-	NStatus       uint32          ///< 0:开市前  1:开盘集合竞价 2:连续竞价 3:临时停盘 4:收盘集合竞价 5:集中竞价闭市  6:协议转让结束  7:闭市
+	NTradingPhase uint32          ///< 0:开市前  1:开盘集合竞价 2:连续竞价 3:临时停盘 4:收盘集合竞价 5:集中竞价闭市  6:协议转让结束  7:闭市
 	NPreClosePx   uint32          ///< 昨收价 * 10000
 	NOpenPx       uint32          ///< 开盘价 ..
 	NHighPx       uint32          ///< 最高价 ..
@@ -102,7 +102,7 @@ func (this *StockSnapshot) GetStockSnapshot(req *protocol.RequestSnapshot) (*pro
 		SnapInfo: &protocol.StockSnapshot{
 			NSID:          data.NSID,
 			NTime:         data.NTime,
-			NStatus:       data.NStatus,
+			NTradingPhase: data.NTradingPhase,
 			NPreClosePx:   data.NPreClosePx,
 			NOpenPx:       data.NOpenPx,
 			NHighPx:       data.NHighPx,
