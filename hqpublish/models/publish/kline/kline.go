@@ -5,7 +5,6 @@ import (
 	"ProtocolBuffer/format/kline"
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -217,7 +216,7 @@ func getHQpostExecutedTime() (string, error) {
 		return "", err
 	}
 	if ss == "" {
-		return "", errors.New("redis get HQpostExecutedTime is null..")
+		return "", fmt.Errorf("redis get HQpostExecutedTime is null..")
 	}
 	return ss, nil
 }

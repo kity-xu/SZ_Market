@@ -262,7 +262,7 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 	sjshqfiles := []*SjsHqFile{}
 
 	// 解析深证市场sjsxx.dbf文件 （证券信息库）
-	//dbfTable, err := godbf.NewFromFile("E:/hqfile/"+timed+"/sz/sjsxx.dbf", "UTF8")
+	//dbfTable, err := godbf.NewFromFile("E:/hqfile/20170613/sz/sjsxx.dbf", "UTF8")
 	// 服务器地址
 	dbfTable, err := godbf.NewFromFile("/opt/develop/hgs/market/hqinit/sjsxx.dbf", "UTF8")
 	if err != nil {
@@ -344,9 +344,9 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 		}
 	}
 
-	logging.Info("=====sz:%v", len(sjshqfiles))
+	//logging.Info("=====sz:%v", len(sjshqfiles))
 	// 上交所 证券处理
-	//f, err := os.Open("E:/hqfile/" + timed + "/sh/cpxx" + mod + ".txt") //打开文件
+	//f, err := os.Open("E:/hqfile/20170613/sh/cpxx" + mod + ".txt") //打开文件
 	// 服务器用
 	f, err := os.Open("/opt/develop/hgs/market/hqinit/cpxx" + mod + ".txt") //打开文件
 	//	f, err := os.Open("/opt/develop/hgs/market/hqinit/static/" + timed + "/cpxx" + mod + ".txt") //打开文件
@@ -385,7 +385,7 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 			}
 		}
 	}
-	logging.Info("=====sh:%v", len(sjshqfiles))
+	//logging.Info("=====sh:%v", len(sjshqfiles))
 	// 沪深市场文档解析完成
 
 	// 对比沪深数据
@@ -393,19 +393,46 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 		var isis = false
 		for _, item := range tss {
 			if ite.NSID == item.NSID {
+
 				isis = true
-				//item.SzStatus = ite.SzStatus
+				item.NSID = item.NSID
+				item.SzSType = item.SzSType
+				item.SzStatus = item.SzStatus
+
 				item.NListDate = ite.NListDate
-				item.LlCircuShare = ite.LlCircuShare
-				item.LlTotalShare = ite.LlTotalShare
+				item.NLastTradeDate = item.NLastTradeDate
+				item.NDelistDate = item.NDelistDate
+				item.LlCircuShare = item.LlCircuShare
+				item.LlTotalShare = item.LlTotalShare
+				item.LlLast5Volume = item.LlLast5Volume
 				item.NEPS = int32(ite.NEPS * 10000)
+				item.LlTotalProperty = item.LlTotalProperty
+				item.LlFlowProperty = item.LlFlowProperty
+
 				item.NAVPS = int32(ite.NAVPS * 10000)
+
+				item.LlMainIncoming = item.LlMainIncoming
+				item.LlMainProfit = item.LlMainProfit
+				item.LlTotalProfit = item.LlTotalProfit
+				item.LlNetProfit = item.LlNetProfit
+				item.NHolders = item.NHolders
+				item.NReportDate = item.NReportDate
+				item.NCurrentRatio = item.NCurrentRatio
+				item.NQuickMovingRatio = item.NQuickMovingRatio
+				item.NEUndisProfit = item.NEUndisProfit
+				item.NFlowLiab = item.NFlowLiab
+				item.NTotalLiabilities = item.NTotalLiabilities
+				item.NTotalHolderEquity = item.NTotalHolderEquity
+				item.NCapitalReserve = item.NCapitalReserve
+				item.NIncomeInvestments = item.NIncomeInvestments
+
 			}
 		}
 		if isis == false {
 			var tssc TagStockStatic
 			tssc.NSID = ite.NSID
-			//tssc.SzStatus = ite.SzStatus
+			tssc.SzStatus = "1"
+			tssc.SzSType = "101"
 			tssc.NListDate = ite.NListDate
 			tssc.LlCircuShare = ite.LlCircuShare
 			tssc.LlTotalShare = ite.LlTotalShare
