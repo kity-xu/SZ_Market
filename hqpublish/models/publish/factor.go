@@ -55,7 +55,7 @@ func (this Factor) ErrDataInvalid(fields string, sid int32, secode string) error
 // 从财汇数据库获取 *股票除权因子*
 func (this Factor) GetReferFactors(sid int32) ([]*pro.Factor, error) {
 	real_sid := sid % 1000000
-	secode, err := fcmysql.NewTQ_OA_STCODE().GetSecode(fmt.Sprintf("%d", real_sid))
+	secode, err := fcmysql.NewTQ_OA_STCODE().GetSecode(fmt.Sprintf("%06d", real_sid))
 	if err != nil {
 		logging.Error("%v", err)
 		return nil, err
