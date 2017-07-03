@@ -64,9 +64,6 @@ func produceWeeprotocol(single *SingleSecurity) *protocol.KInfoTable {
 	var klist protocol.KInfoTable
 
 	for _, week := range *single.WeekDays { //每一周
-		if single.Sid == 100000001 {
-			logging.Debug("Week:%v", week)
-		}
 		tmp := protocol.KInfo{}
 
 		var (

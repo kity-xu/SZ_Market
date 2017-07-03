@@ -3,6 +3,7 @@ package lib
 import (
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"haina.com/share/lib"
 	"haina.com/share/logging"
@@ -61,4 +62,32 @@ func IsFileExist(fileName string) bool {
 		return false
 	}
 	return true
+}
+
+func CreateFile(path string) error {
+	if err := os.MkdirAll(getParentDirectory(path), 0777); err != nil {
+		logging.Error(err.Error())
+		return err
+	}
+
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	if err != nil {
+		logging.Error(err.Error())
+		return err
+	}
+	f.Close()
+	return nil
+}
+
+func substr(s string, pos, length int) string {
+	runes := []rune(s)
+	l := pos + length
+	if l > len(runes) {
+		l = len(runes)
+	}
+	return string(runes[pos:l])
+}
+
+func getParentDirectory(dirctory string) string {
+	return substr(dirctory, 0, strings.LastIndex(dirctory, "/"))
 }

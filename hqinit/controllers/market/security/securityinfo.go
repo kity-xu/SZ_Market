@@ -33,7 +33,7 @@ type TagSecurityName struct {
 	SzStatus    [4]byte                 // 证券状态										len:4
 	SzSCode     [SECURITY_CODE_LEN]byte // 证券代码: 600036.SH							len:SECURITY_CODE_LEN
 	SzSymbol    [SECURITY_CODE_LEN]byte // 证券原始: 600036								len:SECURITY_CODE_LEN
-	SzISIN      [SECURITY_ISIN_LEN]byte // 证券国际代码信息								len:SECURITY_ISIN_LEN
+	SzISIN      [SECURITY_ISIN_LEN]byte // 证券国际代码信息								    len:SECURITY_ISIN_LEN
 	SzSName     [SECURITY_NAME_LEN]byte // 证券名称 (超过24字节部分被省略)					len:SECURITY_NAME_LEN
 	SzSCName    [SECURITY_NAME_LEN]byte // 证券简体中文名称 (美股、港股超过40字节部分被省略		len:SECURITY_NAME_LEN
 	SzDESC      [SECURITY_DESC_LEN]byte // 英文简称										len:SECURITY_DESC_LEN
@@ -50,8 +50,7 @@ func MarketTable() *[]*tb_security.TagSecurityInfo {
 //证券基本信息和单市场的证券代码表的实现
 func UpdateSecurityTable(cfg *config.AppConfig) {
 	var (
-		stype, status string
-		//sec_sh, sec_sz sec.MarketSecurityCodeTable
+		stype, status  string
 		sec_sh, sec_sz protocol.PayloadMarketSecurityNameTable
 	)
 

@@ -47,6 +47,22 @@ func (this *HKLine) LPushHisKLine(sid int32, line *protocol.KInfo) error {
 
 func (this *HKLine) UpdateWeekKLineToRedis(sid int32, today *protocol.KInfo) error {
 	key := fmt.Sprintf(this.CacheKey, sid)
+
+	n, e := redis.Llen(key) //新股上市
+	if n == 0 && e == nil {
+		data, err := proto.Marshal(today)
+		if err != nil {
+			logging.Error("Marshal error...", err.Error())
+			return err
+		}
+
+		if err = redis.Lpush(key, data); err != nil {
+			logging.Error("Lpush error...", err.Error())
+			return err
+		}
+		return nil
+	}
+
 	ss, err := redis.LRange(key, 0, 0)
 	if err != nil {
 		return err
@@ -97,6 +113,22 @@ func (this *HKLine) UpdateWeekKLineToRedis(sid int32, today *protocol.KInfo) err
 
 func (this *HKLine) UpdateMonthKLineToRedis(sid int32, today *protocol.KInfo) error {
 	key := fmt.Sprintf(this.CacheKey, sid)
+
+	n, e := redis.Llen(key) //新股上市
+	if n == 0 && e == nil {
+		data, err := proto.Marshal(today)
+		if err != nil {
+			logging.Error("Marshal error...", err.Error())
+			return err
+		}
+
+		if err = redis.Lpush(key, data); err != nil {
+			logging.Error("Lpush error...", err.Error())
+			return err
+		}
+		return nil
+	}
+
 	ss, err := redis.LRange(key, 0, 0)
 	if err != nil {
 		return err
@@ -144,6 +176,22 @@ func (this *HKLine) UpdateMonthKLineToRedis(sid int32, today *protocol.KInfo) er
 
 func (this *HKLine) UpdateYearKLineToRedis(sid int32, today *protocol.KInfo) error {
 	key := fmt.Sprintf(this.CacheKey, sid)
+
+	n, e := redis.Llen(key) //新股上市
+	if n == 0 && e == nil {
+		data, err := proto.Marshal(today)
+		if err != nil {
+			logging.Error("Marshal error...", err.Error())
+			return err
+		}
+
+		if err = redis.Lpush(key, data); err != nil {
+			logging.Error("Lpush error...", err.Error())
+			return err
+		}
+		return nil
+	}
+
 	ss, err := redis.LRange(key, 0, 0)
 	if err != nil {
 		return err
