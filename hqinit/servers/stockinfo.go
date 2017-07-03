@@ -164,20 +164,24 @@ func TreatingData(secNm []*fcm.FcSecuNameTab) {
 		tsi.SzISIN = item.SECURITYID.String
 
 		// 如果当日有新股 新股名字加N
-
+		var syisis = false
 		if len(bas) > 0 {
 			for _, ibas := range bas {
-				if ibas.SYMBOL.String == item.SYMBOL.String {
-					rsn := []rune(item.SENAME.String)
-					rszs := []rune(item.SESNAME.String)
-					tsi.SzSName = "N" + string(rsn[0]) + string(rszs[1])
-					tsi.SzSCName = "N" + string(rszs[0]) + string(rszs[1])
-				} else {
-					tsi.SzSName = item.SENAME.String
-					tsi.SzSCName = item.SESNAME.String
+				if item.SYMBOL.String == ibas.SYMBOL.String {
+					syisis = true
 				}
 			}
 		}
+		if syisis == true {
+			rsn := []rune(item.SENAME.String)
+			rszs := []rune(item.SESNAME.String)
+			tsi.SzSName = "N" + string(rsn[0]) + string(rszs[1])
+			tsi.SzSCName = "N" + string(rszs[0]) + string(rszs[1])
+		} else {
+			tsi.SzSName = item.SENAME.String
+			tsi.SzSCName = item.SESNAME.String
+		}
+
 		tsi.SzDESC = item.SEENGNAME.String
 		tsi.SzPhonetic = item.SESPELL.String
 		tsi.SzCUR = item.CUR.String
