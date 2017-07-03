@@ -57,8 +57,7 @@ func RegPublish(rg *gin.RouterGroup) {
 	// 个股详情 移动端 -zxw
 	rg.POST("/persdetail", publish.NewPerSDetail().POST)
 	// 分价成交 -zxw
-	rg.POST("/tradedp")
-	
+	rg.POST("/tradedp", publish.NewTradePriceRecordC().POST)
 
 	// 除权除息
 	rg.POST("/xrxd", publish.NewXRXD().POST)

@@ -85,6 +85,6 @@ const (
 )
 
 // 资金统计
-const(
-	REDISKEY_TRADE_PRICE	= "hq:trade:price:%d"			///证券分价统计（参数：sid）（calc写入）
+const (
+	REDISKEY_TRADE_PRICE = "hq:trade:price:%d" ///证券分价统计（参数：sid）（calc写入）
 )
