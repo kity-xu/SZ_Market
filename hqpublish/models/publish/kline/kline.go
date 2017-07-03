@@ -46,7 +46,8 @@ func (this *KLine) GetHisKLineAll(req *protocol.RequestHisK) (*[]*protocol.KInfo
 		}
 		list, err = this.getHisKlineFromeFileStore(key, req)
 		if err != nil {
-			return nil, err
+			var table []*protocol.KInfo
+			return &table, err
 		}
 	}
 	if list == nil {
@@ -244,10 +245,16 @@ func IsHQpostRunOver() (bool, error) {
 		return false, err
 	}
 
-	//1530
-	logging.Debug("--dd:%v---**monment:%v", dd, monment)
 	if dd%10000 < monment%10000 { //hqpost更新完毕
 		return true, nil
 	}
 	return false, nil
+}
+
+func IsExistInRedis(key string) bool {
+	bs, err := RedisStore.GetBytes(key)
+	if err == nil && len(bs) > 0 {
+		return true
+	}
+	return false
 }

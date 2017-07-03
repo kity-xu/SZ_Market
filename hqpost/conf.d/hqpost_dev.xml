@@ -43,7 +43,7 @@
         }
         </config>
     </session>
-    <database>
+   <!-- <database>
         <driverName>mongo</driverName>
         <dataSource>publisher:Haina$A7Kha@tcp(123.56.30.141:3306)/finchinafcdd?charset=utf8</dataSource>
 
@@ -51,7 +51,7 @@
 	
 	<mongoStore>
 		<source>192.168.18.200:27017/hgs</source>
-	</mongoStore>
+	</mongoStore>-->
 	
     <redisStore>
         <addr>192.168.18.200:6379</addr>

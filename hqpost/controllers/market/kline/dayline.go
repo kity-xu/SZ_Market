@@ -48,7 +48,6 @@ func (this *Security) DayLine() {
 		}
 
 		/**********************************************filename*******************************************************/
-		//这里要做一个逻辑判断
 		// 1. 先判断haina历史文件是否存在，不存在去读源文件做第一次生成
 		hnfile := fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Day) //haina文件store路劲
 		if !lib.IsFileExist(hnfile) {                                                  //haina store dk.dat不存在
@@ -67,7 +66,9 @@ func (this *Security) DayLine() {
 			srcfile := fmt.Sprintf("%s%s%d/%s", cfg.File.Finpath, exchange, sid, cfg.File.Finday) //src文件store路劲
 			if !lib.IsFileExist(srcfile) {
 				srcindex := fmt.Sprintf("%s%s%d/%s", cfg.File.Finpath, exchange, sid, cfg.File.Findex)
-				if !lib.IsFileExist(srcindex) {
+				if !lib.IsFileExist(srcindex) { //新增的K线（个股或指数）
+					redistore.IsNSidIndex()
+
 					logging.Error("Cannot find file  SID:%v源文件不存在...", sid)
 					filename = ""
 					continue
@@ -121,9 +122,6 @@ func (this *Security) DayLine() {
 		//得到今天的k线
 		today, e := GetTodayDayLine(sid) //昨收价 lastPx 0
 		if e == nil && today != nil {    //获取当天数据没毛病
-			//tm := filestore.GetDateToday()	//今天的K线不加入周、月、年的计算
-			//date = append(date, tm)
-			//dmap[tm] = *today
 			sigList.today = today
 
 			//追加到文件

@@ -13,8 +13,7 @@ const (
 // global_table
 //---------------------------------------------------------------------------------
 const (
-	MOGON_SECURITY_TABLE = "basic_securityinfo_table"
-	MOGON_MARKET_TABLE   = "basic_securityinfo_table"
+	REDISKEY_SECURITY_NAME_ID = "hq:st:name:%d" ///<证券代码(参数：sid) (hq-init写入)
 )
 
 var (

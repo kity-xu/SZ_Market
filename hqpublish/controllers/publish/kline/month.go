@@ -3,6 +3,9 @@ package kline
 
 import (
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
+	"fmt"
+
+	"haina.com/market/hqpublish/models/publish/kline"
 
 	. "haina.com/market/hqpublish/controllers"
 	"haina.com/market/hqpublish/models"
@@ -32,10 +35,21 @@ func (this *Kline) MonthPB(c *gin.Context, request *protocol.RequestHisK) {
 	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_HISKLINE, reply)
 }
 
-func maybeAddMonthLine(reply *[]*protocol.KInfo) {
+func maybeAddMonthLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
+	if e == publish.INVALID_FILE_PATH { //可能是今天上市的新股
+		key := fmt.Sprintf(publish.REDISKEY_SECURITY_NAME_ID, Sid) //去股票代码表查是否有此ID
+		if !kline.IsExistInRedis(key) {
+			return e
+		}
+		kinfo := &protocol.KInfo{
+			NTime: models.GetCurrentTime(),
+		}
+		*reply = append(*reply, kinfo)
+		return nil
+	}
+
 	if len(*reply) < 1 {
-		logging.Error("PayloadHisK is null...")
-		return
+		return fmt.Errorf("PayloadHisK is null...")
 	}
 
 	today := models.GetCurrentTime()
@@ -64,6 +78,7 @@ func maybeAddMonthLine(reply *[]*protocol.KInfo) {
 			}
 		}
 	} else {
-		logging.Error("Invalid NSID...")
+		return fmt.Errorf("Invalid NSID...")
 	}
+	return nil
 }

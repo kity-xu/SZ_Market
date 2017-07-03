@@ -28,6 +28,8 @@ type TagBlockSortInfo struct {
 	NAveChgRate     int32                   //平均涨跌幅*10000
 	LlVolume        int64                   ///< 板块总成交量
 	LlValue         int64                   ///< 板块总成交额(*10000)
+	NStockID        int32                   ///领涨股ID
+	NStockChgRate   int32                   ///领涨股涨跌幅
 	SzSName         [SECURITY_NAME_LEN]byte //领涨股名称
 	NNum            int32                   //成分股票个数
 	NChgRatio       int32                   //上涨比例
@@ -100,6 +102,8 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 						NAveChgRate:     block.NAveChgRate,
 						LlVolume:        block.LlVolume,
 						LlValue:         block.LlValue,
+						NStockID:        block.NStockID,
+						NStockChgRate:   block.NStockChgRate,
 						SzSName:         byte40ToString(block.SzSName),
 						NNum:            block.NNum,
 						NChgRatio:       block.NChgRatio,
@@ -184,6 +188,8 @@ func (this *Block) GetBlockFromeRediaData(req *protocol.RequestBlock, blocks *[]
 					NAveChgRate:     block.NAveChgRate,
 					LlVolume:        block.LlVolume,
 					LlValue:         block.LlValue,
+					NStockID:        block.NStockID,
+					NStockChgRate:   block.NStockChgRate,
 					SzSName:         byte40ToString(block.SzSName),
 					NNum:            block.NNum,
 					NChgRatio:       block.NChgRatio,

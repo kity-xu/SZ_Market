@@ -3,6 +3,7 @@ package kline
 
 import (
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	. "haina.com/market/hqpublish/controllers"
@@ -33,12 +34,10 @@ func (this *Kline) DayPB(c *gin.Context, request *protocol.RequestHisK) {
 
 func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHisK) (*protocol.PayloadHisK, error) {
 	var ret *protocol.PayloadHisK
-	dlines, err := kline.NewKLine(redisKey).GetHisKLineAll(request)
-	if err != nil {
-		return nil, err
+	dlines, e := kline.NewKLine(redisKey).GetHisKLineAll(request)
+	if e == nil {
+		models.GetASCStruct(dlines) //升序排序
 	}
-
-	models.GetASCStruct(dlines) //升序排序
 
 	over, err := kline.IsHQpostRunOver()
 	if err != nil {
@@ -46,21 +45,40 @@ func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHi
 	}
 	if !over {
 		logging.Info("Create new kline...")
-
 		switch redisKey {
 		case publish.REDISKEY_SECURITY_HDAY:
-			maybeAddKline(dlines)
+			e = maybeAddKline(dlines, request.SID, e)
+			if e != nil {
+				logging.Error(e.Error())
+				return nil, e
+			}
 			break
 		case publish.REDISKEY_SECURITY_HWEEK:
-			maybeAddWeekLine(dlines)
+			e = maybeAddWeekLine(dlines, request.SID, e)
+			if e != nil {
+				logging.Error(e.Error())
+				return nil, e
+			}
 			break
 		case publish.REDISKEY_SECURITY_HMONTH:
-			maybeAddMonthLine(dlines)
+			e = maybeAddMonthLine(dlines, request.SID, e)
+			if e != nil {
+				logging.Error(e.Error())
+				return nil, e
+			}
 			break
 		case publish.REDISKEY_SECURITY_HYEAR:
-			maybeAddYearLine(dlines)
+			e = maybeAddYearLine(dlines, request.SID, e)
+			if e != nil {
+				logging.Error(e.Error())
+				return nil, e
+			}
 			break
 		}
+	}
+
+	if len(*dlines) == 0 {
+		return nil, e
 	}
 
 	total := int32(len(*dlines))
@@ -111,7 +129,6 @@ func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHi
 			return ret, nil
 
 		} else { //TimeIndex作为起始日期
-
 			var frontedSwap, palinalSwap []*protocol.KInfo
 			var databuf []*protocol.KInfo
 
@@ -182,10 +199,21 @@ func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHi
 }
 
 //新增K线
-func maybeAddKline(reply *[]*protocol.KInfo) {
+func maybeAddKline(reply *[]*protocol.KInfo, Sid int32, e error) error {
+	if e == publish.INVALID_FILE_PATH { //可能是今天上市的新股
+		key := fmt.Sprintf(publish.REDISKEY_SECURITY_NAME_ID, Sid) //去股票代码表查是否有此ID
+		if !kline.IsExistInRedis(key) {
+			return e
+		}
+		kinfo := &protocol.KInfo{
+			NTime: models.GetCurrentTime(),
+		}
+		*reply = append(*reply, kinfo)
+		return nil
+	}
+
 	if len(*reply) < 1 {
-		logging.Error("PayloadHisK is null...")
-		return
+		return fmt.Errorf("PayloadHisK is null...")
 	}
 	logging.Debug("Trade_100:%v------Trade_200:%v", Trade_100, Trade_200)
 
@@ -211,6 +239,7 @@ func maybeAddKline(reply *[]*protocol.KInfo) {
 			*reply = append(*reply, &kinfo)
 		}
 	} else {
-		logging.Error("Invalid NSID...")
+		return fmt.Errorf("Invalid NSID...")
 	}
+	return nil
 }

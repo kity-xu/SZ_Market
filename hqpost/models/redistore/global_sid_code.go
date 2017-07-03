@@ -1,13 +1,43 @@
 package redistore
 
 import (
-	"errors"
+	"bytes"
+	"encoding/binary"
 	"fmt"
+	"io"
 	"strconv"
+
+	"haina.com/share/logging"
+
+	"haina.com/market/hqpost/models"
 
 	. "haina.com/share/models"
 	"haina.com/share/store/redis"
 )
+
+const (
+	SECURITY_CODE_LEN = 24 ///< 证券代码长度
+	SECURITY_NAME_LEN = 40 ///< 证券名称长度
+	SECURITY_DESC_LEN = 8  ///< 英文简称
+	INDUSTRY_CODE_LEN = 8  ///< 行业代码
+	SECURITY_ISIN_LEN = 16 ///< 证券国际代码信息
+)
+
+type TagSecurityName struct {
+	NSID        int32
+	NMarket     int32                   // 市场类型
+	SzSType     [4]byte                 // 证券类型										len:4
+	SzStatus    [4]byte                 // 证券状态										len:4
+	SzSCode     [SECURITY_CODE_LEN]byte // 证券代码: 600036.SH							len:SECURITY_CODE_LEN
+	SzSymbol    [SECURITY_CODE_LEN]byte // 证券原始: 600036								len:SECURITY_CODE_LEN
+	SzISIN      [SECURITY_ISIN_LEN]byte // 证券国际代码信息								    len:SECURITY_ISIN_LEN
+	SzSName     [SECURITY_NAME_LEN]byte // 证券名称 (超过24字节部分被省略)					len:SECURITY_NAME_LEN
+	SzSCName    [SECURITY_NAME_LEN]byte // 证券简体中文名称 (美股、港股超过40字节部分被省略		len:SECURITY_NAME_LEN
+	SzDESC      [SECURITY_DESC_LEN]byte // 英文简称										len:SECURITY_DESC_LEN
+	SzPhonetic  [SECURITY_CODE_LEN]byte // 拼音											len:SECURITY_CODE_LEN
+	SzCUR       [4]byte                 // 币种											len:4
+	SzIndusCode [INDUSTRY_CODE_LEN]byte // 行业代码										len:INDUSTRY_CODE_LEN
+}
 
 type GlobalSid struct {
 	Model `db:"-"`
@@ -27,17 +57,39 @@ func (this *GlobalSid) GetGlobalSidFromRedis() (*[]int32, error) {
 		return nil, err
 	}
 	if len(sids) < 1 {
-		return nil, errors.New("sids list is null...")
+		return nil, fmt.Errorf("sids list is null...")
 	}
 
 	var NSids []int32
 	for _, sid := range sids {
 		nsid, err := strconv.Atoi(sid)
 		if err != nil { //此处出错误是因为出现了非数字字符
-			errNew := fmt.Sprintf("The sid is not numeric types...%s", sid)
-			return nil, errors.New(errNew)
+			return nil, fmt.Errorf("The sid is not numeric types...%s", sid)
 		}
 		NSids = append(NSids, int32(nsid))
 	}
 	return &NSids, nil
+}
+
+func IsNSidIndex(sid int32) int {
+	key := fmt.Sprintf(models.REDISKEY_SECURITY_NAME_ID, sid)
+	data, err := models.RedisStore.GetBytes(key)
+	if err != nil {
+		logging.Error(err.Error())
+		return -1
+	}
+	var stock TagSecurityName
+
+	if err = binary.Read(bytes.NewBuffer(data), binary.LittleEndian, &stock); err != nil && err != io.EOF {
+		logging.Error(err.Error())
+		return -1
+	}
+
+	if stock.SzSType[0] == '1' { //股票
+		return 1
+	} else if stock.SzSType[0] == '7' { //指数
+		return 7
+	} else {
+		return 0
+	}
 }

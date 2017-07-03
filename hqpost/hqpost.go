@@ -13,8 +13,7 @@ import (
 
 func main() {
 	cfg := config.Default(APP_PID)
-
-	// 项目初始化
+	//项目初始化
 	a := app.NewApp(APP_NAME, APP_VERSION)
 	a.PidName = APP_PID
 	a.WSPort = cfg.Serve.Port
@@ -26,10 +25,10 @@ func main() {
 
 	r := a.Init()
 
-	// 监控性能
+	//	// 监控性能
 	ginpprof.Wrapper(r)
 
-	//行情数据更新
+	//	//行情数据更新
 	market.Update(cfg)
 
 	logging.Info("Run succeed, and return 0...")
