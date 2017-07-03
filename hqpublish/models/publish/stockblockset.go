@@ -29,6 +29,8 @@ type StockBlockInfo struct {
 	NAveChgRate     int32                   // 平均涨跌幅*10000
 	LlVolume        int64                   ///< 板块总成交量
 	LlValue         int64                   ///< 板块总成交额(*10000)
+	NStockID        int32                   // 领涨股ID
+	NStockChgRate   int32                   // 领涨股涨跌幅
 	SzSName         [SECURITY_NAME_LEN]byte // 领涨股名称
 	NNum            int32                   // 成分股票个数
 	NChgRatio       int32                   //上涨比例
@@ -113,6 +115,8 @@ func (this *StockBlockBase) GetStockBlockBase(req *protocol.RequestStockBlockBas
 				tbhi.NAveChgRate = ite.NAveChgRate
 				tbhi.LlVolume = ite.LlVolume
 				tbhi.LlValue = ite.LlValue
+				tbhi.NStockID = ite.NStockID
+				tbhi.NStockChgRate = ite.NStockChgRate
 				tbhi.SzSName = strings.Replace(string(ite.SzSName[:]), "\u0000", "", -1)
 				tbhi.NNum = ite.NNum
 				tbhi.NChgRatio = ite.NChgRatio
