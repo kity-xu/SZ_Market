@@ -14,12 +14,6 @@ func (this *MinKline) HMinLine_5() {
 	rstore5 := redistore.NewHMinKLine(REDISKEY_SECURITY_HMIN5)
 	for _, dmin := range *(this.list.All) { //个股当天数据
 		var tmps []*protocol.KInfo
-
-		if dmin.Sid == 100600036 {
-			logging.Debug("time:%v", dmin.Time_5)
-			//logging.Debug("min:%v", dmin.Min)
-		}
-
 		for _, min5 := range *dmin.Time_5 { //当天的每个5分钟
 			if len(min5) < 1 {
 				logging.Error("%v", ERROR_INDEX_MAYBE_OUTOF_RANGE)

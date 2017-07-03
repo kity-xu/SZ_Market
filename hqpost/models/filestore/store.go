@@ -30,6 +30,16 @@ func UpdateMonthLineToFile(filename string, today *protocol.KInfo) error {
 	}
 	defer file.Close()
 
+	n, err := file.Seek(0, 2) //添加新股
+	if n == 0 && err == nil {
+		buf := new(bytes.Buffer)
+		binary.Write(buf, binary.LittleEndian, today)
+		if _, err = file.Write(buf.Bytes()); err != nil {
+			return err
+		}
+		return nil
+	}
+
 	_, err = file.Seek(int64(-size), 2)
 	if err != nil {
 		return err
@@ -75,9 +85,18 @@ func UpdateYearLineToFile(filename string, today *protocol.KInfo) error {
 	}
 	defer file.Close()
 
+	n, err := file.Seek(0, 2) //添加新股
+	if n == 0 && err == nil {
+		buf := new(bytes.Buffer)
+		binary.Write(buf, binary.LittleEndian, today)
+		if _, err = file.Write(buf.Bytes()); err != nil {
+			return err
+		}
+		return nil
+	}
+
 	_, err = file.Seek(int64(-size), 2)
 	if err != nil {
-		//	logging.Error("fist seek error ...%v", err.Error())
 		return err
 	}
 	if _, err = file.Read(bs); err != nil && err != io.EOF {
@@ -122,6 +141,16 @@ func UpdateWeekLineToFile(filename string, today *protocol.KInfo) error {
 		return err
 	}
 	defer file.Close()
+
+	n, err := file.Seek(0, 2) //添加新股
+	if n == 0 && err == nil {
+		buf := new(bytes.Buffer)
+		binary.Write(buf, binary.LittleEndian, today)
+		if _, err = file.Write(buf.Bytes()); err != nil {
+			return err
+		}
+		return nil
+	}
 
 	_, err = file.Seek(int64(-size), 2)
 	if err != nil {
