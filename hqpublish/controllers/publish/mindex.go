@@ -37,7 +37,7 @@ func NewMIndex() *MIndex {
 	return &MIndex{}
 }
 
-func (this *MIndex) POST(c *gin.Context) {
+func (this *MIndex) GET(c *gin.Context) {
 	replayfmt := c.Query(models.CONTEXT_FORMAT)
 	if len(replayfmt) == 0 {
 		replayfmt = "pb" // 默认
@@ -45,15 +45,15 @@ func (this *MIndex) POST(c *gin.Context) {
 
 	switch replayfmt {
 	case "json":
-		this.PostJson(c)
+		this.GetJson(c)
 	case "pb":
-		this.PostPB(c)
+		this.GetPB(c)
 	default:
 		return
 	}
 }
 
-func (this *MIndex) PostJson(c *gin.Context) {
+func (this *MIndex) GetJson(c *gin.Context) {
 	payload, err := publish.NewMIndex().GetMIndexObj()
 	if err != nil {
 		logging.Error("%v", err)
@@ -63,7 +63,7 @@ func (this *MIndex) PostJson(c *gin.Context) {
 	WriteJson(c, 200, payload)
 }
 
-func (this *MIndex) PostPB(c *gin.Context) {
+func (this *MIndex) GetPB(c *gin.Context) {
 	payload, err := publish.NewMIndex().GetMIndexObj()
 	if err != nil {
 		logging.Error("%v", err)

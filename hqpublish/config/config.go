@@ -131,6 +131,7 @@ type CacheTTL struct {
 
 	MinK         int `xml:"minK"`
 	MarketStatus int `xml:"marketStatus"`
+	MIndex       int `xml:"mindex"`
 }
 
 type CorsSetting struct {

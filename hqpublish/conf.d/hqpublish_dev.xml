@@ -53,9 +53,8 @@
 			47.94.109.175   ali_test  # hz 测试 杭州
 			47.94.16.69     ali_dev   # hz 开发 杭州
 		-->
-		
-       <!-- <addr>47.93.102.171:61380</addr>-->
-		<!--<addr>47.94.109.175:61380</addr>-->
+<!--        <addr>47.93.102.171:61380</addr>-->
+<!--		<addr>47.94.109.175:61380</addr>-->
         <addr>47.94.16.69:61380</addr>
         <auth>8dc40c2c4598ae5a</auth>
         <db>0</db>
@@ -63,7 +62,6 @@
     </redisStore>
     <redisCache>
          <addr>47.94.16.69:60000</addr>  
-<!--	    <addr>192.168.18.200:7379</addr>-->
         <auth>T_vYzoqa0Qn7Pa4T</auth>
         <db>7</db>
         <timeout>3</timeout> 
@@ -102,6 +100,7 @@
         <marketStatus>3</marketStatus> 	<!-- 市场状态 -->
 		<sort>3</sort>					<!-- 排序； 单位（秒） -->
 		<block>930</block>			    <!-- 板块； 9:30 -->
+		<mindex>3</mindex>              <!-- 移动端首页 -->
     </cacheTTL>
 	
 </configuration>

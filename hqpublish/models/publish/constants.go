@@ -85,6 +85,12 @@ const (
 )
 
 // 资金统计
-const(
-	REDISKEY_TRADE_PRICE	= "hq:trade:price:%d"			///证券分价统计（参数：sid）（calc写入）
+const (
+	REDISKEY_TRADE_PRICE = "hq:trade:price:%d" ///证券分价统计（参数：sid）（calc写入）
+)
+
+// RedisCache: 缓存首页
+const (
+	REDISKEY_L2CACHE_INDEX_MOBILE = "hq:index:mobile" // 移动端 /api/hq/mindex
+	REDISKEY_L2CACHE_INDEX_PC     = "hq:index:pc"     // PC端 /api/hq/pcindex
 )

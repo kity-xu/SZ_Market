@@ -58,10 +58,12 @@ func RegPublish(rg *gin.RouterGroup) {
 	rg.POST("/persdetail", publish.NewPerSDetail().POST)
 	// 分价成交 -zxw
 	rg.POST("/tradedp")
-	
 
 	// 除权除息
 	rg.POST("/xrxd", publish.NewXRXD().POST)
 	// 复权因子
 	rg.POST("/factor", publish.NewFactor().POST)
+
+	// 移动端首页
+	rg.GET("/mindex", publish.NewMIndex().GET)
 }
