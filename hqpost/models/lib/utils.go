@@ -68,8 +68,15 @@ func CreateFile(path string) error {
 	if lib.IsFileExist(path) {
 		return nil
 	}
-	if err := os.MkdirAll(getParentDirectory(path), 0777); err != nil {
-		logging.Error(err.Error())
+
+	ss := strings.SplitAfter(path, "/")
+	var str = ""
+	for i := len(ss) - 2; i >= 0; i-- {
+		str = ss[i] + str
+	}
+
+	if err := os.MkdirAll(str, 0777); err != nil {
+		logging.Error("%v------str:%v-------path:%v", err.Error(), str, path)
 		return err
 	}
 
@@ -80,17 +87,4 @@ func CreateFile(path string) error {
 	}
 	f.Close()
 	return nil
-}
-
-func substr(s string, pos, length int) string {
-	runes := []rune(s)
-	l := pos + length
-	if l > len(runes) {
-		l = len(runes)
-	}
-	return string(runes[pos:l])
-}
-
-func getParentDirectory(dirctory string) string {
-	return substr(dirctory, 0, strings.LastIndex(dirctory, "/"))
 }

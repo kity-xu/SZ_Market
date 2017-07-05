@@ -52,6 +52,7 @@ type FileStore struct {
 	Path  string `xml:"path"`
 	Day   string `xml:"day"`
 	Index string `xml:"index"`
+	Other string `xml:"other"`
 	Week  string `xml:"week"`
 	Month string `xml:"month"`
 	Year  string `xml:"year"`

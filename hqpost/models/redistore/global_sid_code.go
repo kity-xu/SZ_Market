@@ -71,7 +71,7 @@ func (this *GlobalSid) GetGlobalSidFromRedis() (*[]int32, error) {
 	return &NSids, nil
 }
 
-func IsNSidIndex(sid int32) int {
+func GetSecurityStatus(sid int32) int {
 	key := fmt.Sprintf(models.REDISKEY_SECURITY_NAME_ID, sid)
 	data, err := models.RedisStore.GetBytes(key)
 	if err != nil {
@@ -85,10 +85,10 @@ func IsNSidIndex(sid int32) int {
 		return -1
 	}
 
-	if stock.SzSType[0] == '1' { //股票
-		return 1
-	} else if stock.SzSType[0] == '7' { //指数
-		return 7
+	if stock.SzSType[1] == 'S' { //股票
+		return 'S'
+	} else if stock.SzSType[1] == 'I' { //指数
+		return 'I'
 	} else {
 		return 0
 	}

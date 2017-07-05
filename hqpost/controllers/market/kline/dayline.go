@@ -68,8 +68,9 @@ func (this *Security) DayLine() {
 			if !lib.IsFileExist(srcfile) {
 				srcindex := fmt.Sprintf("%s%s%d/%s", cfg.File.Finpath, exchange, sid, cfg.File.Findex)
 				if !lib.IsFileExist(srcindex) { //新增的K线（个股或指数新上市）
-					tag = redistore.IsNSidIndex(sid)
-					if tag == 1 {
+					//查股票代码表 "hq:st:name:%d"
+					tag = redistore.GetSecurityStatus(sid)
+					if tag == 'S' {
 						filename = hnfile
 						lib.CreateFile(filename)
 
@@ -78,7 +79,7 @@ func (this *Security) DayLine() {
 						lib.CreateFile(fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Month))
 						lib.CreateFile(fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Year))
 						goto LABEL
-					} else if tag == 7 {
+					} else if tag == 'I' {
 						filename = fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Index)
 						lib.CreateFile(filename)
 
@@ -127,13 +128,16 @@ func (this *Security) DayLine() {
 		}
 		if len(klist.List) < 1 {
 			var aday string
-
-			if tag == 1 {
+			tag = redistore.GetSecurityStatus(sid)
+			if tag == 'S' {
 				aday = fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Day)
-			}
-			if tag == 7 {
+			} else if tag == 'I' {
 				aday = fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Index)
+			} else {
+				logging.Error("%v Data error...", sid)
+				continue
 			}
+			filename = aday
 			lib.CreateFile(aday)
 			lib.CreateFile(fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Week))
 			lib.CreateFile(fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Month))
