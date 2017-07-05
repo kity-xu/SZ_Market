@@ -65,6 +65,9 @@ func IsFileExist(fileName string) bool {
 }
 
 func CreateFile(path string) error {
+	if lib.IsFileExist(path) {
+		return nil
+	}
 	if err := os.MkdirAll(getParentDirectory(path), 0777); err != nil {
 		logging.Error(err.Error())
 		return err

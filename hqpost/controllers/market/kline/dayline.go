@@ -27,6 +27,7 @@ func (this *Security) DayLine() {
 	/******************************沪深所有股票*************************************/
 	for _, sid := range *this.sids {
 		var (
+			tag      int = 0
 			e, err   error
 			filename string         //文件名
 			exchange string         //股票交易所
@@ -67,7 +68,7 @@ func (this *Security) DayLine() {
 			if !lib.IsFileExist(srcfile) {
 				srcindex := fmt.Sprintf("%s%s%d/%s", cfg.File.Finpath, exchange, sid, cfg.File.Findex)
 				if !lib.IsFileExist(srcindex) { //新增的K线（个股或指数新上市）
-					tag := redistore.IsNSidIndex(sid)
+					tag = redistore.IsNSidIndex(sid)
 					if tag == 1 {
 						filename = hnfile
 						lib.CreateFile(filename)
@@ -125,8 +126,18 @@ func (this *Security) DayLine() {
 			}
 		}
 		if len(klist.List) < 1 {
-			logging.Error("SID:%v---No historical data...", sid)
-			continue
+			var aday string
+
+			if tag == 1 {
+				aday = fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Day)
+			}
+			if tag == 7 {
+				aday = fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Index)
+			}
+			lib.CreateFile(aday)
+			lib.CreateFile(fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Week))
+			lib.CreateFile(fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Month))
+			lib.CreateFile(fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Year))
 		}
 
 		//map SingleSecurity结构
@@ -154,7 +165,7 @@ func (this *Security) DayLine() {
 				continue
 			}
 		} else {
-			//logging.Debug("获取%v当天K线信息失败...", sid)
+			logging.Debug("Gets the minute line of today failed...%v", sid)
 		}
 		sigList.Sid = sid
 		sigList.Date = date
@@ -169,7 +180,7 @@ func (this *Security) DayLine() {
 func GetTodayDayLine(sid int32) (*protocol.KInfo, error) {
 	min, err := redistore.NewMinKLine(REDISKEY_SECURITY_MIN).GetMinKLineToday(sid)
 	if err != nil {
-		logging.Debug("%v", err.Error())
+		//logging.Debug("%v", err.Error())
 		return nil, err
 	}
 	var tmp protocol.KInfo //pb类型

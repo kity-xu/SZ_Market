@@ -54,7 +54,27 @@ func (this *InfoBar) PostJson(c *gin.Context) {
 	}
 	req.SID = 200399006 // 创业板
 	datacy, err := publish.NewIndexSnapshot().GetIndexSnapshotObj(&req)
-
+	if err != nil {
+		logging.Error("%v", err)
+		WriteJson(c, 40002, nil)
+		return
+	}
+	req.SID = 200399005 // 中小板指
+	datazx, err := publish.NewIndexSnapshot().GetIndexSnapshotObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		WriteJson(c, 40002, nil)
+		return
+	}
+	req.SID = 100000300 // 沪深300 上海
+	datahssh, err := publish.NewIndexSnapshot().GetIndexSnapshotObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		WriteJson(c, 40002, nil)
+		return
+	}
+	req.SID = 200399300 // 沪深300 深圳
+	datahssz, err := publish.NewIndexSnapshot().GetIndexSnapshotObj(&req)
 	if err != nil {
 		logging.Error("%v", err)
 		WriteJson(c, 40002, nil)
@@ -67,6 +87,9 @@ func (this *InfoBar) PostJson(c *gin.Context) {
 	payload.List = append(payload.List, DataTreating(1, datash))
 	payload.List = append(payload.List, DataTreating(2, datasz))
 	payload.List = append(payload.List, DataTreating(3, datacy))
+	payload.List = append(payload.List, DataTreating(4, datazx))
+	payload.List = append(payload.List, DataTreating(5, datahssh))
+	payload.List = append(payload.List, DataTreating(6, datahssz))
 
 	WriteJson(c, 200, payload)
 }
@@ -95,12 +118,37 @@ func (this *InfoBar) PostPB(c *gin.Context) {
 		WriteJson(c, 40002, nil)
 		return
 	}
+	req.SID = 200399005 // 中小板指
+	datazx, err := publish.NewIndexSnapshot().GetIndexSnapshotObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		WriteJson(c, 40002, nil)
+		return
+	}
+	req.SID = 100000300 // 沪深300 上海
+	datahssh, err := publish.NewIndexSnapshot().GetIndexSnapshotObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		WriteJson(c, 40002, nil)
+		return
+	}
+	req.SID = 200399300 // 沪深300 深圳
+	datahssz, err := publish.NewIndexSnapshot().GetIndexSnapshotObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		WriteJson(c, 40002, nil)
+		return
+	}
+
 	payload := &protocol.PayloadInfoBar{
 		List: make([]*protocol.Infobar, 0, 10),
 	}
 	payload.List = append(payload.List, DataTreating(1, datash))
 	payload.List = append(payload.List, DataTreating(2, datasz))
 	payload.List = append(payload.List, DataTreating(3, datacy))
+	payload.List = append(payload.List, DataTreating(4, datazx))
+	payload.List = append(payload.List, DataTreating(5, datahssh))
+	payload.List = append(payload.List, DataTreating(6, datahssz))
 
 	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_INFOBAR, payload)
 }
@@ -116,6 +164,15 @@ func DataTreating(ind int, pst *protocol.IndexSnapshot) *protocol.Infobar {
 	}
 	if ind == 3 {
 		sname = "创业板指"
+	}
+	if ind == 4 {
+		sname = "中小板指"
+	}
+	if ind == 5 {
+		sname = "沪深300"
+	}
+	if ind == 6 {
+		sname = "沪深300"
 	}
 	return &protocol.Infobar{
 		NSID:       pst.NSID,

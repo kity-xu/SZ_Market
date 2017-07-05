@@ -64,6 +64,8 @@ func RegPublish(rg *gin.RouterGroup) {
 	// 复权因子
 	rg.POST("/factor", publish.NewFactor().POST)
 
+	rg.POST("/userdef", publish.NewUserDefine().POST)
+
 	// 移动端首页
 	rg.GET("/mindex", publish.NewMIndex().GET)
 }

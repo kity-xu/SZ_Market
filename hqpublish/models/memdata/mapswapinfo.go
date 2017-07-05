@@ -84,6 +84,7 @@ func GetSwapInfo(sid int32) *SwapInfo {
 	pay, err := security.NewSecurityInfo().GetSecurityBasicInfo(&req)
 	if err != nil {
 		logging.Error("%v", err)
+		return nil
 	} else {
 		info.Status = pay.SNInfo.SzStatus
 		info.Type = pay.SNInfo.SzSType

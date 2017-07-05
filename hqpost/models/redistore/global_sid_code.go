@@ -1,16 +1,16 @@
 package redistore
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
-	"io"
 	"strconv"
 
 	"haina.com/share/logging"
 
 	"haina.com/market/hqpost/models"
 
+	"ProtocolBuffer/projects/hqpost/go/protocol"
+
+	"github.com/golang/protobuf/proto"
 	. "haina.com/share/models"
 	"haina.com/share/store/redis"
 )
@@ -78,9 +78,9 @@ func IsNSidIndex(sid int32) int {
 		logging.Error(err.Error())
 		return -1
 	}
-	var stock TagSecurityName
 
-	if err = binary.Read(bytes.NewBuffer(data), binary.LittleEndian, &stock); err != nil && err != io.EOF {
+	stock := &protocol.SecurityName{}
+	if err = proto.Unmarshal(data, stock); err != nil {
 		logging.Error(err.Error())
 		return -1
 	}

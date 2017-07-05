@@ -25,7 +25,7 @@ type TagSecurityInfo struct {
 func GetSecurityInfoTableFromMG() *[]*TagSecurityInfo {
 	var secus []*TagSecurityInfo
 
-	TagI := new(servers.TagSecurityInfo).GetStockInfo("s2")
+	TagI := new(servers.TagSecurityInfo).GetStockInfo("s1")
 
 	for _, ite := range TagI {
 		var tsi TagSecurityInfo
