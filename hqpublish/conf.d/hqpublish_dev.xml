@@ -100,7 +100,7 @@
         <marketStatus>3</marketStatus> 	<!-- 市场状态 -->
 		<sort>3</sort>					<!-- 排序； 单位（秒） -->
 		<block>930</block>			    <!-- 板块； 9:30 -->
-		<mindex>3</mindex>              <!-- 移动端首页 -->
+		<mindex>5</mindex>              <!-- 移动端首页 -->
     </cacheTTL>
 	
 </configuration>

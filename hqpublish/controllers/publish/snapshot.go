@@ -1,4 +1,4 @@
-// 证券快照
+// 快照
 package publish
 
 import (
@@ -13,13 +13,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type StockSnapshot struct{}
+type Snapshot struct{}
 
-func NewStockSnapshot() *StockSnapshot {
-	return &StockSnapshot{}
+func NewSnapshot() *Snapshot {
+	return &Snapshot{}
 }
 
-func (this *StockSnapshot) POST(c *gin.Context) {
+func (this *Snapshot) POST(c *gin.Context) {
 	replayfmt := c.Query(models.CONTEXT_FORMAT)
 	if len(replayfmt) == 0 {
 		replayfmt = "pb" // 默认
@@ -35,7 +35,7 @@ func (this *StockSnapshot) POST(c *gin.Context) {
 	}
 }
 
-func (this *StockSnapshot) PostJson(c *gin.Context) {
+func (this *Snapshot) PostJson(c *gin.Context) {
 	var req protocol.RequestSnapshot
 
 	code, err := RecvAndUnmarshalJson(c, 1024, &req)
@@ -50,16 +50,23 @@ func (this *StockSnapshot) PostJson(c *gin.Context) {
 		return
 	}
 
-	data, err := publish.NewStockSnapshot().GetStockSnapshot(&req)
+	stock, index, err := publish.NewSnapshot().GetSnapshot(&req)
 	if err != nil {
 		logging.Error("%v", err)
 		WriteJson(c, 40002, nil)
 		return
 	}
-	WriteJson(c, 200, data)
+	if stock != nil {
+		WriteJson(c, 200, stock)
+		return
+	} else if index != nil {
+		WriteJson(c, 200, index)
+		return
+	}
+	WriteJson(c, 40002, nil)
 }
 
-func (this *StockSnapshot) PostPB(c *gin.Context) {
+func (this *Snapshot) PostPB(c *gin.Context) {
 	var req protocol.RequestSnapshot
 
 	code, err := RecvAndUnmarshalPB(c, 1024, &req)
@@ -74,11 +81,18 @@ func (this *StockSnapshot) PostPB(c *gin.Context) {
 		return
 	}
 
-	data, err := publish.NewStockSnapshot().GetStockSnapshot(&req)
+	stock, index, err := publish.NewSnapshot().GetSnapshot(&req)
 	if err != nil {
 		logging.Error("%v", err)
 		WriteDataErrCode(c, 40002)
 		return
 	}
-	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_SNAPSHOT, data)
+	if stock != nil {
+		WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_SSNAPSHOT, stock)
+		return
+	} else if index != nil {
+		WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_ISNAPSHOT, index)
+		return
+	}
+	WriteDataErrCode(c, 40002)
 }

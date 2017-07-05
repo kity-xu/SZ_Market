@@ -30,7 +30,7 @@ func (this *PerSDetailM) GetPerSDtail(req *protocol.RequestPerSDetail) (*protoco
 	// 调用快照数据处理
 	var reqsnap protocol.RequestSnapshot
 	reqsnap.SID = int32(req.SID)
-	snap, err := NewStockSnapshot().GetStockSnapshot(&reqsnap)
+	snap, err := NewStockSnapshot().GetStockSnapshotObj(&reqsnap)
 	if err != nil {
 		logging.Info("调用快照数据处理 error %v", err)
 	}
