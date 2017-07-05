@@ -105,7 +105,7 @@ func UseTradeSentinel(sid int32) *TradeSentinel {
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-func GetLocalTime(year int, month int, day int, hour int, min int, sec int) time.Time {
+func GetLocalTimeBy(year int, month int, day int, hour int, min int, sec int) time.Time {
 	local, _ := time.LoadLocation("Local")
 	v := fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, min, sec)
 	t, _ := time.ParseInLocation("2006-01-02 15:04:05", v, local)

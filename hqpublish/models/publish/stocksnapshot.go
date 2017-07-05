@@ -78,7 +78,7 @@ func NewStockSnapshot() *StockSnapshot {
 }
 
 // 获取证券快照
-func (this *StockSnapshot) GetStockSnapshot(req *protocol.RequestSnapshot) (*protocol.PayloadSnapshot, error) {
+func (this *StockSnapshot) GetStockSnapshotObj(req *protocol.RequestSnapshot) (*protocol.PayloadStockSnapshot, error) {
 	key := fmt.Sprintf(this.CacheKey, req.SID)
 
 	bin, err := RedisStore.GetBytes(key)
@@ -97,7 +97,7 @@ func (this *StockSnapshot) GetStockSnapshot(req *protocol.RequestSnapshot) (*pro
 		return nil, err
 	}
 
-	ret := &protocol.PayloadSnapshot{
+	ret := &protocol.PayloadStockSnapshot{
 		SID: req.SID,
 		SnapInfo: &protocol.StockSnapshot{
 			NSID:          data.NSID,
