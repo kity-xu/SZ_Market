@@ -108,7 +108,7 @@ func (this *Security) GetAllSecurityDayList() {
 
 	for i, v := range secs {
 		if len(v.Date) < 1 {
-			logging.Error("SID:%v---No historical data...", v.Sid)
+			//logging.Error("SID:%v---No historical data...", v.Sid)
 			continue
 		}
 		var wday [][]int32
