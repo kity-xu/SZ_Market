@@ -38,11 +38,17 @@ func (this KTable) Less(i, j int) bool {
 
 //升序
 func GetASCStruct(a *[]*protocol.KInfo) {
+	if len(*a) == 0 {
+		return
+	}
 	sort.Sort(sort.Reverse(KTable(*a)))
 }
 
 //降序
 func GetSECStruct(a *[]*protocol.KInfo) {
+	if len(*a) == 0 {
+		return
+	}
 	sort.Sort(KTable(*a))
 }
 

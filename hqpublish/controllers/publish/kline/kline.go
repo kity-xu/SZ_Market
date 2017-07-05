@@ -19,6 +19,7 @@ func NewKline() *Kline {
 
 func (this *Kline) POST(c *gin.Context) {
 	initMarketTradeDate()
+
 	replayfmt := c.Query(models.CONTEXT_FORMAT)
 	if len(replayfmt) == 0 {
 		replayfmt = "pb" // 默认
