@@ -160,25 +160,11 @@ func StockTreatingData(sess *dbr.Session) []*TagStockStatic {
 			}
 		}
 
-		// 根据公司内码查询股票历史信息   五日交易量 最近交易日期暂时默认为零
-		//dklinfo, err := new(dkfm.Stock).GetSKTList5FC(sess, item.SECODE.String)
-		/*if err != nil {
-			if err == dbr.ErrNotFound {
-				logging.Info("查询股票历史信息未找到数据 %v", err)
-			} else {
-				logging.Info("查询股票历史信息出错 error %v", err)
-			}
-		}
-		var vol5 = 0
-		for index, dkl := range dklinfo {
-			if index == 0 {
-				tss.NLastTradeDate = int32(dkl.TRADEDATE.Int64)
-			}
-			vol5 += int(dkl.VOL.Int64)
-		}
-		*/
+		// 根据公司内码查询股票历史信息   五日交易量
+		ineqt, err := new(stf.TQ_SK_INTERVALQT).GetSingleInfo(sess, item.SECODE.String)
+
 		tss.NLastTradeDate = 0
-		tss.LlLast5Volume = 0
+		tss.LlLast5Volume = ineqt.VOL5D
 		// 查询一般企业利润
 		tspe, err := new(stf.TQ_FIN_PROINCSTATEMENTNEW).GetSingleInfo(sess, item.COMPCODE.String)
 
