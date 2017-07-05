@@ -57,7 +57,7 @@ func (this MIndex) GetMIndexObj() (*pro.PayloadMIndex, error) {
 	}
 
 	index := pro.PayloadMIndex{
-		InfoList:     make([]*pro.Infobar, 0, 3),
+		InfoList:     make([]*pro.Infobar, 0, 6),
 		HotBlockList: make([]*pro.TagBlockSortInfo, 0, 3),
 		IncrList:     make([]*pro.TagStockSortInfo, 0, 5),
 		DeclList:     make([]*pro.TagStockSortInfo, 0, 5),
@@ -65,30 +65,7 @@ func (this MIndex) GetMIndexObj() (*pro.PayloadMIndex, error) {
 		OutflowList:  make([]*pro.TagStockSortInfo, 0, 5),
 	}
 
-	{ //InfoList 信息栏
-		var req pro.RequestSnapshot
-		req.SID = 100000001 // 上证指数
-		datash, err := NewIndexSnapshot().GetIndexSnapshotObj(&req)
-		if err != nil {
-			logging.Error("%v", err)
-			return nil, err
-		}
-		req.SID = 200399001 // 深圳成指
-		datasz, err := NewIndexSnapshot().GetIndexSnapshotObj(&req)
-		if err != nil {
-			logging.Error("%v", err)
-			return nil, err
-		}
-		req.SID = 200399006 // 创业板
-		datacy, err := NewIndexSnapshot().GetIndexSnapshotObj(&req)
-		if err != nil {
-			logging.Error("%v", err)
-			return nil, err
-		}
-		index.InfoList = append(index.InfoList, DataTreating(1, datash))
-		index.InfoList = append(index.InfoList, DataTreating(2, datasz))
-		index.InfoList = append(index.InfoList, DataTreating(3, datacy))
-	}
+	index.InfoList, _ = SetInfoList(index.InfoList)
 
 	{ //HotBlockList // 板块排序 热点
 		req := pro.RequestBlock{
@@ -187,6 +164,15 @@ func DataTreating(ind int, pst *pro.IndexSnapshot) *pro.Infobar {
 	if ind == 3 {
 		sname = "创业板指"
 	}
+	if ind == 4 {
+		sname = "中小板指"
+	}
+	if ind == 5 {
+		sname = "沪深300"
+	}
+	if ind == 6 {
+		sname = "沪深300"
+	}
 	return &pro.Infobar{
 		NSID:       pst.NSID,
 		SzSName:    sname,
@@ -195,4 +181,55 @@ func DataTreating(ind int, pst *pro.IndexSnapshot) *pro.Infobar {
 		NPxChg:     pst.NPxChg,
 		PxChgRatio: pst.NPxChgRatio,
 	}
+}
+
+func SetInfoList(ilist []*pro.Infobar) ([]*pro.Infobar, error) {
+	//InfoList 信息栏
+	var req pro.RequestSnapshot
+	req.SID = 100000001 // 上证指数
+	datash, err := NewIndexSnapshot().GetIndexSnapshotObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		return nil, err
+	}
+	req.SID = 200399001 // 深圳成指
+	datasz, err := NewIndexSnapshot().GetIndexSnapshotObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		return nil, err
+	}
+	req.SID = 200399006 // 创业板
+	datacy, err := NewIndexSnapshot().GetIndexSnapshotObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		return nil, err
+	}
+
+	req.SID = 200399005 // 中小板指
+	datazx, err := NewIndexSnapshot().GetIndexSnapshotObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		return nil, err
+	}
+	req.SID = 100000300 // 沪深300 上海
+	datahssh, err := NewIndexSnapshot().GetIndexSnapshotObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		return nil, err
+	}
+	req.SID = 200399300 // 沪深300 深圳
+	datahssz, err := NewIndexSnapshot().GetIndexSnapshotObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		return nil, err
+	}
+
+	ilist = append(ilist, DataTreating(1, datash))
+	ilist = append(ilist, DataTreating(2, datasz))
+	ilist = append(ilist, DataTreating(3, datacy))
+	ilist = append(ilist, DataTreating(4, datazx))
+	ilist = append(ilist, DataTreating(5, datahssh))
+	ilist = append(ilist, DataTreating(6, datahssz))
+
+	return ilist, nil
 }
