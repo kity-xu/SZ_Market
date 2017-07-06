@@ -26,6 +26,7 @@ func (this *TQ_SK_INTERVALQT) GetSingleInfo(sec string) (TQ_SK_INTERVALQT, error
 	var tss TQ_SK_INTERVALQT
 	err := this.Db.Select("VOL5D").From(this.TableName).
 		Where("SECODE='" + sec + "' and  ISVALID=1").
+		Where("VOL5D>0").
 		OrderBy("TRADEDATE DESC").
 		Limit(1).
 		LoadStruct(&tss)
