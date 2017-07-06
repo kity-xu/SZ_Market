@@ -28,6 +28,9 @@ func Update(cfg *config.AppConfig) {
 	// 板块信息
 	security.UpdateStockBlockSet(cfg)
 
+	// 指数成分股
+	security.UpdateIndexComponent(cfg)
+
 	end := time.Now()
 	logging.Info("Update Kline historical data successed, and running time:%v", end.Sub(start))
 

@@ -1,12 +1,15 @@
 package fcmysql
 
 import (
-	"github.com/gocraft/dbr"
+	_ "github.com/go-sql-driver/mysql"
+	"haina.com/share/gocraft/dbr"
+	. "haina.com/share/models"
 )
 
 // 数据对象名称：TQ_FIN_PROINCSTATEMENTNEW    中文名称：一般企业利润表(新准则产品表)
 
 type TQ_FIN_PROINCSTATEMENTNEW struct {
+	Model       `db:"-"`
 	BASICEPS    dbr.NullFloat64 `db:"BASICEPS"`    // 基本每股收益
 	TOTPROFIT   dbr.NullFloat64 `db:"TOTPROFIT"`   // 利润总额
 	NETPROFIT   dbr.NullFloat64 `db:"NETPROFIT"`   // 净利润
@@ -16,10 +19,20 @@ type TQ_FIN_PROINCSTATEMENTNEW struct {
 	INVEINCO    dbr.NullFloat64 `db:"INVEINCO"`    // 投资收益
 }
 
-func (this *TQ_FIN_PROINCSTATEMENTNEW) GetSingleInfo(sess *dbr.Session, comc string) (TQ_FIN_PROINCSTATEMENTNEW, error) {
+func NewTQ_FIN_PROINCSTATEMENTNEW() *TQ_FIN_PROINCSTATEMENTNEW {
+	return &TQ_FIN_PROINCSTATEMENTNEW{
+		Model: Model{
+			TableName: TABLE_TQ_FIN_PROINCSTATEMENTNEW,
+			Db:        MyCat,
+		},
+	}
+}
+
+func (this *TQ_FIN_PROINCSTATEMENTNEW) GetSingleInfo(comc string) (TQ_FIN_PROINCSTATEMENTNEW, error) {
 	var tsp TQ_FIN_PROINCSTATEMENTNEW
 
-	err := sess.Select("BASICEPS,TOTPROFIT,NETPROFIT,PUBLISHDATE,BIZINCO,PERPROFIT,INVEINCO").From("TQ_FIN_PROINCSTATEMENTNEW").
+	err := this.Db.Select("BASICEPS,TOTPROFIT,NETPROFIT,PUBLISHDATE,BIZINCO,PERPROFIT,INVEINCO").
+		From(this.TableName).
 		Where("COMPCODE=" + comc + " and  ISVALID=1").
 		Where("REPORTTYPE=1").
 		OrderBy("ENDDATE DESC ").

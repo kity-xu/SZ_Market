@@ -17,7 +17,7 @@ import (
 	"io"
 	"strings"
 
-	//	"haina.com/market/hqinit/config"
+	"haina.com/market/hqinit/config"
 
 	"github.com/axgle/mahonia"
 )
@@ -64,33 +64,21 @@ type TagStockStatic struct {
 }
 
 // 整理静态数据放到monogoDB中
-func (this *TagStockStatic) GetStaticDataList() []*TagStockStatic {
+func (this *TagStockStatic) GetStaticDataList(cfg *config.AppConfig) []*TagStockStatic {
 
-	//	var cfg *config.AppConfig
-	// FC数据库连接
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
-	// 服务器用
-	//conn, err := dbr.Open(cfg.MysqlStore.MysqlN, cfg.MysqlStore.Source, nil)
-	if err != nil {
-		logging.Debug("mysql onn", err)
-	} else {
-		logging.Info("mysql connect succeed")
-	}
-	sess := conn.NewSession(nil)
-
-	tatic := StockTreatingData(sess)
+	tatic := StockTreatingData()
 
 	// 把静态数据传到文件解析进行比对校验
 
-	return AnalysisFileUpMongodb(tatic)
+	return AnalysisFileUpMongodb(tatic, cfg)
 
 }
 
 // 处理个股静态数据
-func StockTreatingData(sess *dbr.Session) []*TagStockStatic {
+func StockTreatingData() []*TagStockStatic {
 	var tsd []*TagStockStatic
 	// 获取沪深股票信息
-	secNm, err := new(stf.FcSecuNameTab).GetSecuNmList(sess)
+	secNm, err := stf.NewFcSecuNameTab().GetSecuNmList()
 
 	if err != nil {
 		logging.Info("查询finance出错 %v", err)
@@ -99,7 +87,7 @@ func StockTreatingData(sess *dbr.Session) []*TagStockStatic {
 	for index, item := range secNm {
 		var tss TagStockStatic
 		// 根据证券id获取证券信息
-		basinfo, err := new(stf.TQ_SK_BASICINFO).GetBasicinfoList(sess, item.SYMBOL.String)
+		basinfo, err := stf.NewTQ_SK_BASICINFO().GetBasicinfoList(item.SYMBOL.String)
 
 		if err != nil {
 			if err == dbr.ErrNotFound {
@@ -133,7 +121,7 @@ func StockTreatingData(sess *dbr.Session) []*TagStockStatic {
 		tss.NDelistDate = int32(dse)
 
 		// 查询股本结构变化
-		sharch, err := new(stf.TQ_SK_SHARESTRUCHG).GetSingleInfo(sess, item.COMPCODE.String)
+		sharch, err := stf.NewTQ_SK_SHARESTRUCHG().GetSingleInfo(item.COMPCODE.String)
 
 		if err != nil {
 			logging.Info("查询股本结构 error")
@@ -144,7 +132,7 @@ func StockTreatingData(sess *dbr.Session) []*TagStockStatic {
 		}
 
 		// 根据公司内码获取股东信息
-		shdn, errs := new(stf.TQ_SK_SHAREHOLDERNUM).GetSingleInfo(sess, item.COMPCODE.String)
+		shdn, errs := stf.NewTQ_SK_SHAREHOLDERNUM().GetSingleInfo(item.COMPCODE.String)
 
 		if errs != nil {
 			if err == dbr.ErrNotFound {
@@ -161,12 +149,13 @@ func StockTreatingData(sess *dbr.Session) []*TagStockStatic {
 		}
 
 		// 根据公司内码查询股票历史信息   五日交易量
-		ineqt, err := new(stf.TQ_SK_INTERVALQT).GetSingleInfo(sess, item.SECODE.String)
+		ineqt, err := stf.NewTQ_SK_INTERVALQT().GetSingleInfo(item.SECODE.String)
 
 		tss.NLastTradeDate = 0
+
 		tss.LlLast5Volume = ineqt.VOL5D
 		// 查询一般企业利润
-		tspe, err := new(stf.TQ_FIN_PROINCSTATEMENTNEW).GetSingleInfo(sess, item.COMPCODE.String)
+		tspe, err := stf.NewTQ_FIN_PROINCSTATEMENTNEW().GetSingleInfo(item.COMPCODE.String)
 
 		if err != nil {
 			if err == dbr.ErrNotFound {
@@ -184,7 +173,7 @@ func StockTreatingData(sess *dbr.Session) []*TagStockStatic {
 		tss.LlMainProfit = int64(tspe.PERPROFIT.Float64)
 		tss.NIncomeInvestments = int64(tspe.INVEINCO.Float64)
 		// 上市公司业绩快报 填充总资产
-		tspce, err := new(stf.TQ_SK_PERFORMANCE).GetSingleInfo(sess, item.COMPCODE.String)
+		tspce, err := stf.NewTQ_SK_PERFORMANCE().GetSingleInfo(item.COMPCODE.String)
 
 		if err != nil {
 			if err == dbr.ErrNotFound {
@@ -197,7 +186,7 @@ func StockTreatingData(sess *dbr.Session) []*TagStockStatic {
 		}
 
 		//查询一般企业资产负债信息 填充流动资产
-		tfp, err := new(stf.TQ_FIN_PROBALSHEETNEW).GetSingleInfo(sess, item.COMPCODE.String)
+		tfp, err := stf.NewTQ_FIN_PROBALSHEETNEW().GetSingleInfo(item.COMPCODE.String)
 
 		if err != nil {
 			if err == dbr.ErrNotFound {
@@ -215,7 +204,7 @@ func StockTreatingData(sess *dbr.Session) []*TagStockStatic {
 		tss.NAVPS = int32((tss.LlTotalProperty / tss.LlTotalShare) * 10000)
 
 		// 查询衍生财务指标信息 流动比率和速动比率
-		tfpr, err := new(stf.TQ_FIN_PROINDICDATA).GetSingleInfo(sess, item.COMPCODE.String)
+		tfpr, err := stf.NewTQ_FIN_PROINDICDATA().GetSingleInfo(item.COMPCODE.String)
 
 		if err != nil {
 			if err == dbr.ErrNotFound {
@@ -238,7 +227,7 @@ func StockTreatingData(sess *dbr.Session) []*TagStockStatic {
 }
 
 // 分析 沪深市场证券基本信息文件修改 静态数据
-func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
+func AnalysisFileUpMongodb(tss []*TagStockStatic, cfg *config.AppConfig) []*TagStockStatic {
 
 	// 获取当前日期
 	//timed := time.Now().Format("20060102")
@@ -248,9 +237,9 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 	sjshqfiles := []*SjsHqFile{}
 
 	// 解析深证市场sjsxx.dbf文件 （证券信息库）
-	//dbfTable, err := godbf.NewFromFile("E:/hqfile/20170613/sz/sjsxx.dbf", "UTF8")
+	//dbfTable, err := godbf.NewFromFile(cfg.File.Sjsxxdbfpath, "UTF8")
 	// 服务器地址
-	dbfTable, err := godbf.NewFromFile("/opt/develop/hgs/market/hqinit/sjsxx.dbf", "UTF8")
+	dbfTable, err := godbf.NewFromFile(cfg.File.Sjsxxdbfpath, "UTF8")
 	if err != nil {
 		logging.Info("==========%v", err)
 		os.Exit(1)
@@ -330,12 +319,11 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 		}
 	}
 
-	//logging.Info("=====sz:%v", len(sjshqfiles))
 	// 上交所 证券处理
-	//f, err := os.Open("E:/hqfile/20170613/sh/cpxx" + mod + ".txt") //打开文件
+	//f, err := os.Open(cfg.File.Cpxxtxtpath + mod + ".txt") //打开文件
 	// 服务器用
-	f, err := os.Open("/opt/develop/hgs/market/hqinit/cpxx" + mod + ".txt") //打开文件
-	//	f, err := os.Open("/opt/develop/hgs/market/hqinit/static/" + timed + "/cpxx" + mod + ".txt") //打开文件
+	f, err := os.Open(cfg.File.Cpxxtxtpath + mod + ".txt") //打开文件
+
 	defer f.Close()                      //打开文件出错处理
 	decoder := mahonia.NewDecoder("gbk") // 把原来ANSI格式的文本文件里的字符，用gbk进行解码。
 	if nil == err {
@@ -353,9 +341,7 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 
 			// ES 股票
 			if strings.TrimSpace(strl[7]) == "ES" && strings.TrimSpace(strl[8]) == "ASH" {
-				//				if (strings.TrimSpace(strl[0]))[0:1] == "6" {
-				//					if (strings.TrimSpace(strl[0]))[1:2] == "0" {
-				//						if (strings.TrimSpace(strl[0]))[2:3] >= "0" && (strings.TrimSpace(strl[0]))[2:3] <= "3" {
+
 				nsid, err := strconv.Atoi("100" + strings.TrimSpace(strl[0]))
 
 				if err != nil {
@@ -363,15 +349,10 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic) []*TagStockStatic {
 				}
 				// 解析上交所 cpxx0512文档 只有证券代码可以利用
 				sjshqfile.NSID = int32(nsid)
-				//sjshqfiles = append(sjshqfiles, &sjshqfile)
-				//						}
-				//					}
-				//				}
 
 			}
 		}
 	}
-	//logging.Info("=====sh:%v", len(sjshqfiles))
 	// 沪深市场文档解析完成
 
 	// 对比沪深数据

@@ -11,16 +11,16 @@ import (
 
 func UpdateStockBlockSet(cfg *config.AppConfig) {
 
-	lib.CheckDir("/opt/develop/hgs/filestore/security/")
-	//lib.CheckDir("E:/hqfile/")
-	_, err := controllers.OpenFile("/opt/develop/hgs/filestore/security/securitiesplate.xml")
-	//_, err := controllers.OpenFile("E:/hqfile/securitiesplate.xml")
+	lib.CheckDir(cfg.File.Path)
+	//lib.CheckDir(cfg.File.Path)
+	_, err := controllers.OpenFile(cfg.File.Securitiesplate)
+	//_, err := controllers.OpenFile(cfg.File.Securitiesplate)
 
 	if err != nil {
 		logging.Info("创建文件失败！")
 	}
 	// 生成板块xml文件
-	servers.NewStockBlockXML().CreateStockblockXML()
+	servers.NewStockBlockXML().CreateStockblockXML(cfg)
 	// 入redis
 	servers.NewStockBlockRedis().Block()
 }

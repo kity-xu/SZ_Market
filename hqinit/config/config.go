@@ -43,12 +43,22 @@ type MongoStore struct {
 	Source string `xml:"source"`
 }
 
+// MysqlDB
+type MysqlStore struct {
+	DriverName string `xml:"mysqldriverName"`
+	DataSource string `xml:"mysqldataSource"`
+}
+
 // fileSystem
 type FileStore struct {
-	Path       string `xml:"path"`
-	StockName  string `xml:"stockName"`
-	StaticName string `xml:"staticName"`
-	IndexName  string `xml:"indexName"`
+	Path               string `xml:"path"`
+	StockName          string `xml:"stockName"`
+	StaticName         string `xml:"staticName"`
+	IndexName          string `xml:"indexName"`
+	IndexComponentPath string `xml:"indexComponentPath"`
+	Securitiesplate    string `xml:"securitiesplate"`
+	Sjsxxdbfpath       string `xml:"sjsxxdbfpath"`
+	Cpxxtxtpath        string `xml:"cpxxtxtpath"`
 }
 
 type CorsSetting struct {
@@ -63,6 +73,7 @@ type ListenAndServe struct {
 type AppConfig struct {
 	Cors     CorsSetting    `xml:"cors"`
 	Mongo    MongoStore     `xml:"mongoStore"`
+	Mysql    MysqlStore     `xml:"mysqldatabase"`
 	File     FileStore      `xml:"fileStore"`
 	Redis    RedisStore     `xml:"redisStore"`
 	Serve    ListenAndServe `xml:"listenAndServe"`

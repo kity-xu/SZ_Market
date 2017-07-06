@@ -47,6 +47,11 @@
         <driverName>mongo</driverName>
         <dataSource>publisher:Haina$A7Kha@tcp(123.56.30.141:3306)/finchinafcdd?charset=utf8</dataSource>
     </database>
+	<mysqldatabase>
+        <mysqldriverName>mysql</mysqldriverName>
+        <!--<mysqldataSource>finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8</mysqldataSource>-->
+   	     <mysqldataSource>finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8</mysqldataSource>
+	</mysqldatabase>
 	<mongoStore>
 		<source>192.168.18.200:27017/hgs</source>
 	</mongoStore>
@@ -60,11 +65,23 @@
         <timeout>3</timeout> 
     </redisStore>
 	<fileStore>
-		<!--<path>E:/security/</path>-->
+		<!--<path>E:/hqfile/</path>-->
 		<path>/opt/develop/hgs/filestore/security/</path>
 		<stockName>stock.dat</stockName>
 		<indexName>index.dat</indexName>
 		<staticName>static.dat</staticName>
+		<!--生成指数成分股xml -->
+		<!--<indexComponentPath>E:/hqfile/indexcomponent.xml</indexComponentPath>-->
+		<indexComponentPath>/opt/develop/hgs/filestore/security/indexcomponent.xml</indexComponentPath>
+		<!--生成板块信息 xml文件 -->
+		<!--<securitiesplate>E:/hqfile/securitiesplate.xml</securitiesplate>-->
+		<securitiesplate>/opt/develop/hgs/filestore/security/securitiesplate.xml</securitiesplate>
+		<!--沪深行情文件 -->
+		<!--<sjsxxdbfpath>E:/hqfile/20170613/sz/sjsxx.dbf</sjsxxdbfpath>-->
+		<sjsxxdbfpath>/opt/develop/hgs/market/hqinit/sjsxx.dbf</sjsxxdbfpath>
+		<!--<cpxxtxtpath>E:/hqfile/20170613/sh/cpxx</cpxxtxtpath>-->
+		<cpxxtxtpath>/opt/develop/hgs/market/hqinit/cpxx</cpxxtxtpath>
+		
 	</fileStore>
 
 </configuration>

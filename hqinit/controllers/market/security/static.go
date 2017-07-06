@@ -51,8 +51,8 @@ type TagStockStatic struct {
 }
 
 // 静态数据
-func getSecurityStatic() *[]*tb_security.TagStockStatic {
-	return tb_security.GetSecurityStaticTableFromMG()
+func getSecurityStatic(cfg *config.AppConfig) *[]*tb_security.TagStockStatic {
+	return tb_security.GetSecurityStaticTableFromMG(cfg)
 }
 
 func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
@@ -60,7 +60,7 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 	var (
 		stype, status string
 	)
-	stable := getSecurityStatic()
+	stable := getSecurityStatic(cfg)
 	var err error
 	//入文件
 	buffer := new(bytes.Buffer)

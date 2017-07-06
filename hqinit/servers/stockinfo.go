@@ -3,8 +3,6 @@ package servers
 import (
 	"strconv"
 
-	"github.com/gocraft/dbr"
-
 	fcm "haina.com/market/hqinit/models/fcmysql"
 	"haina.com/share/logging"
 )
@@ -31,24 +29,9 @@ type BasicInfoN struct {
 	SYMBOL   string // 证券代码
 }
 
-func GetSession() *dbr.Session {
-	// 获取沪深股票信息
-	logging.Info("stockinfo begin==")
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
-
-	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
-
-	if err != nil {
-		logging.Debug("mysql onn", err)
-	}
-	sess := conn.NewSession(nil)
-	return sess
-}
-
 // 获取当日新股
 func (this *BasicInfoN) GetBasiN() []*BasicInfoN {
-	sess := GetSession()
-	nbi, err := new(fcm.TQ_SK_BASICINFO).GetNewBasicinfo(sess)
+	nbi, err := fcm.NewTQ_SK_BASICINFO().GetNewBasicinfo()
 	if err != nil {
 		logging.Info("查询当日新股 error %v", err)
 	}
@@ -67,17 +50,16 @@ var codes []*TagSecurityInfo
 // 获取股票信息返回
 func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
 
-	sess := GetSession()
 	// s1 个股+指数   s2 个股  s3 指数
 	if sty == "s1" {
 		codes = nil
-		secNm1, err := new(fcm.FcSecuNameTab).GetSecuNmList(sess)
+		secNm1, err := fcm.NewFcSecuNameTab().GetSecuNmList()
 		if err != nil {
 			logging.Info("个股查询finance出错 %v", err)
 		}
 		// 处理个股
 		TreatingData(secNm1)
-		secNm2, err := new(fcm.FcSecuNameTab).GetExponentList(sess)
+		secNm2, err := fcm.NewFcSecuNameTab().GetExponentList()
 		if err != nil {
 			logging.Info("指数查询finance出错 %v", err)
 		}
@@ -87,7 +69,7 @@ func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
 	}
 	if sty == "s2" {
 		codes = nil
-		secNm3, err := new(fcm.FcSecuNameTab).GetSecuNmList(sess)
+		secNm3, err := fcm.NewFcSecuNameTab().GetSecuNmList()
 		if err != nil {
 			logging.Info("个股查询finance出错 %v", err)
 		}
@@ -96,7 +78,7 @@ func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
 	}
 	if sty == "s3" {
 		codes = nil
-		secNm4, err := new(fcm.FcSecuNameTab).GetExponentList(sess)
+		secNm4, err := fcm.NewFcSecuNameTab().GetExponentList()
 		if err != nil {
 			logging.Info("指数查询finance出错 %v", err)
 		}
@@ -109,8 +91,8 @@ func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
 
 //  处理数据插入mongoDB
 func TreatingData(secNm []*fcm.FcSecuNameTab) {
-	sess := GetSession()
-	bas, err := new(fcm.TQ_SK_BASICINFO).GetNewBasicinfo(sess)
+
+	bas, err := fcm.NewTQ_SK_BASICINFO().GetNewBasicinfo()
 	if err != nil {
 		logging.Info("查询当日新股error %v", err)
 	}

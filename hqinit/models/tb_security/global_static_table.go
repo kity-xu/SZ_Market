@@ -2,6 +2,7 @@
 package tb_security
 
 import (
+	"haina.com/market/hqinit/config"
 	"haina.com/market/hqinit/servers"
 	"haina.com/share/logging"
 )
@@ -39,13 +40,12 @@ type TagStockStatic struct {
 }
 
 //股票代码表
-func GetSecurityStaticTableFromMG() *[]*TagStockStatic {
+func GetSecurityStaticTableFromMG(cfg *config.AppConfig) *[]*TagStockStatic {
 	var tags []*TagStockStatic
 
-	stat := new(servers.TagStockStatic).GetStaticDataList()
+	stat := new(servers.TagStockStatic).GetStaticDataList(cfg)
 	for _, ite := range stat {
 		var tssc TagStockStatic
-
 		tssc.NSID = ite.NSID
 		tssc.SzSType = ite.SzSType
 		tssc.SzStatus = ite.SzStatus

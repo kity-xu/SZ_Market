@@ -9,7 +9,6 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gocraft/dbr"
 	"github.com/golang/protobuf/proto"
 	"haina.com/market/hqinit/models/fcmysql"
 	"haina.com/share/logging"
@@ -44,13 +43,8 @@ func (this *StockBlockRedis) Block() {
 	if errr != nil {
 		logging.Info("redis conn error %v", errr)
 	}
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
-	if err != nil {
-		logging.Debug("mysql onn", err)
-	}
-	sess := conn.NewSession(nil)
 
-	boar1j, err := new(fcmysql.TQ_COMP_BOARDMAP).GetBoardmapRedis(sess)
+	boar1j, err := fcmysql.NewTQ_COMP_BOARDMAP().GetBoardmapRedis()
 	if err != nil {
 		logging.Debug("mysql 1j", err)
 	}
@@ -106,7 +100,7 @@ func (this *StockBlockRedis) Block() {
 		//logging.Debug("secstr--%v", secstr)
 
 		//查数据库
-		stock, err := new(fcmysql.FcSecuNameTab).GetComCodeList(sess, secstr)
+		stock, err := fcmysql.NewFcSecuNameTab().GetComCodeList(secstr)
 		//logging.Debug("--len stock-%v", len(stock))
 		if err != nil {
 			logging.Error("%v", err.Error())
@@ -181,7 +175,7 @@ func (this *StockBlockRedis) Block() {
 		secstr = strings.TrimRight(secstr, ",")
 
 		//查数据库
-		stock, err := new(fcmysql.FcSecuNameTab).GetComCodeList(sess, secstr)
+		stock, err := fcmysql.NewFcSecuNameTab().GetComCodeList(secstr)
 		if err != nil {
 			logging.Error("%v", err.Error())
 			return
@@ -254,7 +248,7 @@ func (this *StockBlockRedis) Block() {
 		secstr = strings.TrimRight(secstr, ",")
 
 		//查数据库
-		stock, err := new(fcmysql.FcSecuNameTab).GetComCodeList(sess, secstr)
+		stock, err := fcmysql.NewFcSecuNameTab().GetComCodeList(secstr)
 		if err != nil {
 			logging.Error("%v", err.Error())
 			return

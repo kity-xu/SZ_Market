@@ -6,7 +6,7 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gocraft/dbr"
+	"haina.com/market/hqinit/config"
 	"haina.com/market/hqinit/models/fcmysql"
 	"haina.com/share/logging"
 	. "haina.com/share/models"
@@ -46,19 +46,11 @@ type SerINfo struct {
 	Name string `xml:"name"`
 }
 
-func (this *StockBlockXML) CreateStockblockXML() {
+func (this *StockBlockXML) CreateStockblockXML(cfg *config.AppConfig) {
 	logging.Info("stockblock xml begin ...")
 
-	// 服务器用
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
-	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
-	if err != nil {
-		logging.Debug("mysql conn", err)
-	}
-	sess := conn.NewSession(nil)
-
 	// 查询一级大板块信息
-	boar1j, err := new(fcmysql.TQ_COMP_BOARDMAP).GetBoardmapList(sess)
+	boar1j, err := fcmysql.NewTQ_COMP_BOARDMAP().GetBoardmapList()
 	if err != nil {
 		logging.Debug("mysql 1j", err)
 	}
@@ -71,7 +63,7 @@ func (this *StockBlockXML) CreateStockblockXML() {
 		v.BOARDCODE = boar1ji.BOARDCODE.String
 		v.Name = boar1ji.BOARDNAME.String
 		// 查询二级板块信息
-		boar2j, err := new(fcmysql.TQ_COMP_BOARDMAP).GetBoardmap2List(sess, boar1ji.BOARDCODE.String)
+		boar2j, err := fcmysql.NewTQ_COMP_BOARDMAP().GetBoardmap2List(boar1ji.BOARDCODE.String)
 		if err != nil {
 			logging.Debug("mysql 2j", err)
 		}
@@ -85,7 +77,7 @@ func (this *StockBlockXML) CreateStockblockXML() {
 			serv.Keyname = boar2ji.KEYNAME.String
 
 			// 根据KeyCode查询ComCODE
-			boarinfo, err := new(fcmysql.TQ_COMP_BOARDMAP).GetBoardmapInfoList(sess, boar2ji.KEYCODE.String)
+			boarinfo, err := fcmysql.NewTQ_COMP_BOARDMAP().GetBoardmapInfoList(boar2ji.KEYCODE.String)
 			if err != nil {
 				logging.Info("二级%v", err)
 			}
@@ -95,7 +87,7 @@ func (this *StockBlockXML) CreateStockblockXML() {
 			}
 			secstr = secstr[0 : len(secstr)-1]
 			// 根据ComCode查询证券信息
-			stcInfo, err := new(fcmysql.FcSecuNameTab).GetComCodeList(sess, secstr)
+			stcInfo, err := fcmysql.NewFcSecuNameTab().GetComCodeList(secstr)
 			var serl []SerINfo
 			for _, sitem := range stcInfo {
 				var si SerINfo
@@ -127,7 +119,7 @@ func (this *StockBlockXML) CreateStockblockXML() {
 	//拼接XML头和实际XML内容
 	xmlOutPutData := append(headerBytes, output...)
 
-	ioutil.WriteFile("/opt/develop/hgs/filestore/security/securitiesplate.xml", xmlOutPutData, os.ModeAppend) // 服务器用
-	//ioutil.WriteFile("E:/hqfile/securitiesplate.xml", xmlOutPutData, os.ModeAppend)
+	ioutil.WriteFile(cfg.File.Securitiesplate, xmlOutPutData, os.ModeAppend) // 服务器用
+	//ioutil.WriteFile(cfg.File.Securitiesplate, xmlOutPutData, os.ModeAppend)
 	logging.Info("stockblock xml end ...")
 }
