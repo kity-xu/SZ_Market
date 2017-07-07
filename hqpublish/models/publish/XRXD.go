@@ -147,7 +147,7 @@ func (this XRXD) GetRangeKList(req *pro.RequestXRXD, rows []*pro.KInfo) ([]*pro.
 		fmt.Printf("GetRangeKList req time %d no found\n", req.TimeIndex)
 	}
 
-	if req.Direct == 1 {
+	if req.Direct == 0 {
 		if n != -1 {
 			if req.Num > 0 {
 				m := n + int(req.Num)
@@ -484,13 +484,13 @@ func (this XRXD) getKlistByRequest(req *pro.RequestXRXD, rows []*pro.KInfo) ([]*
 
 	} else {
 		if req.Num > 0 {
-			m := n + 1 - int(req.Num)
+			m := n - int(req.Num)
 			if m < 0 {
 				m = 0
 			}
-			return rows[m : n+1], nil
+			return rows[m:n], nil
 		}
-		return rows[:n+1], nil
+		return rows[:n], nil
 	}
 }
 
