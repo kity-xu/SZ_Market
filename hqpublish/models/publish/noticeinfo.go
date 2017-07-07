@@ -29,7 +29,7 @@ func (this *NoticeinfoL) GetNoticeInfoL(req *protocol.RequestNoticeInfo) (*proto
 		logging.Info("select　TQ_OA_STCODE　error%v", err)
 	}
 	// 根据证券id获取公告信息
-	noif, err := fcmysql.NewTQ_SK_ANNOUNCEMT().GetNoticeInfo(stc.COMPCODE.String)
+	noif, err := fcmysql.NewTQ_SK_ANNOUNCEMT().GetNoticeInfo(stc.COMPCODE.String, req.Num)
 	if err != nil {
 		logging.Info("mysql select error %v", err)
 	}

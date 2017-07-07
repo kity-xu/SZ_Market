@@ -31,14 +31,23 @@ func NewTQ_SK_ANNOUNCEMT() *TQ_SK_ANNOUNCEMT {
 	}
 }
 
-func (this *TQ_SK_ANNOUNCEMT) GetNoticeInfo(ccode string) ([]*TQ_SK_ANNOUNCEMT, error) {
+func (this *TQ_SK_ANNOUNCEMT) GetNoticeInfo(ccode string, num int32) ([]*TQ_SK_ANNOUNCEMT, error) {
 	var tsa []*TQ_SK_ANNOUNCEMT
 
-	bulid := this.Db.Select("ID,ANNTYPE,DECLAREDATE,ANNTITLE,LEVEL1").
-		From(this.TableName).
-		Where("COMPCODE='" + ccode + "'").
-		Where("ISVALID=1").
-		OrderBy("DECLAREDATE desc")
+	var bulid *dbr.SelectBuilder
+	if num != 0 {
+		bulid = this.Db.Select("ID,ANNTYPE,DECLAREDATE,ANNTITLE,LEVEL1").
+			From(this.TableName).
+			Where("COMPCODE='" + ccode + "'").
+			Where("ISVALID=1").
+			OrderBy("DECLAREDATE desc").Limit(uint64(num))
+	} else {
+		bulid = this.Db.Select("ID,ANNTYPE,DECLAREDATE,ANNTITLE,LEVEL1").
+			From(this.TableName).
+			Where("COMPCODE='" + ccode + "'").
+			Where("ISVALID=1").
+			OrderBy("DECLAREDATE desc")
+	}
 
 	_, err := this.SelectWhere(bulid, nil).LoadStructs(&tsa)
 
