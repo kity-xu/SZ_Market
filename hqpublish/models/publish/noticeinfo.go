@@ -136,7 +136,6 @@ func (this *NoticeinfoL) GetNoticeInfoL(req *protocol.RequestNoticeInfo) (*proto
 		psb.List = append(psb.List, &noti)
 
 	}
-	logging.Info("----------")
 
 	return &psb, nil
 }
