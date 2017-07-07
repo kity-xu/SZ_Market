@@ -49,7 +49,7 @@ func NewFactor() *Factor {
 }
 
 func (this Factor) ErrDataInvalid(fields string, sid int32, secode string) error {
-	return errors.New(fmt.Sprintf("finchina TQ_SK_XDRY fields[%s] invalid by sid[%d], secode[%d]", "BEGINDATE", sid, secode))
+	return errors.New(fmt.Sprintf("finchina TQ_SK_XDRY fields[%s] invalid by sid[%d], secode[%s]", fields, sid, secode))
 }
 
 // 从财汇数据库获取 *股票除权因子*

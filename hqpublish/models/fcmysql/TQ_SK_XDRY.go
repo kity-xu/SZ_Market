@@ -39,6 +39,9 @@ func (this *TQ_SK_XDRY) GetFactorsBySecode(secode string) ([]*XDRYFactor, error)
 		Where("SECODE='" + secode + "'").
 		Where("ISVALID=1").
 		Where("DATASOURCE=2").
+		Where("LTDXDY is not null").
+		Where("THELTDXDY is not null").
+		Where(`BEGINDATE <= DATE_FORMAT(now(),'%Y%m%d')`).
 		OrderBy("BEGINDATE")
 
 	_, err := cond.LoadStructs(&rows)

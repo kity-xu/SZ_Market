@@ -66,7 +66,7 @@ func HandleSwapInfo(sid int32) *SwapInfo {
 	if info == nil {
 		return nil
 	}
-	//SafeSetSwapInfo(sid, info)
+	//SafeSetSwapInfo(sid, info) //暂时不存入和使用map(涉及内存数据清空问题)，从redis取
 	return info
 }
 
