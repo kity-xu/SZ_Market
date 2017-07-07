@@ -69,6 +69,7 @@ func (this *UserDefine) GetSortByFieldID(req *protocol.RequestUserdef) (*protoco
 			NOpenPx:           v.NOpenPx,
 			NHighPx:           v.NHighPx,
 			NLowPx:            v.NLowPx,
+			NPreClosePx:       v.NPreClosePx,
 			LlVolume:          v.LlVolume,
 			LlValue:           v.LlValue,
 			NPxChgRatio:       v.NPxChgRatio,

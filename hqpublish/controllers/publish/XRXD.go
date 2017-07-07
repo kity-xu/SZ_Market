@@ -12,7 +12,7 @@ import (
 	"haina.com/market/hqpublish/models/publish"
 
 	. "haina.com/market/hqpublish/controllers"
-	"haina.com/market/hqpublish/controllers/publish/kline"
+	//	"haina.com/market/hqpublish/controllers/publish/kline"
 
 	"haina.com/share/lib"
 	"haina.com/share/logging"
@@ -69,24 +69,14 @@ func (this *XRXD) PostJson(c *gin.Context) {
 		return
 	}
 
-	if req.Type == 1 {
-		payload, err := publish.NewXRXD().GetXRXDObj(&req)
-		if err != nil {
-			logging.Error("%v", err)
-			WriteJson(c, 40002, nil)
-			return
-		}
-		WriteJson(c, 200, payload)
+	payload, err := publish.NewXRXD().GetXRXDObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		WriteJson(c, 40002, nil)
 		return
 	}
-	transfer := protocol.RequestHisK{
-		SID:       req.SID,
-		Type:      req.Type,
-		TimeIndex: req.TimeIndex,
-		Num:       req.Num,
-		Direct:    req.Direct,
-	}
-	kline.NewKline().HandleHisKJson(c, &transfer)
+	WriteJson(c, 200, payload)
+	return
 }
 
 func (this *XRXD) PostPB(c *gin.Context) {
@@ -103,22 +93,12 @@ func (this *XRXD) PostPB(c *gin.Context) {
 		return
 	}
 
-	if req.Type == 1 {
-		payload, err := publish.NewXRXD().GetXRXDObj(&req)
-		if err != nil {
-			logging.Error("%v", err)
-			WriteDataErrCode(c, 40002)
-			return
-		}
-		WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_XRXD, payload)
+	payload, err := publish.NewXRXD().GetXRXDObj(&req)
+	if err != nil {
+		logging.Error("%v", err)
+		WriteDataErrCode(c, 40002)
 		return
 	}
-	transfer := protocol.RequestHisK{
-		SID:       req.SID,
-		Type:      req.Type,
-		TimeIndex: req.TimeIndex,
-		Num:       req.Num,
-		Direct:    req.Direct,
-	}
-	kline.NewKline().HandleHisKPB(c, &transfer)
+	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_XRXD, payload)
+	return
 }

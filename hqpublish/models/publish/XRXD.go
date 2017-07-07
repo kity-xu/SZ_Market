@@ -6,7 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	//	"strconv"
+
+	"haina.com/share/kityxu/utils"
 
 	ctrl "haina.com/market/hqpublish/controllers"
 	. "haina.com/market/hqpublish/models"
@@ -111,7 +112,6 @@ func (this XRXD) LocationKLine(req *pro.RequestXRXD, rows []*pro.KInfo) int {
 	if req.Direct == 0 {
 		// 时间轴减小<-方向向左, but K线的存储模式是 下标小->大 时间大->小
 		for n := len(rows) - 1; n > -1; n-- {
-			//fmt.Printf("0 1 n %d - %+v\n", n, *rows[n])
 			if req.TimeIndex <= rows[n].NTime {
 				//fmt.Printf("0 2 n %d\n", n)
 				if req.TimeIndex == rows[n].NTime {
@@ -121,6 +121,7 @@ func (this XRXD) LocationKLine(req *pro.RequestXRXD, rows []*pro.KInfo) int {
 				}
 			}
 		}
+
 	} else {
 		// 向右->时间轴增大
 		for n, v := range rows {
@@ -134,19 +135,19 @@ func (this XRXD) LocationKLine(req *pro.RequestXRXD, rows []*pro.KInfo) int {
 				}
 			}
 		}
+
 	}
 	return -1
 }
 
 func (this XRXD) GetRangeKList(req *pro.RequestXRXD, rows []*pro.KInfo) ([]*pro.KInfo, error) {
-
 	n := this.LocationKLine(req, rows)
 	if n == -1 {
 		return nil, nil
 		fmt.Printf("GetRangeKList req time %d no found\n", req.TimeIndex)
 	}
 
-	if req.Direct == 0 {
+	if req.Direct == 1 {
 		if n != -1 {
 			if req.Num > 0 {
 				m := n + int(req.Num)
@@ -277,6 +278,37 @@ func (this XRXD) CalcAfterRightRecoverKList(fgs []*FactorGroup) {
 		}
 	}
 }
+func (this XRXD) FactorGroupTotal(req *pro.RequestXRXD, fs []*pro.Factor, rows []*pro.KInfo) ([]*FactorGroup, error) {
+	var fg []*FactorGroup // *Factor([]*KInfo), 即每一个复权因子关联一组K线
+	var err error
+
+	this.ReverseKList(rows)
+
+	if req.Method == 1 {
+		if fg, err = this.GroupRightRecoverKList(fs, rows); err != nil {
+			logging.Error("%v", err)
+			return nil, err
+		}
+		this.CalcBeforeRightRecoverKList(fg)
+	} else if req.Method == 2 {
+		if fg, err = this.GroupRightRecoverKList(fs, rows); err != nil {
+			logging.Error("%v", err)
+			return nil, err
+		}
+		this.CalcAfterRightRecoverKList(fg)
+	} else {
+		g1 := &FactorGroup{
+			Ls: make([]*pro.KInfo, 0, 200),
+		}
+		g1.Ls = append(g1.Ls, rows...)
+		fg = append(fg, g1)
+	}
+	if fg == nil {
+		return nil, nil
+	}
+
+	return fg, nil
+}
 
 // 将K线根据除权数据的日期进行分组, 一组K线属于一条除权数据
 func (this XRXD) FactorGroupOp(req *pro.RequestXRXD, fs []*pro.Factor, rows []*pro.KInfo) ([]*FactorGroup, error) {
@@ -326,6 +358,7 @@ func (this XRXD) FactorGroupOp(req *pro.RequestXRXD, fs []*pro.Factor, rows []*p
 
 func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 	key := fmt.Sprintf(this.CacheKey, req.SID)
+	var fgs []*FactorGroup
 
 	lsbin, err := RedisStore.LRange(key, 0, -1)
 	if err != nil {
@@ -345,10 +378,21 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 		return nil, err
 	}
 
-	fgs, err := this.FactorGroupOp(req, fcs, ls)
-	if err != nil {
-		return nil, err
+	switch req.Type {
+	case 1: //日线
+		fgs, err = this.FactorGroupOp(req, fcs, ls)
+		if err != nil {
+			return nil, err
+		}
+	case 2, 3, 4: // 其他K线
+		fgs, err = this.FactorGroupTotal(req, fcs, ls)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("Invalid request parameter - 'req.Type'")
 	}
+
 	if fgs == nil {
 		return &pro.PayloadXRXD{
 			SID:   req.SID,
@@ -361,21 +405,230 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 	}
 
 	result_ls := make([]*pro.KInfo, 0, 1024)
+	var kline *[]*pro.KInfo
+
 	for _, v := range fgs {
 		result_ls = append(result_ls, v.Ls[:]...)
 	}
-
-	begin := int32(0)
-	if len(result_ls) > 0 {
-		begin = result_ls[0].NTime
+	if len(result_ls) == 0 {
+		return nil, fmt.Errorf("The klineData of xrxd is null")
 	}
 
-	return &pro.PayloadXRXD{
-		SID:   req.SID,
-		Type:  req.Type,
-		Total: int32(len(ls)),
-		Begin: begin,
-		Num:   int32(len(result_ls)),
-		KList: result_ls,
-	}, nil
+	switch req.Type {
+	case 1:
+		break
+	case 2:
+		if kline, err = ToWeekLine(&result_ls); err != nil {
+			return nil, err
+		}
+	case 3:
+		if kline, err = ToMonthLine(&result_ls); err != nil {
+			return nil, err
+		}
+	case 4:
+		if kline, err = ToYearLine(&result_ls); err != nil {
+			return nil, err
+		}
+	}
+
+	if req.Type == 1 {
+		return &pro.PayloadXRXD{
+			SID:   req.SID,
+			Type:  req.Type,
+			Total: int32(len(ls)),
+			Begin: result_ls[0].NTime,
+			Num:   int32(len(result_ls)),
+			KList: result_ls,
+		}, nil
+	} else {
+		res, err := this.getKlistByRequest(req, *kline)
+		if err != nil {
+			logging.Error("%v", err)
+		}
+
+		return &pro.PayloadXRXD{
+			SID:   req.SID,
+			Type:  req.Type,
+			Total: int32(len(*kline)),
+			Begin: res[0].NTime,
+			Num:   int32(len(res)),
+			KList: res,
+		}, nil
+	}
+}
+
+func (this XRXD) getKlistByRequest(req *pro.RequestXRXD, rows []*pro.KInfo) ([]*pro.KInfo, error) {
+	var tmptime int32
+	var n int
+	var v *pro.KInfo
+	for n, v = range rows {
+
+		if tmptime < req.TimeIndex && req.TimeIndex < v.NTime {
+			if tmptime == 0 {
+				tmptime = v.NTime
+			}
+			break
+		}
+		tmptime = v.NTime
+	}
+
+	if req.Direct == 1 {
+		if req.Num > 0 {
+			m := n + int(req.Num)
+			if m > len(rows) {
+				m = len(rows)
+			}
+			return rows[n:m], nil
+		}
+		return rows[n:], nil
+
+	} else {
+		if req.Num > 0 {
+			m := n + 1 - int(req.Num)
+			if m < 0 {
+				m = 0
+			}
+			return rows[m : n+1], nil
+		}
+		return rows[:n+1], nil
+	}
+}
+
+//复权后的日K线转周K
+func ToWeekLine(ksrc *[]*pro.KInfo) (*[]*pro.KInfo, error) {
+	var aweek, weeks []*pro.KInfo
+
+	sat, _ := utils.DateAdd((*ksrc)[0].NTime) //该股票第一个交易日所在周的周日（周六可能会有交易）
+	for i, kl := range *ksrc {
+		var wk *pro.KInfo
+		var lengh int
+
+		if utils.IntToTime(kl.NTime).Before(sat) {
+			aweek = append(aweek, kl)
+			if i == int(len(*ksrc)-1) { //执行到最后一个
+				wk = daysToAKline(aweek) //一周形成
+				if lengh = len(weeks); lengh > 0 {
+					wk.NPreCPx = weeks[len(weeks)-1].NLastPx //昨收价取前一周最新价
+				}
+				weeks = append(weeks, wk)
+			}
+		} else {
+			wk = daysToAKline(aweek) //一周形成
+			if lengh = len(weeks); lengh > 0 {
+				wk.NPreCPx = weeks[lengh-1].NLastPx //昨收价取前一周最新价
+			}
+			weeks = append(weeks, wk)
+
+			sat, _ = utils.DateAdd(kl.NTime)
+			aweek = nil
+			aweek = append(aweek, kl)
+		}
+	}
+	return &weeks, nil
+}
+
+//复权后的日K线转月K
+func ToMonthLine(ksrc *[]*pro.KInfo) (*[]*pro.KInfo, error) {
+	var amonth, months []*pro.KInfo
+	var yesterday int32 = 0
+
+	for i, kl := range *ksrc {
+		var monk *pro.KInfo
+		var lengh int
+
+		if i == 0 {
+			amonth = append(amonth, kl)
+			yesterday = kl.NTime / 100
+			continue
+		}
+		if yesterday == kl.NTime/100 {
+			amonth = append(amonth, kl)
+			if i == int(len(*ksrc)-1) { //执行到最后一个
+				monk = daysToAKline(amonth) //一月形成
+				if lengh = len(months); lengh > 0 {
+					monk.NPreCPx = months[lengh-1].NLastPx //昨收价取前一月最新价
+				}
+				months = append(months, monk)
+			}
+		} else {
+			monk = daysToAKline(amonth) //一月形成
+			if lengh = len(months); lengh > 0 {
+				monk.NPreCPx = months[lengh-1].NLastPx //昨收价取前一月最新价
+			}
+			months = append(months, monk)
+
+			amonth = nil
+			amonth = append(amonth, kl)
+		}
+		yesterday = kl.NTime / 100
+	}
+	return &months, nil
+}
+
+//复权后的日K线转年K
+func ToYearLine(ksrc *[]*pro.KInfo) (*[]*pro.KInfo, error) {
+	var ayear, years []*pro.KInfo
+	var yesterday int32 = 0
+
+	for i, kl := range *ksrc {
+		var yk *pro.KInfo
+		var lengh int
+
+		if i == 0 {
+			ayear = append(ayear, kl)
+			yesterday = kl.NTime / 10000
+			continue
+		}
+		if yesterday == kl.NTime/10000 {
+			ayear = append(ayear, kl)
+			if i == int(len(*ksrc)-1) { //执行到最后一个
+				yk = daysToAKline(ayear) //一年形成
+				if lengh = len(years); lengh > 0 {
+					yk.NPreCPx = years[lengh-1].NLastPx //昨收价取前一年最新价
+				}
+				years = append(years, yk)
+			}
+		} else {
+			yk = daysToAKline(ayear) //一年形成
+			if lengh = len(years); lengh > 0 {
+				yk.NPreCPx = years[lengh-1].NLastPx //昨收价取前一年最新价
+			}
+			years = append(years, yk)
+
+			ayear = nil
+			ayear = append(ayear, kl)
+		}
+		yesterday = kl.NTime / 10000
+	}
+	return &years, nil
+}
+
+//将一组K线合成一根
+func daysToAKline(days []*pro.KInfo) *pro.KInfo {
+	var (
+		i          int
+		AvgPxTotal uint32
+		tmp        pro.KInfo
+		dk         *pro.KInfo
+	)
+
+	for i, dk = range days {
+		if tmp.NHighPx < dk.NHighPx || tmp.NHighPx == 0 { //最高价
+			tmp.NHighPx = dk.NHighPx
+		}
+		if tmp.NLowPx > dk.NLowPx || tmp.NLowPx == 0 { //最低价
+			tmp.NLowPx = dk.NLowPx
+		}
+		tmp.LlVolume += dk.LlVolume //成交量
+		tmp.LlValue += dk.LlValue   //成交额
+		AvgPxTotal += dk.NAvgPx
+	}
+
+	tmp.NSID = days[0].NSID
+	tmp.NTime = days[0].NTime               //时间（取每周第一天）
+	tmp.NOpenPx = days[0].NOpenPx           //开盘价（每周第一天的开盘价）
+	tmp.NPreCPx = days[len(days)-1].NPreCPx //取每星期最后一天（之后再替换，防止第一周的昨收为零）
+	tmp.NLastPx = days[i].NLastPx           //最新价
+	tmp.NAvgPx = AvgPxTotal / uint32(i+1)   //平均价
+	return &tmp
 }

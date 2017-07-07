@@ -28,27 +28,28 @@ const (
 
 type TagStockSortInfo struct {
 	NSID              int32                   //SID
-	NLastPx           int32                   //最新价
-	NOpenPx           int32                   //开盘价
-	NHighPx           int32                   //最高价
-	NLowPx            int32                   //最低价
+	NLastPx           int32                   //最新价(*10000)
+	NOpenPx           int32                   //开盘价(*10000)
+	NHighPx           int32                   //最高价(*10000)
+	NLowPx            int32                   //最低价(*10000)
+	NPreClosePx       int32                   //昨收价
 	LlVolume          int64                   ///< 成交量
 	LlValue           int64                   ///< 总成交额(*10000)
-	NPxChgRatio       int32                   ///< 涨幅
-	NPxAmplitude      int32                   //振幅
-	NPxChg            int32                   //涨跌
-	NPE               int32                   //市盈（动）
-	NPB               int32                   //市净（动）
-	NLiangbi          int32                   //量比
-	NWeibi            int32                   //委比
+	NPxChgRatio       int32                   ///< 涨幅(*10000)
+	NPxAmplitude      int32                   //振幅(*10000)
+	NPxChg            int32                   //涨跌(*10000)
+	NPE               int32                   //市盈（动）(*10000)
+	NPB               int32                   //市净（动）(*10000)
+	NLiangbi          int32                   //量比(*10000)
+	NWeibi            int32                   //委比(*10000)
 	LlMarketVal       int64                   //总市值
 	LlFlowVal         int64                   //流通市值
-	NAveBidPx         int32                   //委买均价
-	NAveOfferPx       int32                   //委卖均价
+	NAveBidPx         int32                   //委买均价(*10000)
+	NAveOfferPx       int32                   //委卖均价(*10000)
 	LlBidVol          int64                   //委买总量
 	LlOfferVol        int64                   //委卖总量
-	NBid1Px           int32                   //买一价
-	NOffer1Px         int32                   //卖一价
+	NBid1Px           int32                   //买一价(*10000)
+	NOffer1Px         int32                   //卖一价(*10000)
 	LlBid1Vol         int64                   //买一量
 	LlOffer1Vol       int64                   //卖一量
 	LlValueOfInFlow   int64                   //资金净流入额(*10000)
@@ -100,6 +101,7 @@ func (this *Sort) GetSortByFieldID(req *protocol.RequestSort) (*protocol.RedisSo
 			NOpenPx:           v.NOpenPx,
 			NHighPx:           v.NHighPx,
 			NLowPx:            v.NLowPx,
+			NPreClosePx:       v.NPreClosePx,
 			LlVolume:          v.LlVolume,
 			LlValue:           v.LlValue,
 			NPxChgRatio:       v.NPxChgRatio,

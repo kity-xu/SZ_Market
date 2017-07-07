@@ -105,7 +105,7 @@ func (this *Security) GetMonthDay() {
 	securitys := *this.list.Securitys
 
 	for i, v := range securitys { // v: 单个股票
-		var yesterday int32 = 0
+		var lastyear int32 = 0
 
 		var dates [][]int32
 		var month []int32
@@ -118,10 +118,10 @@ func (this *Security) GetMonthDay() {
 
 			if j == 0 {
 				month = append(month, day)
-				yesterday = day / 100
+				lastyear = day / 100
 				continue
 			}
-			if yesterday == day/100 {
+			if lastyear == day/100 {
 				month = append(month, day)
 				if j == int(len(v.Date)-1) { //执行到最后一个
 					dates = append(dates, month)
@@ -131,7 +131,7 @@ func (this *Security) GetMonthDay() {
 				month = nil
 				month = append(month, day)
 			}
-			yesterday = day / 100
+			lastyear = day / 100
 
 		}
 		securitys[i].MonthDays = &dates

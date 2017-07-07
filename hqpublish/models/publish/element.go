@@ -76,6 +76,7 @@ func (this *Element) GetBlockElementReply(req *protocol.RequestElement) (*protoc
 					NOpenPx:           stock.NOpenPx,
 					NHighPx:           stock.NHighPx,
 					NLowPx:            stock.NLowPx,
+					NPreClosePx:       stock.NPreClosePx,
 					LlVolume:          stock.LlVolume,
 					LlValue:           stock.LlValue,
 					NPxChgRatio:       stock.NPxChgRatio,

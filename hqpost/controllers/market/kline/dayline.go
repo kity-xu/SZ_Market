@@ -74,7 +74,7 @@ func (this *Security) DayLine() {
 						filename = hnfile
 						lib.CreateFile(filename)
 
-						//创建周、月、年文件路劲，用于新增股票（或指数）的追加
+						//创建周、月、年文件路劲，用于新增股票的追加
 						lib.CreateFile(fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Week))
 						lib.CreateFile(fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Month))
 						lib.CreateFile(fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Year))
@@ -83,7 +83,7 @@ func (this *Security) DayLine() {
 						filename = fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Index)
 						lib.CreateFile(filename)
 
-						//创建周、月、年文件路劲，用于新增股票（或指数）的追加
+						//创建周、月、年文件路劲，用于新增指数的追加
 						lib.CreateFile(fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Week))
 						lib.CreateFile(fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Month))
 						lib.CreateFile(fmt.Sprintf("%s%s%d/%s", cfg.File.Path, exchange, sid, cfg.File.Year))
