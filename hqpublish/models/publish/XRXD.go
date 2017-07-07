@@ -96,17 +96,16 @@ func (this XRXD) LocationBinaryKLine(req *pro.RequestXRXD, rows []*pro.KInfo) in
 			return m
 		}
 	}
-	fmt.Printf("n0 %d ni %d m %d\n", n0, ni, m)
 	return -1
 }
 func (this XRXD) LocationKLine(req *pro.RequestXRXD, rows []*pro.KInfo) int {
 	// 找时间点K线
 	index := this.LocationBinaryKLine(req, rows)
 	if index != -1 {
-		fmt.Printf("req time %d is found with index %d: %+v\n", req.TimeIndex, index, rows[index])
+		logging.Info("binary search req time %d is found with index %d: %+v", req.TimeIndex, index, rows[index])
 		return index
 	}
-	fmt.Printf("req time %d is no found\n", req.TimeIndex)
+	logging.Info("binary search req time %d is not found", req.TimeIndex)
 
 	// 按条件找范围内第一根时间点K线
 	if req.Direct == 0 {
@@ -143,8 +142,8 @@ func (this XRXD) LocationKLine(req *pro.RequestXRXD, rows []*pro.KInfo) int {
 func (this XRXD) GetRangeKList(req *pro.RequestXRXD, rows []*pro.KInfo) ([]*pro.KInfo, error) {
 	n := this.LocationKLine(req, rows)
 	if n == -1 {
+		logging.Info("GetRangeKList req time %d is not found", req.TimeIndex)
 		return nil, nil
-		fmt.Printf("GetRangeKList req time %d no found\n", req.TimeIndex)
 	}
 
 	if req.Direct == 0 {
