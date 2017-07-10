@@ -159,13 +159,16 @@ func TreatingData(secNm []*fcm.FcSecuNameTab) {
 			rszs := []rune(item.SESNAME.String)
 			tsi.SzSName = "N" + string(rsn[0]) + string(rszs[1])
 			tsi.SzSCName = "N" + string(rszs[0]) + string(rszs[1])
+			// 新股拼音前加N
+			tsi.SzPhonetic = "N" + item.SESPELL.String[:1] + item.SESPELL.String[1:2]
 		} else {
+			tsi.SzPhonetic = item.SESPELL.String
 			tsi.SzSName = item.SENAME.String
 			tsi.SzSCName = item.SESNAME.String
 		}
 
 		tsi.SzDESC = item.SEENGNAME.String
-		tsi.SzPhonetic = item.SESPELL.String
+
 		tsi.SzCUR = item.CUR.String
 		//tsi.SzIndusCode = item.
 
