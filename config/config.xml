@@ -29,10 +29,14 @@
 		<projects>
 			<appId>hqpost</appId>
 			<configFile>hqpost.xml</configFile>     
-		</projects>		
+		</projects>	
 		<projects>
             <appId>market_hqpublish</appId>
             <configFile>hqpublish.xml</configFile>
+        </projects>	
+		<projects>
+            <appId>activity</appId>
+            <configFile>activity.xml</configFile>
         </projects>
     </appSettings>
     <emailSetting>
