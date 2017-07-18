@@ -1,6 +1,7 @@
 package finchina
 
 const (
+	TABLE_TQ_COMP_INDUSTRY    = "TQ_COMP_INDUSTRY"    //行业分类表
 	TABLE_TQ_COMP_INFO        = "TQ_COMP_INFO"        //机构资料表（公司信息）
 	TABLE_TQ_COMP_MANAGER     = "TQ_COMP_MANAGER"     //公司高管表
 	TABLE_TQ_COMP_SKHOLDERCHG = "TQ_COMP_SKHOLDERCHG" //高管和关联人持股变动情况表

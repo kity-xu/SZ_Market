@@ -28,3 +28,4 @@ hqpost/hqinit_linux_amd64
 hqinit/bin/
 *.rar
 test/test.go
+hqpublish/debug

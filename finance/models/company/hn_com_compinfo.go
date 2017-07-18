@@ -2,6 +2,7 @@ package company
 
 import (
 	"haina.com/market/finance/models/finchina"
+	"haina.com/share/logging"
 )
 
 type CompInfo struct {
@@ -36,6 +37,11 @@ func (this *CompInfo) GetCompInfo(scode string, market string) (*CompInfo, error
 		return &js, err
 	}
 
+	indus, e := finchina.NewTQ_COMP_INDUSTRY().GetCompTrade(scode, market)
+	if e != nil {
+		logging.Error("Error accessing company industry information...")
+	}
+
 	js.Account = v.ACCFIRM.String
 	js.Addr = v.OFFICEADDR.String
 	js.Code = scode
@@ -43,7 +49,7 @@ func (this *CompInfo) GetCompInfo(scode string, market string) (*CompInfo, error
 	js.Desc = v.COMPINTRO.String
 	js.EDate = v.FOUNDDATE.String
 	js.Email = v.COMPEMAIL.String
-	//js.Indus = ?
+	js.Indus = indus.LEVEL2NAME.String
 	js.Legal = v.LEGREP.String
 	js.License = v.BIZLICENSENO.String
 	js.Main = v.MAJORBIZ.String

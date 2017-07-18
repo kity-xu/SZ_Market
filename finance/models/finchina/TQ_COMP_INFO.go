@@ -7,6 +7,7 @@ import (
 	"haina.com/share/models"
 )
 
+//机构信息
 type TQ_COMP_INFO struct {
 	models.Model `db:"-" `
 	ACCFIRM      dbr.NullString //会计师事务所
@@ -40,6 +41,46 @@ func (this *TQ_COMP_INFO) newTQ_COMP_INFO() *TQ_COMP_INFO {
 			Db:        models.MyCat,
 		},
 	}
+}
+
+//行业分类表
+type TQ_COMP_INDUSTRY struct {
+	models.Model `db:"-" `
+	LEVEL2NAME   dbr.NullString //二级行业分类名称
+}
+
+func NewTQ_COMP_INDUSTRY() *TQ_COMP_INDUSTRY {
+	return &TQ_COMP_INDUSTRY{
+		Model: models.Model{
+			CacheKey:  "redis_key",
+			TableName: TABLE_TQ_COMP_INDUSTRY,
+			Db:        models.MyCat,
+		},
+	}
+}
+
+//获取公司所属行业
+func (this *TQ_COMP_INDUSTRY) GetCompTrade(scode string, market string) (*TQ_COMP_INDUSTRY, error) {
+	//comp := this.NewTQ_COMP_INDUSTRY()
+	//根据股票代码获取公司内码
+	sc := NewTQ_OA_STCODE()
+	if err := sc.getCompcode(scode, market); err != nil {
+		return this, err
+	}
+
+	exps := map[string]interface{}{
+		"COMPCODE=?":     sc.COMPCODE,
+		"INDCLASSCODE=?": 2107, //申万行业分类(2011新版)
+		"ISVALID=?":      1,
+	}
+	builder := this.Db.Select("*").From(this.TableName)
+	err := this.SelectWhere(builder, exps).Limit(1).LoadStruct(this)
+	if err != nil {
+		logging.Error("%s", err.Error())
+		return this, err
+	}
+	//logging.Debug("get compTrade success...%v", this.LEVEL2NAME)
+	return this, err
 }
 
 //获取公司信息数据
