@@ -15,13 +15,15 @@ import (
 	"haina.com/share/logging"
 )
 
+var cnum chan int
+
 func main() {
 	logging.SetLogModel(true, false)
 	logging.Info("begin..")
 	// 查询finance数据库历史指数K线数据
-	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
+	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
 	// 服务器用
-	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
+	conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
 	if err != nil {
 		logging.Debug("mysql onn", err)
 	}
@@ -29,31 +31,55 @@ func main() {
 	// 获取指数信息
 	CCodes, err := new(dkl.ComCode).GetIndexInfoList(sess)
 
-	var index []ilt.TQ_QT_INDEX
-	var err1 error
 	logging.Info("=====len=%v", len(CCodes))
-	for _, item := range CCodes {
+
+	intx := len(CCodes) / 10
+	for i := 0; i < 10; i++ {
+		if i == 0 {
+			go Compute(i, (i+1)*intx, CCodes, sess)
+		} else if i == 9 {
+			go Compute(i*intx+1, len(CCodes)-1, CCodes, sess)
+		} else {
+			go Compute(i*intx+1, (i+1)*intx, CCodes, sess)
+		}
+	}
+	// 下面这个for循环的意义就是利用信道的阻塞，一直从信道里取数据，直到取得跟并发数一样的个数的数据，则视为所有goroutines完成。
+
+	cnum = make(chan int, 10)
+	for i := 0; i < 10; i++ {
+		<-cnum
+	}
+
+	logging.Info("end.........The-successful-running.....")
+
+}
+
+func Compute(statidx, endidx int, ccom []dkl.ComCode, sess *dbr.Session) {
+	logging.Info("=========start:%v============end:%v", statidx, endidx)
+	for i := statidx; i <= endidx; i++ {
+		// 根据证券代码查询历史K线
 		// 根据指数历史K线
 		//logging.Info("item.secode %v", item.SECODE.String)
-		index, err1 = new(ilt.TQ_QT_INDEX).GetIndexInfoList(sess, item.SECODE.String)
+		index, err1 := new(ilt.TQ_QT_INDEX).GetIndexInfoList(sess, ccom[i].SECODE.String)
+
 		if err1 != nil {
 			logging.Info("K线历史 %v", err1)
 			return
 		}
 
-		if item.EXCHANGE.String == "001002" {
-			//var addstr = "/opt/develop/hgs/filestore/hqdata/sh/100" + item.SYMBOL.String
-			var addstr = "E:/hqdata/sh/100" + item.SYMBOL.String
-			WriteFileInfo(addstr, index, "100"+item.SYMBOL.String)
+		if ccom[i].EXCHANGE.String == "001002" {
+			var addstr = "/opt/develop/hgs/filestore/hqdata/sh/100" + ccom[i].SYMBOL.String
+			//var addstr = "E:/hqdata/sh/100" + ccom[i].SYMBOL.String
+			WriteFileInfo(addstr, index, "100"+ccom[i].SYMBOL.String)
 		}
 		// 001003 深圳交易市场
-		if item.EXCHANGE.String == "001003" {
-			//var addstr = "/opt/develop/hgs/filestore/hqdata/sz/200" + item.SYMBOL.String
-			var addstr = "E:/hqdata/sz/200" + item.SYMBOL.String
-			WriteFileInfo(addstr, index, "200"+item.SYMBOL.String)
+		if ccom[i].EXCHANGE.String == "001003" {
+			var addstr = "/opt/develop/hgs/filestore/hqdata/sz/200" + ccom[i].SYMBOL.String
+			//var addstr = "E:/hqdata/sz/200" + ccom[i].SYMBOL.String
+			WriteFileInfo(addstr, index, "200"+ccom[i].SYMBOL.String)
 		}
 	}
-	logging.Info("end..")
+	cnum <- 1 //goroutine结束时传送一个标示给信道。
 }
 
 // 写入文件

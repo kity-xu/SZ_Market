@@ -18,7 +18,8 @@ func (this *ComCode) GetComCodeList(sess *dbr.Session) ([]ComCode, error) {
 	var code []ComCode
 	_, err := sess.Select("*").From("TQ_OA_STCODE").
 		Where("EXCHANGE in ('001002','001003') and SETYPE='101' and  LISTSTATUS=1 and ISVALID =1").
-		OrderBy("SECODE").LoadStructs(&code)
+		OrderBy("SECODE").
+		LoadStructs(&code)
 	return code, err
 }
 
