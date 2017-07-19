@@ -37,6 +37,7 @@ type StockBlockInfo struct {
 	NLongNum        int32                   // 上涨家数
 	NShortNum       int32                   // 下跌家数
 	LlValueOfInFlow int64                   ///< 资金流入额(*10000)
+	NLastPx         int32                   // 板块指数(*10000)
 }
 
 func NewStockBlockBase() *StockBlockBase {
@@ -125,6 +126,7 @@ func (this *StockBlockBase) GetStockBlockBase(req *protocol.RequestStockBlockBas
 				tbhi.LlValueOfInFlow = ite.LlValueOfInFlow
 				tbhi.NBaseBlockID = stb.NBaseBlockID
 				tbhi.NStockID = stb.NStockID
+				tbhi.NLastPx = stb.NLastPx
 				psbs.List = append(psbs.List, &tbhi)
 			}
 		}
@@ -183,7 +185,11 @@ func GetSortStockBlockL(Sortkey string, rule int32) ([]*StockBlockInfo, error) {
 	var sbin StockBlockInfo
 	size := binary.Size(&sbin)
 	// 循环 取每股结构体 100字节
+	if len(bin) <= 0 {
+		return nil, err
+	}
 	for i := 0; i < len(bin); i += size {
+
 		v := bin[i : i+size]
 		bfi := StockBlockInfo{}
 		buffer := bytes.NewBuffer(v)
