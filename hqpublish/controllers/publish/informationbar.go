@@ -73,7 +73,7 @@ func (this *InfoBar) PostJson(c *gin.Context) {
 		WriteJson(c, 40002, nil)
 		return
 	}
-	req.SID = 200399300 // 沪深300 深圳
+	req.SID = 100000016 // 上证50
 	datahssz, err := publish.NewIndexSnapshot().GetIndexSnapshotObj(&req)
 	if err != nil {
 		logging.Error("%v", err)
@@ -132,7 +132,7 @@ func (this *InfoBar) PostPB(c *gin.Context) {
 		WriteJson(c, 40002, nil)
 		return
 	}
-	req.SID = 200399300 // 沪深300 深圳
+	req.SID = 100000016 // 上证50
 	datahssz, err := publish.NewIndexSnapshot().GetIndexSnapshotObj(&req)
 	if err != nil {
 		logging.Error("%v", err)
@@ -172,7 +172,7 @@ func DataTreating(ind int, pst *protocol.IndexSnapshot) *protocol.Infobar {
 		sname = "沪深300"
 	}
 	if ind == 6 {
-		sname = "沪深300"
+		sname = "上证50"
 	}
 	return &protocol.Infobar{
 		NSID:       pst.NSID,
