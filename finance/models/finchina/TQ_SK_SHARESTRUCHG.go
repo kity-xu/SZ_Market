@@ -152,3 +152,36 @@ func (this *TQ_SK_SHARESTRUCHG) GetChangesStrGroup(enddate string, scode string,
 
 	return data, nil
 }
+
+/***********************************以下是移动端f10页面******************************************/
+// 该处实现 总股本、流通股本的查询
+
+type Equity struct {
+	Model      `db:"-" `
+	TOTALSHARE dbr.NullFloat64 //总股本(万股)
+	CIRCSKAMT  dbr.NullFloat64 //流通股本(万股)
+}
+
+func NewEquity() *Equity {
+	return &Equity{
+		Model: Model{
+			TableName: TABLE_TQ_SK_SHARESTRUCHG,
+			Db:        MyCat,
+		},
+	}
+}
+
+func (this *Equity) GetEquity(compCode string) (*Equity, error) {
+	exps := map[string]interface{}{
+		"COMPCODE=?": compCode,
+		"ISVALID=?":  1,
+	}
+	builder := this.Db.Select("*").From(this.TableName).OrderBy("BEGINDATE desc") //变动起始日
+	err := this.SelectWhere(builder, exps).Limit(1).LoadStruct(this)
+	if err != nil {
+		logging.Error("%s", err.Error())
+		return this, err
+	}
+	logging.Debug("get compinfo success...")
+	return this, nil
+}

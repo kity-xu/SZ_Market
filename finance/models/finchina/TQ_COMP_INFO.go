@@ -106,3 +106,55 @@ func (this *TQ_COMP_INFO) GetCompInfoFromFC(scode string, market string) (*TQ_CO
 	logging.Debug("get compinfo success...")
 	return comp, err
 }
+
+/***********************************以下是移动端f10页面******************************************/
+// 该处实现 公司信息查询
+
+type CompInfo struct {
+	models.Model `db:"-" `
+	COMPSNAME    dbr.NullString //机构简称
+	REGION       dbr.NullString //省份
+	MAJORBIZ     dbr.NullString //主营业务
+}
+
+func NewCompInfo() *CompInfo {
+	return &CompInfo{
+		Model: models.Model{
+			TableName: TABLE_TQ_COMP_INFO,
+			Db:        models.MyCat,
+		},
+	}
+}
+
+func (this *CompInfo) GetCompInfo(compCode string) (*CompInfo, error) {
+	exps := map[string]interface{}{
+		"COMPCODE=?": compCode,
+		"ISVALID=?":  1,
+	}
+	builder := this.Db.Select("*").From(this.TableName)
+	err := this.SelectWhere(builder, exps).LoadStruct(this)
+	if err != nil {
+		logging.Error("%s", err.Error())
+		return this, err
+	}
+
+	return this, err
+}
+
+//获取公司所属行业
+func (this *CompInfo) GetCompTrade(compCode string) (string, error) {
+	comp := NewTQ_COMP_INDUSTRY()
+
+	exps := map[string]interface{}{
+		"COMPCODE=?":     compCode,
+		"INDCLASSCODE=?": 2107, //申万行业分类(2011新版)
+		"ISVALID=?":      1,
+	}
+	builder := comp.Db.Select("*").From(comp.TableName)
+	err := comp.SelectWhere(builder, exps).Limit(1).LoadStruct(comp)
+	if err != nil {
+		logging.Error("%s", err.Error())
+		return "", err
+	}
+	return comp.LEVEL2NAME.String, err
+}

@@ -5,6 +5,8 @@ import (
 	"haina.com/share/logging"
 )
 
+var Province map[string]string
+
 type CompInfo struct {
 	Account string `json:"Account"` //会计师事务所
 	Addr    string `json:"Addr"`    //公司办公地址
@@ -56,7 +58,7 @@ func (this *CompInfo) GetCompInfo(scode string, market string) (*CompInfo, error
 	js.Manager = v.MANAGER.String
 	js.Other = v.BIZSCOPE.String
 	js.Postc = v.OFFICEZIPCODE.String
-	js.Prov = v.REGION.String
+	js.Prov = getProvince(v.REGION.String)
 	js.Short = v.COMPSNAME.String
 	js.Site = v.REGADDR.String
 	js.Tele = v.COMPTEL.String
@@ -74,4 +76,63 @@ func (this *CompInfo) getListDate(scode string, market string) string {
 		return ""
 	}
 	return info.LISTDATE.String
+}
+
+func getProvince(pro string) string {
+
+	if Province[pro] == "" {
+		initProvince()
+		logging.Debug("----------initProvince")
+	}
+	return Province[pro]
+}
+
+func initProvince() {
+	Province = make(map[string]string)
+	Province["CN"] = "全国"
+	Province["CN110000"] = "北京"
+	Province["CN120000"] = "天津"
+	Province["CN130000"] = "河北"
+	Province["CN140000"] = "山西"
+	Province["CN150000"] = "内蒙古"
+	Province["CN210000"] = "辽宁"
+	Province["CN220000"] = "吉林"
+	Province["CN230000"] = "黑龙江"
+	Province["CN310000"] = "上海"
+	Province["CN320000"] = "江苏"
+	Province["CN320100"] = "南京"
+	Province["CN320500"] = "苏州"
+	Province["CN330000"] = "浙江"
+	Province["CN330100"] = "杭州"
+	Province["CN330200"] = "宁波"
+	Province["CN340000"] = "安徽"
+	Province["CN350000"] = "福建"
+	Province["CN350200"] = "厦门"
+	Province["CN360000"] = "江西"
+	Province["CN370000"] = "山东"
+	Province["CN410000"] = "河南"
+	Province["CN410100"] = "郑州"
+	Province["CN420000"] = "湖北"
+	Province["CN420100"] = "武汉"
+	Province["CN430000"] = "湖南"
+	Province["CN440000"] = "广东"
+	Province["CN440100"] = "广州"
+	Province["CN440300"] = "深证"
+	Province["CN450000"] = "广西"
+	Province["CN460000"] = "海南"
+	Province["CN510000"] = "四川"
+	Province["CN520000"] = "贵州"
+	Province["CN530000"] = "云南"
+	Province["CN540000"] = "西藏"
+	Province["CN500000"] = "重庆"
+	Province["CN610000"] = "陕西"
+	Province["CN620000"] = "甘肃"
+	Province["CN630000"] = "青海"
+	Province["CN640000"] = "宁夏"
+	Province["CN650000"] = "新疆"
+	Province["CN810000"] = "香港"
+	Province["CN820000"] = "澳门"
+	Province["CN710000"] = "台湾"
+	Province["99999998"] = "境外"
+	Province["99999999"] = "其他"
 }

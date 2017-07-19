@@ -56,6 +56,7 @@ type TagStockSortInfo struct {
 	SzSName           [SECURITY_NAME_LEN]byte //证券代码名称
 	SzIndusCode       [INDUSTRY_CODE_LEN]byte ///< 行业代码
 	NPxChgRatioIn5Min int32                   ///5分钟涨跌幅(*10000)
+	NTurnOver         int32                   ///换手率
 }
 
 type Sort struct {
@@ -125,6 +126,7 @@ func (this *Sort) GetSortByFieldID(req *protocol.RequestSort) (*protocol.RedisSo
 			SzSName:           byte40ToString(v.SzSName),
 			SzIndusCode:       byte8ToString(v.SzIndusCode),
 			NPxChgRatioIn5Min: v.NPxChgRatioIn5Min,
+			NTurnOver:         v.NTurnOver,
 		}
 		table.List = append(table.List, info)
 	}

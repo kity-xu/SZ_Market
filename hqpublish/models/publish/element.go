@@ -100,6 +100,7 @@ func (this *Element) GetBlockElementReply(req *protocol.RequestElement) (*protoc
 					SzSName:           byte40ToString(stock.SzSName),
 					SzIndusCode:       byte8ToString(stock.SzIndusCode),
 					NPxChgRatioIn5Min: stock.NPxChgRatioIn5Min,
+					NTurnOver:         stock.NTurnOver,
 				}
 				stocks = append(stocks, pstock)
 				break

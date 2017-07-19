@@ -151,3 +151,37 @@ func (this *TQ_FIN_PROINDICDATA) GetListByEnddates(scode string, market string, 
 	}
 	return this.getListByCompcode(sc.COMPCODE.String, report_type, per_page, page, date)
 }
+
+/***************************以下是移动端f10页面*****************************************/
+// 该处是财务数据部分字段
+
+type F10_MB_PROINDICDATA struct {
+	Model     `db:"-" `
+	ROEAVG    dbr.NullFloat64 //净资产收益率_平均(%)
+	ASSLIABRT dbr.NullFloat64 //资产负债率(%)
+	CRPS      dbr.NullFloat64 //每股资本公积金(元)
+	UPPS      dbr.NullFloat64 //每股未分配利润(元)
+}
+
+func NewF10_MB_PROINDICDATA() *F10_MB_PROINDICDATA {
+	return &F10_MB_PROINDICDATA{
+		Model: Model{
+			TableName: TABLE_TQ_FIN_PROINDICDATA,
+			Db:        MyCat,
+		},
+	}
+}
+
+func (this *F10_MB_PROINDICDATA) GetF10_MB_PROINDICDATA(compCode string) (*F10_MB_PROINDICDATA, error) {
+	exps := map[string]interface{}{
+		"COMPCODE=?":   compCode,
+		"REPORTTYPE=?": 3,
+		"ISVALID=?":    1,
+	}
+	builder := this.Db.Select("*").From(this.TableName).OrderBy("ENDDATE desc") //变动起始日
+	err := this.SelectWhere(builder, exps).Limit(1).LoadStruct(this)
+	if err != nil {
+		return nil, err
+	}
+	return this, nil
+}

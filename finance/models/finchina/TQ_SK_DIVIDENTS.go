@@ -64,3 +64,38 @@ func (this *TQ_SK_DIVIDENTS) GetDivListFromFC(sets uint64, scode string, market 
 	logging.Debug("dataSize %d:", num)
 	return divs, err
 }
+
+/***********************************以下是移动端f10页面******************************************/
+// 该处实现分红配股
+
+type DividendRO struct {
+	models.Model       `db:"-" `
+	DIVIYEAR           dbr.NullString  //年度
+	PRETAXCASHMAXDVCNY dbr.NullFloat64 //分红
+	EQURECORDDATE      dbr.NullString  //股权登记日
+}
+
+func NewDividendRO() *DividendRO {
+	return &DividendRO{
+		Model: models.Model{
+			TableName: TABLE_TQ_SK_DIVIDENTS,
+			Db:        models.MyCat,
+		},
+	}
+}
+
+func (this *DividendRO) GetDividendRO(compCode string) (*[]DividendRO, error) {
+	var divs []DividendRO
+	exps := map[string]interface{}{
+		"COMPCODE=?":    compCode,
+		"DATETYPE=?":    "4",
+		"GRAOBJTYPE!=?": "99",
+		"ISVALID=?":     1,
+	}
+	builder := this.Db.Select("*").From(this.TableName)
+	_, err := this.SelectWhere(builder, exps).OrderBy("DIVIYEAR desc").Limit(5).LoadStructs(&divs)
+	if err != nil {
+		return nil, err
+	}
+	return &divs, nil
+}

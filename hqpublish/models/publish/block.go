@@ -36,6 +36,7 @@ type TagBlockSortInfo struct {
 	NLongNum        int32                   //上涨家数
 	NShortNum       int32                   //下跌家数
 	LlValueOfInFlow int64                   ///<资金流入额(*10000)
+	NLastPx         int32                   ///板块指数（*10000）
 }
 
 var (
@@ -110,6 +111,7 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 						NLongNum:        block.NLongNum,
 						NShortNum:       block.NShortNum,
 						LlValueOfInFlow: block.LlValueOfInFlow,
+						NLastPx:         block.NLastPx,
 					}
 					blocks = append(blocks, pbk)
 					break
@@ -196,6 +198,7 @@ func (this *Block) GetBlockFromeRediaData(req *protocol.RequestBlock, blocks *[]
 					NLongNum:        block.NLongNum,
 					NShortNum:       block.NShortNum,
 					LlValueOfInFlow: block.LlValueOfInFlow,
+					NLastPx:         block.NLastPx,
 				}
 				*blocks = append(*blocks, pbk)
 

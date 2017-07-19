@@ -93,6 +93,7 @@ func (this *UserDefine) GetSortByFieldID(req *protocol.RequestUserdef) (*protoco
 			SzSName:           byte40ToString(v.SzSName),
 			SzIndusCode:       byte8ToString(v.SzIndusCode),
 			NPxChgRatioIn5Min: v.NPxChgRatioIn5Min,
+			NTurnOver:         v.NTurnOver,
 		}
 		table.List = append(table.List, info)
 	}

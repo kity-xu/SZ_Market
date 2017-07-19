@@ -73,3 +73,36 @@ func (this *TQ_SK_SHAREHOLDER) GetListByExps(exps map[string]interface{}) ([]*TQ
 	}
 	return data, err
 }
+
+/***************************以下是移动端f10页面*****************************************/
+// 该处是十大股东信息
+
+type ShareHoldersTop10 struct {
+	Model        `db:"-" `
+	SHHOLDERNAME dbr.NullString  //股东名称
+	RANK         dbr.NullInt64   //股东排名
+	HOLDERRTO    dbr.NullFloat64 //持股数量占总股本比例
+}
+
+func NewShareHoldersTop10() *ShareHoldersTop10 {
+	return &ShareHoldersTop10{
+		Model: Model{
+			TableName: TABLE_TQ_SK_SHAREHOLDER,
+			Db:        MyCat,
+		},
+	}
+}
+
+func (this *ShareHoldersTop10) GetShareHoldersTop10(compCode string) (*[]ShareHoldersTop10, error) {
+	var top10 []ShareHoldersTop10
+	exps := map[string]interface{}{
+		"COMPCODE=?": compCode,
+		"ISVALID=?":  1,
+	}
+	builder := this.Db.Select("*").From(this.TableName).OrderBy("PUBLISHDATE desc") //变动起始日
+	_, err := this.SelectWhere(builder, exps).Limit(10).LoadStructs(&top10)
+	if err != nil {
+		return nil, err
+	}
+	return &top10, nil
+}

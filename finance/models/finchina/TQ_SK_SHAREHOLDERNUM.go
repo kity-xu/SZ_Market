@@ -65,3 +65,35 @@ func (this *TQ_SK_SHAREHOLDERNUM) GetListByExps(scode string, limit int, strdate
 
 	return data, nil
 }
+
+/***************************以下是移动端f10页面*****************************************/
+// 该处是股东人数和机构投资者占比
+
+type ShareHolders struct {
+	Model      `db:"-" `
+	TOTALSHAMT dbr.NullFloat64 //股东总户数
+	TOTALSHRTO dbr.NullFloat64 //股东总户数较上期增减
+	CORPSHAMT  dbr.NullFloat64 //法人股东数
+}
+
+func NewShareHolders() *ShareHolders {
+	return &ShareHolders{
+		Model: Model{
+			TableName: TABLE_TQ_SK_SHAREHOLDERNUM,
+			Db:        MyCat,
+		},
+	}
+}
+
+func (this *ShareHolders) GetShareHolders(compCode string) (*ShareHolders, error) {
+	exps := map[string]interface{}{
+		"COMPCODE=?": compCode,
+		"ISVALID=?":  1,
+	}
+	builder := this.Db.Select("*").From(this.TableName).OrderBy("ENDDATE desc") //变动起始日
+	err := this.SelectWhere(builder, exps).Limit(1).LoadStruct(this)
+	if err != nil {
+		return this, err
+	}
+	return this, nil
+}

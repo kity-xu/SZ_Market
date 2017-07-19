@@ -97,3 +97,36 @@ func (this *TQ_FIN_PROINCSTATEMENTNEW) GetList(scode string, market string, repo
 // TQ_FIN_PROBINCSTATEMENTNEW    中文名称：银行利润表(新准则产品表)
 // TQ_FIN_PROIINCSTATEMENTNEW    中文名称：保险利润表(新准则产品表)
 // TQ_FIN_PROSINCSTATEMENTNEW    中文名称：证券利润表(新准则产品表)
+
+/***************************以下是移动端f10页面*****************************************/
+// 该处是财务数据
+
+type F10_MB_PROINCSTATEMENTNEW struct {
+	Model       `db:"-" `
+	MAINBIZINCO dbr.NullFloat64 //主营业务收入（元）
+	BASICEPS    dbr.NullFloat64 //基本每股收益（元）
+	NETPROFIT   dbr.NullFloat64 //净利润（元）
+}
+
+func NewF10_MB_PROINCSTATEMENTNEW() *F10_MB_PROINCSTATEMENTNEW {
+	return &F10_MB_PROINCSTATEMENTNEW{
+		Model: Model{
+			TableName: TABLE_TQ_FIN_PROINCSTATEMENTNEW,
+			Db:        MyCat,
+		},
+	}
+}
+
+func (this *F10_MB_PROINCSTATEMENTNEW) GetF10_MB_PROINCSTATEMENTNEW(compCode string) (*F10_MB_PROINCSTATEMENTNEW, error) {
+	exps := map[string]interface{}{
+		"COMPCODE=?":   compCode,
+		"REPORTTYPE=?": 1,
+		"ISVALID=?":    1,
+	}
+	builder := this.Db.Select("*").From(this.TableName).OrderBy("ENDDATE desc") //变动起始日
+	err := this.SelectWhere(builder, exps).Limit(1).LoadStruct(this)
+	if err != nil {
+		return this, err
+	}
+	return this, nil
+}
