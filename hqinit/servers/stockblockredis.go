@@ -68,7 +68,7 @@ func (this *StockBlockRedis) Block() {
 				Keyname: v.KEYNAME.String,
 			}
 			index := stringToInt32("8" + ((v.KEYCODE.String)[2:]))
-			//logging.Debug("---index:%v  ------ele:%v", index, ele.NSid)
+			logging.Debug("---index:%v  ------ele:%v", index, ele.NSid)
 			disMap[index] = append(disMap[index], ele)
 		case CONCEPT: //概念
 			ele := &protocol.Element{
@@ -91,6 +91,7 @@ func (this *StockBlockRedis) Block() {
 
 	var boards1 = &protocol.BlockList{}
 	for bid, element := range disMap { //key,value: 某个地区下的成份股
+		logging.Debug("---------------------bid:-%v", bid)
 		var secstr string
 		for _, v := range element {
 			secstr += "'" + int32Tostring(v.NSid) + "',"

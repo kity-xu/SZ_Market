@@ -14,22 +14,22 @@ func Update(cfg *config.AppConfig) {
 	start := time.Now()
 
 	//股票代码表
-	security.UpdateSecurityCodeTable()
+	//security.UpdateSecurityCodeTable()
 
 	//市场代码表及证券基本数据
-	security.UpdateSecurityTable(cfg)
+	//security.UpdateSecurityTable(cfg)
 
 	//指数基本数据
-	security.UpdateIndexTable(cfg)
+	//security.UpdateIndexTable(cfg)
 
 	//证券静态数据
-	security.UpdateSecurityStaticInfo(cfg)
+	//security.UpdateSecurityStaticInfo(cfg)
 
 	// 板块信息
 	security.UpdateStockBlockSet(cfg)
 
 	// 指数成分股
-	security.UpdateIndexComponent(cfg)
+	//security.UpdateIndexComponent(cfg)
 
 	end := time.Now()
 	logging.Info("Update Kline historical data successed, and running time:%v", end.Sub(start))

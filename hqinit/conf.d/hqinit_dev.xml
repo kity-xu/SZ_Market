@@ -49,8 +49,8 @@
     </database>
 	<mysqldatabase>
         <mysqldriverName>mysql</mysqldriverName>
-        <!--<mysqldataSource>finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8</mysqldataSource>-->
-   	     <mysqldataSource>finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8</mysqldataSource>
+        <mysqldataSource>finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8</mysqldataSource>
+   	     <!--<mysqldataSource>finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8</mysqldataSource>-->
 	</mysqldatabase>
 	<mongoStore>
 		<source>192.168.18.200:27017/hgs</source>
