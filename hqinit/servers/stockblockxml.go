@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 	"haina.com/market/hqinit/config"
@@ -29,14 +30,15 @@ type Femoral struct {
 
 type Servers struct {
 	XMLName   xml.Name `xml:"servers"`
-	BOARDCODE string   `xml:"BOARDCODE,attr"`
-	Name      string   `xml:"Name,attr"`
+	BOARDCODE string   `xml:"BOARDCODE,attr"` // 一级板块代码
+	Name      string   `xml:"Name,attr"`      // 一级板块名称
 	Svs       []server `xml:"server"`
 }
 
 type server struct {
-	Keycode string    `xml:"Keycode"`
-	Keyname string    `xml:"Keyname"`
+	Keycode string    `xml:"Keycode"` // 二级板块代码
+	Keyname string    `xml:"Keyname"` // 二级板块名称
+	NPreCPx string    `xml:"NPreCPx"` // 板块昨收价
 	SerInfo []SerINfo `xml:"SerInfo"`
 }
 
@@ -73,8 +75,10 @@ func (this *StockBlockXML) CreateStockblockXML(cfg *config.AppConfig) {
 		for _, boar2ji := range boar2j {
 
 			var serv server
-			serv.Keycode = boar2ji.KEYCODE.String
+
+			serv.Keycode = "8" + strings.Replace(string(boar2ji.KEYCODE.String), "CN", "", -1)
 			serv.Keyname = boar2ji.KEYNAME.String
+			serv.NPreCPx = "1000"
 
 			// 根据KeyCode查询ComCODE
 			boarinfo, err := fcmysql.NewTQ_COMP_BOARDMAP().GetBoardmapInfoList(boar2ji.KEYCODE.String)

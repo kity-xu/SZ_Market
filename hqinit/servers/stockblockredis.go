@@ -64,25 +64,25 @@ func (this *StockBlockRedis) Block() {
 		switch v.BOARDCODE.String {
 		case DISTRICT: //地区
 			ele := &protocol.Element{
-				NSid:    stringToInt32((v.SECODE.String)),
+				NSid:    stringToInt32("8" + (v.SECODE.String)),
 				Keyname: v.KEYNAME.String,
 			}
-			index := stringToInt32((v.KEYCODE.String)[2:])
+			index := stringToInt32(("8" + ((v.KEYCODE.String)[2:])))
 			//logging.Debug("---index:%v  ------ele:%v", index, ele.NSid)
 			disMap[index] = append(disMap[index], ele)
 		case CONCEPT: //概念
 			ele := &protocol.Element{
-				NSid:    stringToInt32(v.SECODE.String),
+				NSid:    stringToInt32("8" + (v.SECODE.String)),
 				Keyname: v.KEYNAME.String,
 			}
-			index := stringToInt32(v.KEYCODE.String)
+			index := stringToInt32("8" + v.KEYCODE.String)
 			conMap[index] = append(conMap[index], ele)
 		case INDUSTRY: //行业
 			ele := &protocol.Element{
-				NSid:    stringToInt32(v.SECODE.String),
+				NSid:    stringToInt32("8" + (v.SECODE.String)),
 				Keyname: v.KEYNAME.String,
 			}
-			index := stringToInt32(v.KEYCODE.String)
+			index := stringToInt32("8" + v.KEYCODE.String)
 			indusMap[index] = append(indusMap[index], ele)
 		default:
 		}
@@ -94,7 +94,7 @@ func (this *StockBlockRedis) Block() {
 		var secstr string
 		for _, v := range element {
 			secstr += "'" + int32Tostring(v.NSid) + "',"
-		}
+		
 
 		secstr = strings.TrimRight(secstr, ",")
 		//logging.Debug("secstr--%v", secstr)
