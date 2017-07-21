@@ -54,8 +54,6 @@ func (this *StockBlockRedis) Block() {
 	INDUSTRY = strconv.Itoa(int(protocol.REDIS_BLOCK_CLASSIFY_Industry))
 	ALL = strconv.Itoa(int(protocol.REDIS_BLOCK_CLASSIFY_All))
 
-	logging.Debug("-----------------%v-%v-%v-%v---------------", DISTRICT, CONCEPT, INDUSTRY, ALL)
-
 	disMap := make(map[int32][]*protocol.Element)
 	conMap := make(map[int32][]*protocol.Element)
 	indusMap := make(map[int32][]*protocol.Element)
@@ -68,7 +66,7 @@ func (this *StockBlockRedis) Block() {
 				Keyname: v.KEYNAME.String,
 			}
 			index := stringToInt32("8" + ((v.KEYCODE.String)[2:]))
-			logging.Debug("---index:%v  ------ele:%v", index, ele.NSid)
+
 			disMap[index] = append(disMap[index], ele)
 		case CONCEPT: //概念
 			ele := &protocol.Element{
@@ -91,7 +89,7 @@ func (this *StockBlockRedis) Block() {
 
 	var boards1 = &protocol.BlockList{}
 	for bid, element := range disMap { //key,value: 某个地区下的成份股
-		logging.Debug("---------------------bid:-%v", bid)
+
 		var secstr string
 		for _, v := range element {
 			secstr += "'" + int32Tostring(v.NSid) + "',"
@@ -151,6 +149,7 @@ func (this *StockBlockRedis) Block() {
 			SetID:   bid,
 			SetName: disMap[bid][0].Keyname,
 		}
+
 		boards1.List = append(boards1.List, board)
 	}
 	data1, err := proto.Marshal(boards1)
@@ -223,6 +222,7 @@ func (this *StockBlockRedis) Block() {
 			SetID:   bid,
 			SetName: conMap[bid][0].Keyname,
 		}
+
 		boards2.List = append(boards2.List, board)
 	}
 
@@ -233,6 +233,7 @@ func (this *StockBlockRedis) Block() {
 	}
 
 	key2 := fmt.Sprintf(REDISKEY_BLOCK_CLASSIFY, protocol.REDIS_BLOCK_CLASSIFY_Concept)
+
 	if _, err = c.Do("SET", key2, data2); err != nil {
 		logging.Error("%v", err.Error())
 		return
@@ -240,7 +241,9 @@ func (this *StockBlockRedis) Block() {
 	//-------------------------------------------------------------------------------//
 	var boards3 = &protocol.BlockList{}
 	var sid int32
+
 	for bid, element := range indusMap { //key,value: 某个行业下的成份股
+
 		var secstr string
 		for _, v := range element {
 			secstr += "'" + int32Tostring(v.NSid) + "',"
@@ -273,6 +276,7 @@ func (this *StockBlockRedis) Block() {
 		}
 
 		//以板块分类的成份股
+
 		data, err := proto.Marshal(elms)
 		if err != nil {
 			logging.Error("%v", err.Error())
@@ -295,13 +299,17 @@ func (this *StockBlockRedis) Block() {
 			SetID:   bid,
 			SetName: indusMap[bid][0].Keyname,
 		}
+
 		boards3.List = append(boards3.List, board)
+
 	}
+
 	data3, err := proto.Marshal(boards3)
 	if err != nil {
 		logging.Error("%v", err.Error())
 		return
 	}
+
 	key3 := fmt.Sprintf(REDISKEY_BLOCK_CLASSIFY, protocol.REDIS_BLOCK_CLASSIFY_Industry)
 	if _, err = c.Do("SET", key3, data3); err != nil {
 		logging.Error("%v", err.Error())

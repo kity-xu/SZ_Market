@@ -58,29 +58,29 @@
 	
     <redisStore>
         <!--<addr>47.93.102.171:61380</addr>-->
-		<!--<addr>192.168.18.200:6379</addr>-->
-		<addr>127.0.0.1:61380</addr>
+		<addr>192.168.18.200:6379</addr>
+		<!--<addr>127.0.0.1:61380</addr>-->
         <auth>8dc40c2c4598ae5a</auth>
         <db>0</db>
         <timeout>3</timeout> 
     </redisStore>
 	<fileStore>
-		<!--<path>E:/hqfile/</path>-->
-		<path>/opt/develop/hgs/filestore/security/</path>
+		<path>E:/hqfile/</path>
+		<!--<path>/opt/develop/hgs/filestore/security/</path>-->
 		<stockName>stock.dat</stockName>
 		<indexName>index.dat</indexName>
 		<staticName>static.dat</staticName>
 		<!--生成指数成分股xml -->
-		<!--<indexComponentPath>E:/hqfile/indexcomponent.xml</indexComponentPath>-->
-		<indexComponentPath>/opt/develop/hgs/filestore/security/indexcomponent.xml</indexComponentPath>
+		<indexComponentPath>E:/hqfile/indexcomponent.xml</indexComponentPath>
+		<!--<indexComponentPath>/opt/develop/hgs/filestore/security/indexcomponent.xml</indexComponentPath>-->
 		<!--生成板块信息 xml文件 -->
-		<!--<securitiesplate>E:/hqfile/securitiesplate.xml</securitiesplate>-->
-		<securitiesplate>/opt/develop/hgs/filestore/security/securitiesplate.xml</securitiesplate>
+		<securitiesplate>E:/hqfile/securitiesplate.xml</securitiesplate>
+		<!--<securitiesplate>/opt/develop/hgs/filestore/security/securitiesplate.xml</securitiesplate>-->
 		<!--沪深行情文件 -->
-		<!--<sjsxxdbfpath>E:/hqfile/20170613/sz/sjsxx.dbf</sjsxxdbfpath>-->
-		<sjsxxdbfpath>/opt/develop/hgs/market/hqinit/sjsxx.dbf</sjsxxdbfpath>
-		<!--<cpxxtxtpath>E:/hqfile/20170613/sh/cpxx</cpxxtxtpath>-->
-		<cpxxtxtpath>/opt/develop/hgs/market/hqinit/cpxx</cpxxtxtpath>
+		<sjsxxdbfpath>E:/hqfile/20170613/sz/sjsxx.dbf</sjsxxdbfpath>
+		<!--<sjsxxdbfpath>/opt/develop/hgs/market/hqinit/sjsxx.dbf</sjsxxdbfpath>-->
+		<cpxxtxtpath>E:/hqfile/20170613/sh/cpxx</cpxxtxtpath>
+		<!--<cpxxtxtpath>/opt/develop/hgs/market/hqinit/cpxx</cpxxtxtpath>-->
 		
 	</fileStore>
 
