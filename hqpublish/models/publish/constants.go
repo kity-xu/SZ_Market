@@ -80,8 +80,10 @@ const (
 
 // 证券集合(板块)
 const (
-	REDISKEY_STOCK_BLOCK      = "hq:bk:%d:*"    ///证券字段排序结果(参数：板块基础id)(calc写入)
-	REDISKEY_STOCK_BLOCK_BASE = "hq:sort:11:%d" ///证券字段排序结果(参数：排序id)(calc写入)
+	REDISKEY_STOCK_BLOCK      = "hq:bk:%d:*"      ///板块信息(参数：板块基础id)(calc写入)
+	REDISKEY_STOCK_BLOCK_BASE = "hq:sort:11:%d"   ///板块信息(参数：排序id)(calc写入)
+	REDISKEY_STOCK_BLOCK_INFO = "hq:init:bk:%d:*" ///板块信息(calc写入)
+	REDISKEY_STOCK_BLOCK_SHOT = "hq:bk:%d:%d"     ///板块快照信息(参数：板块基础id, 板块id)(calc写入)
 )
 
 // 资金统计

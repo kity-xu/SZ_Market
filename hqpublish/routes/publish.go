@@ -58,6 +58,10 @@ func RegPublish(rg *gin.RouterGroup) {
 	rg.POST("/persdetail", publish.NewPerSDetail().POST)
 	// 分价成交 -zxw
 	rg.POST("/tradedp", publish.NewTradePriceRecordC().POST)
+	// 根据成分股查询所属板块信息 -zxw
+	rg.POST("/blockinfo", publish.NewBlockInfoC().POST)
+	// 查询板块快照 -zxw
+	rg.POST("/blockshot", publish.NewBlockShotC().POST)
 
 	// 除权除息
 	rg.POST("/xrxd", publish.NewXRXD().POST)
