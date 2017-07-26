@@ -9,6 +9,7 @@ import (
 	"haina.com/share/logging"
 
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -50,19 +51,40 @@ func (this *Snapshot) PostJson(c *gin.Context) {
 		return
 	}
 
-	stock, index, err := publish.NewSnapshot().GetSnapshot(&req)
-	if err != nil {
-		logging.Error("%v", err)
-		WriteJson(c, 40002, nil)
-		return
+	// 板块快照
+	if req.SID > 0 {
+		bksid := req.SID
+		sidstr := strconv.Itoa(int(bksid))
+		if len(sidstr) == 7 && sidstr[:1] == "8" {
+			var reqb protocol.RequestBlockShot
+			reqb.BlockID = req.SID
+			block, err := publish.NewBlockShotM().GetBlockShotM(&reqb)
+			if err != nil {
+				logging.Error("%v", err)
+				WriteJson(c, 40002, nil)
+				return
+			} else if block != nil {
+				WriteJson(c, 200, block)
+				return
+			}
+		} else {
+			// 返回个股或指数快照
+			stock, index, err := publish.NewSnapshot().GetSnapshot(&req)
+			if err != nil {
+				logging.Error("%v", err)
+				WriteJson(c, 40002, nil)
+				return
+			}
+			if stock != nil {
+				WriteJson(c, 200, stock)
+				return
+			} else if index != nil {
+				WriteJson(c, 200, index)
+				return
+			}
+		}
 	}
-	if stock != nil {
-		WriteJson(c, 200, stock)
-		return
-	} else if index != nil {
-		WriteJson(c, 200, index)
-		return
-	}
+
 	WriteJson(c, 40002, nil)
 }
 

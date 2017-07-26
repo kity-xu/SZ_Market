@@ -35,7 +35,7 @@ func (this *Element) GetBlockElementReply(req *protocol.RequestElement) (*protoc
 	}
 
 	//------------------------------------板块下的成份股------------------------------------------------------//
-	key := fmt.Sprintf(this.CacheKey, req.Classify, req.SetID)
+	key := fmt.Sprintf(this.CacheKey, req.BlockID)
 
 	slist, err := RedisStore.GetBytes(key)
 	if err != nil {
@@ -130,13 +130,12 @@ func (this *Element) GetBlockElementReply(req *protocol.RequestElement) (*protoc
 	}
 
 	payload := &protocol.PayloadElement{
-		Classify: req.Classify,
-		SetID:    req.SetID,
-		FieldID:  req.FieldID,
-		Total:    int32(len(stocks)),
-		Begin:    req.Begin,
-		Num:      int32(len(board)),
-		List:     board,
+		BlockID: req.BlockID,
+		FieldID: req.FieldID,
+		Total:   int32(len(stocks)),
+		Begin:   req.Begin,
+		Num:     int32(len(board)),
+		List:    board,
 	}
 
 	return payload, nil

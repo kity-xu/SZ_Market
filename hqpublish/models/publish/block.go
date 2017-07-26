@@ -23,20 +23,22 @@ import (
 
 //板块排序结构体
 type TagBlockSortInfo struct {
-	NBlockID        int32                   //板块ID
-	SzBlockName     [12]byte                //板块名称
-	NAveChgRate     int32                   //平均涨跌幅*10000
+	NBlockID        int32                   // 板块ID
+	NBaseBlockID    int32                   // 板块所属集合ID 行业 地区 概念
+	NLastPx         int32                   // 板块指数(*10000)
+	NPreClosePx     int32                   // 板块指数昨收(*10000)
+	NAveChgRate     int32                   // 平均涨跌幅(*10000)
 	LlVolume        int64                   ///< 板块总成交量
 	LlValue         int64                   ///< 板块总成交额(*10000)
-	NStockID        int32                   ///领涨股ID
-	NStockChgRate   int32                   ///领涨股涨跌幅(*10000)
+	NStockID        int32                   // 领涨股
+	NStockChgRate   int32                   // 领涨股涨跌幅 (*10000)
+	NNum            int32                   // 成分股票个数
+	NLongNum        int32                   // 上涨家数
+	NShortNum       int32                   // 下跌家数
+	NChgRatio       int32                   // 上涨比例 (*10000)
+	LlValueOfInFlow int64                   ///< 资金净流入额(*10000)
+	SzBlockName     [12]byte                //板块名称
 	SzSName         [SECURITY_NAME_LEN]byte //领涨股名称
-	NNum            int32                   //成分股票个数
-	NChgRatio       int32                   //上涨比例(*10000)
-	NLongNum        int32                   //上涨家数
-	NShortNum       int32                   //下跌家数
-	LlValueOfInFlow int64                   ///<资金流入额(*10000)
-	NLastPx         int32                   ///板块指数（*10000）
 }
 
 var (
@@ -62,8 +64,18 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 	}
 
 	var blocks []*protocol.TagBlockSortInfo
+	var kvalue = 1100
+	if req.TypeID == 0 {
+		kvalue = 1100
+	} else if req.TypeID == 1 {
+		kvalue = 1109
+	} else if req.TypeID == 2 {
+		kvalue = 1102
+	} else if req.TypeID == 3 {
+		kvalue = 1105
+	}
 
-	ckey := fmt.Sprintf(REDIS_KEY_CACHE_BLOCK, req.Classify)
+	ckey := fmt.Sprintf(REDIS_KEY_CACHE_BLOCK, kvalue)
 	data, err := RedisCache.GetBytes(ckey)
 	if err != nil {
 		logging.Debug("cache redis is nil...%v", err.Error())
@@ -99,19 +111,21 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 				if block.NBlockID == v.SetID {
 					pbk := &protocol.TagBlockSortInfo{
 						NBlockID:        block.NBlockID,
-						SzBlockName:     byte12ToString(block.SzBlockName),
+						NBaseBlockID:    block.NBaseBlockID,
+						NLastPx:         block.NLastPx,
+						NPreClosePx:     block.NPreClosePx,
 						NAveChgRate:     block.NAveChgRate,
 						LlVolume:        block.LlVolume,
 						LlValue:         block.LlValue,
 						NStockID:        block.NStockID,
 						NStockChgRate:   block.NStockChgRate,
-						SzSName:         byte40ToString(block.SzSName),
 						NNum:            block.NNum,
-						NChgRatio:       block.NChgRatio,
 						NLongNum:        block.NLongNum,
 						NShortNum:       block.NShortNum,
+						NChgRatio:       block.NChgRatio,
 						LlValueOfInFlow: block.LlValueOfInFlow,
-						NLastPx:         block.NLastPx,
+						SzBlockName:     byte12ToString(block.SzBlockName),
+						SzSName:         byte40ToString(block.SzSName),
 					}
 					blocks = append(blocks, pbk)
 					break
@@ -141,18 +155,28 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 	}
 
 	payload := &protocol.PayloadBlock{
-		Classify: req.Classify,
-		FieldID:  req.FieldID,
-		Total:    int32(len(blocks)),
-		Begin:    req.Begin,
-		Num:      int32(len(board)),
-		List:     board,
+		TypeID:  req.TypeID,
+		FieldID: req.FieldID,
+		Total:   int32(len(blocks)),
+		Begin:   req.Begin,
+		Num:     int32(len(board)),
+		List:    board,
 	}
 	return payload, nil
 }
 
 func (this *Block) GetBlockFromeRediaData(req *protocol.RequestBlock, blocks *[]*protocol.TagBlockSortInfo) error {
-	key := fmt.Sprintf(this.CacheKey, req.Classify)
+	var kvalue = 1100
+	if req.TypeID == 0 {
+		kvalue = 1100
+	} else if req.TypeID == 1 {
+		kvalue = 1109
+	} else if req.TypeID == 2 {
+		kvalue = 1102
+	} else if req.TypeID == 3 {
+		kvalue = 1105
+	}
+	key := fmt.Sprintf(this.CacheKey, kvalue)
 	data, err := RedisStore.GetBytes(key)
 	if err != nil {
 		return err
@@ -217,7 +241,7 @@ func (this *Block) GetBlockFromeRediaData(req *protocol.RequestBlock, blocks *[]
 	if err != nil {
 		return err
 	}
-	ckey := fmt.Sprintf(REDIS_KEY_CACHE_BLOCK, req.Classify)
+	ckey := fmt.Sprintf(REDIS_KEY_CACHE_BLOCK, kvalue)
 
 	if err = RedisCache.Set(ckey, dCache); err != nil {
 		return err

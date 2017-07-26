@@ -45,7 +45,7 @@ func (this *BlockShotC) PostJson(c *gin.Context) {
 		return
 	}
 	logging.Info("Request %+v", req)
-	if req.BoardCode == 0 || req.KeyCode == 0 {
+	if req.BlockID == 0 {
 		WriteJson(c, 40004, nil)
 		return
 	}
@@ -68,7 +68,7 @@ func (this *BlockShotC) PostPB(c *gin.Context) {
 		return
 	}
 	logging.Info("Request %+v", req)
-	if req.BoardCode == 0 || req.KeyCode == 0 {
+	if req.BlockID == 0 {
 		WriteDataErrCode(c, 40004)
 		return
 	}
