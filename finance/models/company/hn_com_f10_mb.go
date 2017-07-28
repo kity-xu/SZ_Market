@@ -43,15 +43,16 @@ type DividendRo struct {
 
 //4.财务数据
 type F10_Finance struct {
-	MainIncome  float64 `json:"mainIncome"`  //主营业务收入        ///TQ_FIN_PROINCSTATEMENTNEW
-	MainBizRate float64 `json:"mainBizRate"` //主营收入同比增长率
+	MainIncome  float64 `json:"MainIncome"`  //主营业务收入        ///TQ_FIN_PROINCSTATEMENTNEW
+	MainBizRate float64 `json:"MainBizRate"` //主营收入同比增长率
 	EPS         float64 `json:"EPS"`         //每股收益
-	NetProfit   float64 `json:"netProfit"`   //净利润
+	NetProfit   float64 `json:"NetProfit"`   //净利润
 
-	CapReserve float64 `json:"capReserve"` //每股公积金
-	NetYield   float64 `json:"netYield"`   //净资产收益率_平均    ///TQ_FIN_PROINDICDATA
-	Ratio      float64 `json:"ratio"`      //资产负债率
+	CapReserve float64 `json:"CapReserve"` //每股公积金
+	NetYield   float64 `json:"NetYield"`   //净资产收益率_平均    ///TQ_FIN_PROINDICDATA
+	Ratio      float64 `json:"Ratio"`      //资产负债率
 	UPPS       float64 `json:"UPPS"`       //每股未分配利润
+	EndDate    string  `json:"EndDate"`    //截止日期
 }
 
 func F10Mobile(scode string, market string) (*F10MobileTerminal, *string, error) {
@@ -105,11 +106,18 @@ func F10Mobile(scode string, market string) (*F10MobileTerminal, *string, error)
 		}
 	}
 
+	var shrto float64
+	last := shnum.TOTALSHAMT.Float64 - shnum.TOTALSHRTO.Float64
+	if last != 0 {
+		shrto = shnum.TOTALSHRTO.Float64 / last
+	} else {
+		shrto = 99999.9999 //上期为0
+	}
 	t2 := F10_Equity_Shareholder{
 		Totalshare: equity.TOTALSHARE.Float64,
 		Circskamt:  equity.CIRCSKAMT.Float64,
 		Totalshamt: shnum.TOTALSHAMT.Float64,
-		Totalshrto: shnum.TOTALSHRTO.Float64,
+		Totalshrto: shrto,
 		Top1sha:    nametop1,
 		Top10Rate:  top10rate,
 		//LegalPersonsRate: shnum.CORPSHAMT / float32(shnum.TOTALSHAMT*1.0),
@@ -156,6 +164,7 @@ func F10Mobile(scode string, market string) (*F10MobileTerminal, *string, error)
 		NetYield:    f2.ROEAVG.Float64,
 		Ratio:       f2.ASSLIABRT.Float64,
 		UPPS:        f2.UPPS.Float64,
+		EndDate:     f2.ENDDATE.String,
 	}
 
 	f10 := &F10MobileTerminal{

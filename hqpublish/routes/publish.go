@@ -15,6 +15,9 @@ func RegPublish(rg *gin.RouterGroup) {
 	// 分钟K线
 	rg.POST("/min", publish.NewMinKLine().POST)
 
+	//历史K线
+	rg.POST("/kline", kline.NewKline().POST) //默认pb模式
+
 	//历史分钟K线
 	rg.POST("/hismin", publish.NewHisMinLine().POST) //默认pb模式
 
@@ -31,15 +34,15 @@ func RegPublish(rg *gin.RouterGroup) {
 	rg.POST("/block", publish.NewStockBlock().POST)
 	rg.POST("/element", publish.NewStockElement().POST)
 
+	//板块指数历史K线
+	rg.POST("/blockindex", publish.NewBlockIndex().POST)
+
 	//A股市场代码表、市场代码表、证券基本信息、股票静态数据
 	rg.GET("/sntab/astock", security.NewSecurityTable().GET) //默认pb模式
 
 	rg.POST("/sntab", security.NewSecurityTable().POST) //默认pb模式
 	rg.POST("/sn", security.NewSecurityInfo().POST)     //默认pb模式
 	rg.POST("/ssta", security.NewSecurityStatic().POST) //默认pb模式
-
-	//历史K线
-	rg.POST("/kline", kline.NewKline().POST) //默认pb模式
 
 	//分笔成交 正序
 	rg.POST("/tradeet", publish.NewTradeEveryTime().POST)
@@ -63,7 +66,7 @@ func RegPublish(rg *gin.RouterGroup) {
 	rg.POST("/xrxd", publish.NewXRXD().POST)
 	// 复权因子
 	rg.POST("/factor", publish.NewFactor().POST)
-
+	//自选股
 	rg.POST("/userdef", publish.NewUserDefine().POST)
 
 	// 移动端首页

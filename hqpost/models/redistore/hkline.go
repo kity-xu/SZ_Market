@@ -191,8 +191,6 @@ func (this *HKLine) UpdateYearKLineToRedis(sid int32, today *protocol.KInfo) err
 		}
 		return nil
 	}
-	proto.Unmarshal(data)
-	proto.Marshal()
 
 	ss, err := redis.LRange(key, 0, 0)
 	if err != nil {

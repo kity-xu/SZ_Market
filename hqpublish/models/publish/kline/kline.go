@@ -240,6 +240,7 @@ func IsHQpostRunOver() (bool, error) {
 	tm := time.Unix(timestamp, 0)
 	format := tm.Format("200601021504")
 	monment, err := strconv.ParseInt(format, 10, 64)
+	logging.Info("monment:%v-----dd:%v", monment, dd)
 	if err != nil {
 		logging.Error("%v", err.Error())
 		return false, err

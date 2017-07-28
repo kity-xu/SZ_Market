@@ -39,10 +39,6 @@ type TagBlockSortInfo struct {
 	NLastPx         int32                   ///板块指数（*10000）
 }
 
-var (
-	REDIS_KEY_CACHE_BLOCK = "hq:init:bk:%d"
-)
-
 type Block struct {
 	Model `db:"-"`
 }
@@ -56,6 +52,7 @@ func NewBlock(redis_key string) *Block {
 }
 
 func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol.PayloadBlock, error) {
+
 	//按所传参数做数据解析
 	if req.Begin < 0 || req.Num < 0 {
 		return nil, INVALID_REQUEST_PARA
@@ -63,7 +60,7 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 
 	var blocks []*protocol.TagBlockSortInfo
 
-	ckey := fmt.Sprintf(REDIS_KEY_CACHE_BLOCK, req.Classify)
+	ckey := fmt.Sprintf(this.CacheKey, req.Classify)
 	data, err := RedisCache.GetBytes(ckey)
 	if err != nil {
 		logging.Debug("cache redis is nil...%v", err.Error())
@@ -217,7 +214,7 @@ func (this *Block) GetBlockFromeRediaData(req *protocol.RequestBlock, blocks *[]
 	if err != nil {
 		return err
 	}
-	ckey := fmt.Sprintf(REDIS_KEY_CACHE_BLOCK, req.Classify)
+	ckey := fmt.Sprintf(this.CacheKey, req.Classify)
 
 	if err = RedisCache.Set(ckey, dCache); err != nil {
 		return err

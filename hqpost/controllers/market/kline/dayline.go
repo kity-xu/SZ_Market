@@ -153,8 +153,15 @@ func (this *Security) DayLine() {
 		lib.GetASCStruct(&klist.List) //按时间升序排序
 
 	LABEL:
-		today, e := GetTodayDayLine(sid) //得到今天的k线
-		if e == nil && today != nil {    //获取当天数据没毛病
+		var precpx int32
+		if len(klist.List) != 0 {
+			precpx = klist.List[len(klist.List)-1].NLastPx
+		} else {
+			precpx = 0
+		}
+
+		today, e := GetTodayDayLine(sid, precpx) //得到今天的k线
+		if e == nil && today != nil {            //获取当天数据没毛病
 			sigList.today = today
 
 			//追加到文件
@@ -181,7 +188,7 @@ func (this *Security) DayLine() {
 }
 
 //获取今天分钟线生成的日线
-func GetTodayDayLine(sid int32) (*protocol.KInfo, error) {
+func GetTodayDayLine(sid, precpx int32) (*protocol.KInfo, error) {
 	min, err := redistore.NewMinKLine(REDISKEY_SECURITY_MIN).GetMinKLineToday(sid)
 	if err != nil {
 		//logging.Debug("%v", err.Error())
@@ -209,9 +216,13 @@ func GetTodayDayLine(sid int32) (*protocol.KInfo, error) {
 		i++
 	}
 	tmp.NSID = sid
-	tmp.NTime = filestore.GetDateToday()      //时间
-	tmp.NOpenPx = (*min)[0].NOpenPx           //开盘价
-	tmp.NPreCPx = (*min)[len(*min)-1].NPreCPx //昨收价
+	tmp.NTime = filestore.GetDateToday() //时间
+	tmp.NOpenPx = (*min)[0].NOpenPx      //开盘价
+	if precpx == 0 {
+		tmp.NPreCPx = (*min)[len(*min)-1].NPreCPx //昨收价
+	} else {
+		tmp.NPreCPx = precpx
+	}
 	tmp.NLastPx = (*min)[len(*min)-1].NLastPx //最新价
 	tmp.NAvgPx = AvgPxTotal / uint32(i+1)     //平均价
 

@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"unicode/utf8"
 
 	. "haina.com/share/models"
 
@@ -96,38 +97,38 @@ func (this *Sort) GetSortByFieldID(req *protocol.RequestSort) (*protocol.RedisSo
 		if err := binary.Read(buffer, binary.LittleEndian, v); err != nil && err != io.EOF {
 			return nil, err
 		}
-		info := &protocol.TagStockSortInfo{
-			NSID:              v.NSID,
-			NLastPx:           v.NLastPx,
-			NOpenPx:           v.NOpenPx,
-			NHighPx:           v.NHighPx,
-			NLowPx:            v.NLowPx,
-			NPreClosePx:       v.NPreClosePx,
-			LlVolume:          v.LlVolume,
-			LlValue:           v.LlValue,
-			NPxChgRatio:       v.NPxChgRatio,
-			NPxAmplitude:      v.NPxAmplitude,
-			NPxChg:            v.NPxChg,
-			NPE:               v.NPE,
-			NPB:               v.NPB,
-			NLiangbi:          v.NLiangbi,
-			NWeibi:            v.NWeibi,
-			LlMarketVal:       v.LlMarketVal,
-			LlFlowVal:         v.LlFlowVal,
-			NAveBidPx:         v.NAveBidPx,
-			NAveOfferPx:       v.NAveOfferPx,
-			LlBidVol:          v.LlBidVol,
-			LlOfferVol:        v.LlOfferVol,
-			NBid1Px:           v.NBid1Px,
-			NOffer1Px:         v.NOffer1Px,
-			LlBid1Vol:         v.LlBid1Vol,
-			LlOffer1Vol:       v.LlOffer1Vol,
-			LlValueOfInFlow:   v.LlValueOfInFlow,
-			SzSName:           byte40ToString(v.SzSName),
-			SzIndusCode:       byte8ToString(v.SzIndusCode),
-			NPxChgRatioIn5Min: v.NPxChgRatioIn5Min,
-			NTurnOver:         v.NTurnOver,
-		}
+		info := &protocol.TagStockSortInfo{}
+		info.NSID = v.NSID
+		info.NLastPx = v.NLastPx
+		info.NOpenPx = v.NOpenPx
+		info.NHighPx = v.NHighPx
+		info.NLowPx = v.NLowPx
+		info.NPreClosePx = v.NPreClosePx
+		info.LlVolume = v.LlVolume
+		info.LlValue = v.LlValue
+		info.NPxChgRatio = v.NPxChgRatio
+		info.NPxAmplitude = v.NPxAmplitude
+		info.NPxChg = v.NPxChg
+		info.NPE = v.NPE
+		info.NPB = v.NPB
+		info.NLiangbi = v.NLiangbi
+		info.NWeibi = v.NWeibi
+		info.LlMarketVal = v.LlMarketVal
+		info.LlFlowVal = v.LlFlowVal
+		info.NAveBidPx = v.NAveBidPx
+		info.NAveOfferPx = v.NAveOfferPx
+		info.LlBidVol = v.LlBidVol
+		info.LlOfferVol = v.LlOfferVol
+		info.NBid1Px = v.NBid1Px
+		info.NOffer1Px = v.NOffer1Px
+		info.LlBid1Vol = v.LlBid1Vol
+		info.LlOffer1Vol = v.LlOffer1Vol
+		info.LlValueOfInFlow = v.LlValueOfInFlow
+		//info.SzSName = "浦发银行浦发银行浦发银行浦发银行浦发银行浦发银行浦发银行浦发银行浦发银行浦发银行浦发银行浦发银行浦发银行"//byte40ToString(v.SzSName)
+		info.SzSName = byte40ToString(v.SzSName)
+		info.SzIndusCode = byte8ToString(v.SzIndusCode)
+		info.NPxChgRatioIn5Min = v.NPxChgRatioIn5Min
+		info.NTurnOver = v.NTurnOver
 		table.List = append(table.List, info)
 	}
 	return table, nil
@@ -219,26 +220,47 @@ func (this *Sort) GetPayloadSort(req *protocol.RequestSort) (*protocol.PayloadSo
 	return payload, nil
 }
 
-func byte40ToString(src [40]byte) string {
-	var des []byte
+func CompareChars(word string) {
+	s := []byte(word)
+	for utf8.RuneCount(s) > 1 {
+		r, size := utf8.DecodeRune(s)
+		s = s[size:]
+		nextR, size := utf8.DecodeRune(s)
+		fmt.Print(r == nextR, ",")
+	}
+}
 
+func byte40ToString(src [40]byte) string {
+
+	var des []byte
 	for _, v := range src {
-		if v == '\u0000' || v == '0' {
-			break
-		}
 		des = append(des, v)
 	}
+	if len(des) == 0 {
+		return "-"
+	}
+	//	var rs []rune
+	//	for utf8.RuneCount(des) > 1 {
+	//		r, size := utf8.DecodeRune(des)
+	//		des = des[size:]
+	//		if r == '\u0000' {
+	//			break
+	//		}
+	//		rs = append(rs, r)
+	//	}
 	return string(des)
 }
 
 func byte8ToString(src [8]byte) string {
 	var des []byte
-
 	for _, v := range src {
 		if v == '\u0000' || v == '0' {
-			break
+			continue
 		}
 		des = append(des, v)
+	}
+	if len(des) == 0 {
+		return "-"
 	}
 	return string(des)
 }
@@ -247,9 +269,12 @@ func byte12ToString(src [12]byte) string {
 	var ss []byte
 	for _, v := range src {
 		if v == '0' || v == '\u0000' {
-			break
+			continue
 		}
 		ss = append(ss, v)
+	}
+	if len(ss) == 0 {
+		return "-"
 	}
 	return string(ss)
 }

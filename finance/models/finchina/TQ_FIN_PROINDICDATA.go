@@ -161,6 +161,7 @@ type F10_MB_PROINDICDATA struct {
 	ASSLIABRT dbr.NullFloat64 //资产负债率(%)
 	CRPS      dbr.NullFloat64 //每股资本公积金(元)
 	UPPS      dbr.NullFloat64 //每股未分配利润(元)
+	ENDDATE   dbr.NullString  //截止时间
 }
 
 func NewF10_MB_PROINDICDATA() *F10_MB_PROINDICDATA {

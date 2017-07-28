@@ -66,7 +66,7 @@ const (
 	REDISKEY_SECURITY_HMIN60 = "hq:st:hmin60:%d" ///<证券60分钟K线(参数：sid)
 )
 
-//排序
+//排序&板块
 const (
 	REDISKEY_SORT_KDAY_H = "hq:sort:%d:%d"    ///<排序结果(顺序，参数：证券组id,字段id) (calc写入)
 	REDISKEY_BLOCK       = "hq:init:bk:%d"    ///板块
@@ -93,4 +93,10 @@ const (
 const (
 	REDISKEY_L2CACHE_INDEX_MOBILE = "hq:index:mobile" // 移动端 /api/hq/mindex
 	REDISKEY_L2CACHE_INDEX_PC     = "hq:index:pc"     // PC端 /api/hq/pcindex
+)
+
+// 基准日 20100101
+const (
+	Baseday = 20100104 //基准日后第一个工作日
+	Workday = 251      //一年中交易日（除去双休日和法定假日---只多不少）
 )
