@@ -28,8 +28,8 @@ func RegPublish(rg *gin.RouterGroup) {
 	rg.POST("/fundflow", publish.NewFundflow().POST)
 
 	//板块及板块成分
-	rg.POST("/block", publish.NewStockBlock().POST)     // 后期会废弃此接口
-	rg.POST("/element", publish.NewStockElement().POST) // 后期会废弃此接口
+	//rg.POST("/block", publish.NewStockBlock().POST)     // 后期会废弃此接口
+	//rg.POST("/element", publish.NewStockElement().POST) // 后期会废弃此接口
 
 	//A股市场代码表、市场代码表、证券基本信息、股票静态数据
 	rg.GET("/sntab/astock", security.NewSecurityTable().GET) //默认pb模式
@@ -58,14 +58,14 @@ func RegPublish(rg *gin.RouterGroup) {
 	rg.POST("/persdetail", publish.NewPerSDetail().POST)
 	// 分价成交 -zxw
 	rg.POST("/tradedp", publish.NewTradePriceRecordC().POST)
-	// 根据成分股查询所属板块信息 -zxw
-	rg.POST("/blockinfo", publish.NewBlockInfoC().POST)
+	// 根据成分股查询所属板块信息 -zxw(优化后)
+	rg.POST("/block/stock/id", publish.NewBlockInfoC().POST)
 	// 查询板块快照 -zxw
 	//rg.POST("/snapshoot", publish.NewBlockShotC().POST)(作废)
 	// 根据板块类型查询所有板块(优化后)
 	rg.POST("/block/list", publish.NewStockBlock().POST)
 	// 查询板块下成分股(优化后)
-	rg.POST("/block/stocks", publish.NewStockBlock().POST)
+	rg.POST("/block/stocks", publish.NewStockElement().POST)
 
 	// 除权除息
 	rg.POST("/xrxd", publish.NewXRXD().POST)

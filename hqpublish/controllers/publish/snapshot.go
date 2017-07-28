@@ -55,7 +55,7 @@ func (this *Snapshot) PostJson(c *gin.Context) {
 	if req.SID > 0 {
 		bksid := req.SID
 		sidstr := strconv.Itoa(int(bksid))
-		if len(sidstr) == 7 && sidstr[:1] == "8" {
+		if len(sidstr) == 8 && sidstr[:1] == "8" {
 			var reqb protocol.RequestBlockShot
 			reqb.BlockID = req.SID
 			block, err := publish.NewBlockShotM().GetBlockShotM(&reqb)

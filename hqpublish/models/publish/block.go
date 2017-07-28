@@ -24,9 +24,15 @@ import (
 //板块排序结构体
 type TagBlockSortInfo struct {
 	NBlockID        int32                   // 板块ID
-	NBaseBlockID    int32                   // 板块所属集合ID 行业 地区 概念
-	NLastPx         int32                   // 板块指数(*10000)
-	NPreClosePx     int32                   // 板块指数昨收(*10000)
+	NTypeID         int32                   // 板块所属集合ID 行业 地区 概念
+	NTime           int32                   // 时间 hhmmss
+	NLastPx         uint32                  // 板块指数(*10000)
+	NPreClosePx     uint32                  // 板块指数昨收(*10000)
+	NOpenPx         uint32                  // 开盘价(*10000)
+	NHighPx         uint32                  // 最高价(*10000)
+	NLowPx          uint32                  // 最低价(*10000)
+	NPxChg          int32                   // 涨跌(*10000)
+	NPxAmplitude    int32                   // 振幅(*10000)
 	NAveChgRate     int32                   // 平均涨跌幅(*10000)
 	LlVolume        int64                   ///< 板块总成交量
 	LlValue         int64                   ///< 板块总成交额(*10000)
@@ -78,12 +84,14 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 	ckey := fmt.Sprintf(REDIS_KEY_CACHE_BLOCK, kvalue)
 	data, err := RedisCache.GetBytes(ckey)
 	if err != nil {
+
 		logging.Debug("cache redis is nil...%v", err.Error())
 		if err = this.GetBlockFromeRediaData(req, &blocks); err != nil {
 			logging.Error("%v", err.Error())
 			return nil, err
 		}
 	} else {
+
 		blist := &protocol.BlockList{}
 		if err = proto.Unmarshal(data, blist); err != nil {
 			logging.Error("-----------%v", err.Error())
@@ -91,6 +99,7 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 		}
 
 		dkey := fmt.Sprintf(REDISKEY_SORT_KDAY_H, protocol.HAINA_PUBLISH_SORT_BLOCKID_BK_S, absInt32(req.FieldID))
+
 		dblock, err := RedisStore.GetBytes(dkey)
 		if err != nil {
 			logging.Error("---***%v", err.Error())
@@ -111,7 +120,7 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 				if block.NBlockID == v.SetID {
 					pbk := &protocol.TagBlockSortInfo{
 						NBlockID:        block.NBlockID,
-						NBaseBlockID:    block.NBaseBlockID,
+						NTypeID:         block.NTypeID,
 						NLastPx:         block.NLastPx,
 						NPreClosePx:     block.NPreClosePx,
 						NAveChgRate:     block.NAveChgRate,
@@ -126,6 +135,12 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 						LlValueOfInFlow: block.LlValueOfInFlow,
 						SzBlockName:     byte12ToString(block.SzBlockName),
 						SzSName:         byte40ToString(block.SzSName),
+						NTime:           block.NTime,
+						NOpenPx:         block.NOpenPx,
+						NHighPx:         block.NHighPx,
+						NLowPx:          block.NLowPx,
+						NPxChg:          block.NPxChg,
+						NPxAmplitude:    block.NPxAmplitude,
 					}
 					blocks = append(blocks, pbk)
 					break
@@ -135,6 +150,7 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 	}
 
 	if len(blocks)-1 < int(req.Begin) {
+
 		return nil, INVALID_REQUEST_PARA
 	}
 
@@ -162,6 +178,7 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 		Num:     int32(len(board)),
 		List:    board,
 	}
+
 	return payload, nil
 }
 
@@ -210,6 +227,7 @@ func (this *Block) GetBlockFromeRediaData(req *protocol.RequestBlock, blocks *[]
 			if block.NBlockID == v.SetID {
 				pbk := &protocol.TagBlockSortInfo{
 					NBlockID:        block.NBlockID,
+					NTime:           block.NTime,
 					SzBlockName:     byte12ToString(block.SzBlockName),
 					NAveChgRate:     block.NAveChgRate,
 					LlVolume:        block.LlVolume,
@@ -223,6 +241,13 @@ func (this *Block) GetBlockFromeRediaData(req *protocol.RequestBlock, blocks *[]
 					NShortNum:       block.NShortNum,
 					LlValueOfInFlow: block.LlValueOfInFlow,
 					NLastPx:         block.NLastPx,
+					NTypeID:         block.NTypeID,
+					NPreClosePx:     block.NPreClosePx,
+					NOpenPx:         block.NOpenPx,
+					NHighPx:         block.NHighPx,
+					NLowPx:          block.NLowPx,
+					NPxChg:          block.NPxChg,
+					NPxAmplitude:    block.NPxAmplitude,
 				}
 				*blocks = append(*blocks, pbk)
 

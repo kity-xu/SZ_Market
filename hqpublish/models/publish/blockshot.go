@@ -28,9 +28,15 @@ func NewBlockShotM() *BlockShotM {
 
 type StockBlockShotM struct {
 	NBlockID        int32                   // 板块ID
-	NBaseBlockID    int32                   // 板块所属集合ID 行业 地区 概念
-	NLastPx         int32                   // 板块指数(*10000)
-	NPreClosePx     int32                   // 板块指数昨收(*10000)
+	NTypeID         int32                   // 板块所属集合ID 行业 地区 概念
+	NTime           int32                   // 时间 hhmmss
+	NLastPx         uint32                  // 板块指数(*10000)
+	NPreClosePx     uint32                  // 板块指数昨收(*10000)
+	NOpenPx         uint32                  // 开盘价(*10000)
+	NHighPx         uint32                  // 最高价(*10000)
+	NLowPx          uint32                  // 最低价(*10000)
+	NPxChg          int32                   // 涨跌(*10000)
+	NPxAmplitude    int32                   // 振幅(*10000)
 	NAveChgRate     int32                   // 平均涨跌幅(*10000)
 	LlVolume        int64                   ///< 板块总成交量
 	LlValue         int64                   ///< 板块总成交额(*10000)
@@ -67,7 +73,7 @@ func (this *BlockShotM) GetBlockShotM(req *protocol.RequestBlockShot) (*protocol
 		return nil, err
 	}
 	data.NBlockID = sbsm.NBlockID
-	data.NBaseBlockID = sbsm.NBaseBlockID
+	data.NTypeID = sbsm.NTypeID
 	data.NLastPx = sbsm.NLastPx
 	data.NPreClosePx = sbsm.NPreClosePx
 	data.NAveChgRate = sbsm.NAveChgRate
@@ -82,6 +88,12 @@ func (this *BlockShotM) GetBlockShotM(req *protocol.RequestBlockShot) (*protocol
 	data.LlValueOfInFlow = sbsm.LlValueOfInFlow
 	data.SzBlockName = byte12ToString(sbsm.SzBlockName)
 	data.SzSName = byte40ToString(sbsm.SzSName)
+	data.NTime = sbsm.NTime
+	data.NOpenPx = sbsm.NOpenPx
+	data.NHighPx = sbsm.NHighPx
+	data.NLowPx = sbsm.NLowPx
+	data.NPxChg = sbsm.NPxChg
+	data.NPxAmplitude = sbsm.NPxAmplitude
 
 	var pbs protocol.PayloadBlockShot
 	pbs.BlockShort = data
