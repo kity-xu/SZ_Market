@@ -74,7 +74,7 @@ func (this MIndex) GetMIndexObj() (*pro.PayloadMIndex, error) {
 			Begin:   0,
 			Num:     3,
 		}
-		block, err := NewBlock(REDISKEY_BLOCK).GetBlockReplyByRequest(&req)
+		block, err := NewBlock(REDIS_KEY_CACHE_BLOCK).GetBlockReplyByRequest(&req)
 		if err != nil {
 			logging.Error("%v", err)
 			return nil, err

@@ -29,3 +29,4 @@ hqinit/bin/
 *.rar
 test/test.go
 hqpublish/debug
+*.zip

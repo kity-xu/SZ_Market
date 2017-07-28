@@ -78,11 +78,7 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 		kvalue = 1105
 	}
 
-<<<<<<< HEAD
-	ckey := fmt.Sprintf(this.CacheKey, req.Classify)
-=======
 	ckey := fmt.Sprintf(REDIS_KEY_CACHE_BLOCK, kvalue)
->>>>>>> 1d79db176363e62de01473b1210ed63b43f538fe
 	data, err := RedisCache.GetBytes(ckey)
 	if err != nil {
 
@@ -267,11 +263,8 @@ func (this *Block) GetBlockFromeRediaData(req *protocol.RequestBlock, blocks *[]
 	if err != nil {
 		return err
 	}
-<<<<<<< HEAD
-	ckey := fmt.Sprintf(this.CacheKey, req.Classify)
-=======
+
 	ckey := fmt.Sprintf(REDIS_KEY_CACHE_BLOCK, kvalue)
->>>>>>> 1d79db176363e62de01473b1210ed63b43f538fe
 
 	if err = RedisCache.Set(ckey, dCache); err != nil {
 		return err

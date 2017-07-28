@@ -45,7 +45,7 @@ func (this *StockBlock) PostJson(c *gin.Context) {
 	}
 	logging.Info("Request %+v", req)
 
-	reply, err := publish.NewBlock(publish.REDISKEY_BLOCK).GetBlockReplyByRequest(&req)
+	reply, err := publish.NewBlock(publish.REDIS_KEY_CACHE_BLOCK).GetBlockReplyByRequest(&req)
 	if err != nil {
 		logging.Error("%v", err)
 		WriteJson(c, 40002, nil)
@@ -64,7 +64,7 @@ func (this *StockBlock) PostPB(c *gin.Context) {
 	}
 	logging.Info("Request %+v", req)
 
-	reply, err := publish.NewBlock(publish.REDISKEY_BLOCK).GetBlockReplyByRequest(&req)
+	reply, err := publish.NewBlock(publish.REDIS_KEY_CACHE_BLOCK).GetBlockReplyByRequest(&req)
 	if err != nil {
 		logging.Error("%v", err.Error())
 		WriteDataErrCode(c, 40002)
