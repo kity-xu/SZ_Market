@@ -32,6 +32,7 @@ var (
 	INDUSTRY                string //行业
 	REDISKEY_BLOCK_CLASSIFY = "hq:init:bk:%d"
 	REDISKEY_BLOCK_BOARD    = "hq:init:bk:%d:%d"
+	REDISKEY_STOCK_BLOCK    = "hq:init:bk:stock:%d"
 )
 
 func (this *StockBlockRedis) Block() {
@@ -39,6 +40,7 @@ func (this *StockBlockRedis) Block() {
 
 	logging.Info("begin ...")
 	c, errr := redis.Dial("tcp", "127.0.0.1:61380")
+	//c, errr := redis.Dial("tcp", "47.94.16.69:61380")
 	c.Send("AUTH", "8dc40c2c4598ae5a")
 	if errr != nil {
 		logging.Info("redis conn error %v", errr)
@@ -54,8 +56,6 @@ func (this *StockBlockRedis) Block() {
 	INDUSTRY = strconv.Itoa(int(protocol.REDIS_BLOCK_CLASSIFY_Industry))
 	ALL = strconv.Itoa(int(protocol.REDIS_BLOCK_CLASSIFY_All))
 
-	logging.Debug("-----------------%v-%v-%v-%v---------------", DISTRICT, CONCEPT, INDUSTRY, ALL)
-
 	disMap := make(map[int32][]*protocol.Element)
 	conMap := make(map[int32][]*protocol.Element)
 	indusMap := make(map[int32][]*protocol.Element)
@@ -67,22 +67,22 @@ func (this *StockBlockRedis) Block() {
 				NSid:    stringToInt32((v.SECODE.String)),
 				Keyname: v.KEYNAME.String,
 			}
-			index := stringToInt32("8" + ((v.KEYCODE.String)[2:]))
-			logging.Debug("---index:%v  ------ele:%v", index, ele.NSid)
+			index := stringToInt32("81" + ((v.KEYCODE.String)[2:]))
+
 			disMap[index] = append(disMap[index], ele)
 		case CONCEPT: //概念
 			ele := &protocol.Element{
 				NSid:    stringToInt32(v.SECODE.String),
 				Keyname: v.KEYNAME.String,
 			}
-			index := stringToInt32("8" + v.KEYCODE.String)
+			index := stringToInt32("81" + v.KEYCODE.String)
 			conMap[index] = append(conMap[index], ele)
 		case INDUSTRY: //行业
 			ele := &protocol.Element{
 				NSid:    stringToInt32(v.SECODE.String),
 				Keyname: v.KEYNAME.String,
 			}
-			index := stringToInt32("8" + v.KEYCODE.String)
+			index := stringToInt32("81" + v.KEYCODE.String)
 			indusMap[index] = append(indusMap[index], ele)
 		default:
 		}
@@ -91,7 +91,7 @@ func (this *StockBlockRedis) Block() {
 
 	var boards1 = &protocol.BlockList{}
 	for bid, element := range disMap { //key,value: 某个地区下的成份股
-		logging.Debug("---------------------bid:-%v", bid)
+
 		var secstr string
 		for _, v := range element {
 			secstr += "'" + int32Tostring(v.NSid) + "',"
@@ -151,6 +151,7 @@ func (this *StockBlockRedis) Block() {
 			SetID:   bid,
 			SetName: disMap[bid][0].Keyname,
 		}
+
 		boards1.List = append(boards1.List, board)
 	}
 	data1, err := proto.Marshal(boards1)
@@ -223,6 +224,7 @@ func (this *StockBlockRedis) Block() {
 			SetID:   bid,
 			SetName: conMap[bid][0].Keyname,
 		}
+
 		boards2.List = append(boards2.List, board)
 	}
 
@@ -233,6 +235,7 @@ func (this *StockBlockRedis) Block() {
 	}
 
 	key2 := fmt.Sprintf(REDISKEY_BLOCK_CLASSIFY, protocol.REDIS_BLOCK_CLASSIFY_Concept)
+
 	if _, err = c.Do("SET", key2, data2); err != nil {
 		logging.Error("%v", err.Error())
 		return
@@ -240,7 +243,9 @@ func (this *StockBlockRedis) Block() {
 	//-------------------------------------------------------------------------------//
 	var boards3 = &protocol.BlockList{}
 	var sid int32
+
 	for bid, element := range indusMap { //key,value: 某个行业下的成份股
+
 		var secstr string
 		for _, v := range element {
 			secstr += "'" + int32Tostring(v.NSid) + "',"
@@ -273,6 +278,7 @@ func (this *StockBlockRedis) Block() {
 		}
 
 		//以板块分类的成份股
+
 		data, err := proto.Marshal(elms)
 		if err != nil {
 			logging.Error("%v", err.Error())
@@ -295,13 +301,17 @@ func (this *StockBlockRedis) Block() {
 			SetID:   bid,
 			SetName: indusMap[bid][0].Keyname,
 		}
+
 		boards3.List = append(boards3.List, board)
+
 	}
+
 	data3, err := proto.Marshal(boards3)
 	if err != nil {
 		logging.Error("%v", err.Error())
 		return
 	}
+
 	key3 := fmt.Sprintf(REDISKEY_BLOCK_CLASSIFY, protocol.REDIS_BLOCK_CLASSIFY_Industry)
 	if _, err = c.Do("SET", key3, data3); err != nil {
 		logging.Error("%v", err.Error())
@@ -323,6 +333,56 @@ func (this *StockBlockRedis) Block() {
 		logging.Error("%v", err.Error())
 		return
 	}
+
+	//-------------------------------------------------------处理证券查板块
+	stockL, err := fcmysql.NewFcSecuNameTab().GetSecuNmList()
+	if err != nil {
+		logging.Error("select stcode table error:%v", err)
+	}
+	// 遍历所有股票
+	for _, stite := range stockL {
+		// 根据secode 查询所属板块
+		blocks, err := fcmysql.NewTQ_COMP_BOARDMAP().GetBoadBySID(stite.SECODE.String)
+		if err != nil {
+			logging.Error("select TQ_COMP_BOARDMAP table error:%v", err)
+		}
+		var bls protocol.BlockList
+		for _, blite := range blocks {
+			var bk protocol.Block
+			kcode := blite.KEYCODE.String
+			if kcode[:1] == "C" && kcode[1:2] == "N" {
+				kcode = kcode[2:]
+			}
+			kd, err := strconv.Atoi("81" + kcode)
+			if err != nil {
+				logging.Error("kcode  type conversion error:%v", err)
+			}
+			bk.SetID = int32(kd)
+			bls.List = append(bls.List, &bk)
+		}
+		var sym = ""
+		if stite.EXCHANGE.String == "001002" {
+			sym = "100" + stite.SYMBOL.String
+		} else if stite.EXCHANGE.String == "001003" {
+			sym = "200" + stite.SYMBOL.String
+		}
+		symb, err := strconv.Atoi(sym)
+		if err != nil {
+			logging.Error("sym typeconversion error:%v", err)
+		}
+		bkkey := fmt.Sprintf(REDISKEY_STOCK_BLOCK, symb)
+
+		bkdata, err := proto.Marshal(&bls)
+
+		if err != nil {
+			return
+		}
+		if _, err = c.Do("SET", bkkey, bkdata); err != nil {
+			logging.Error("%v", err.Error())
+			return
+		}
+	}
+	//-------------------------------------------------------处理证券查板块
 	end := time.Now()
 	logging.Info("Update Kline historical data successed, and running time:%v", end.Sub(start))
 }

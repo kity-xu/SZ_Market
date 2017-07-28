@@ -68,9 +68,9 @@ const (
 
 //排序&板块
 const (
-	REDISKEY_SORT_KDAY_H = "hq:sort:%d:%d"    ///<排序结果(顺序，参数：证券组id,字段id) (calc写入)
-	REDISKEY_BLOCK       = "hq:init:bk:%d"    ///板块
-	REDISKEY_ELEMENT     = "hq:init:bk:%d:%d" ///成份股
+	REDISKEY_SORT_KDAY_H = "hq:sort:%d:%d"      ///<排序结果(顺序，参数：证券组id,字段id) (calc写入)
+	REDISKEY_BLOCK       = "hq:init:bk:%d"      ///板块
+	REDISKEY_ELEMENT     = "hq:init:bk:1100:%d" ///成份股
 )
 
 //资金流向
@@ -80,8 +80,11 @@ const (
 
 // 证券集合(板块)
 const (
-	REDISKEY_STOCK_BLOCK      = "hq:bk:%d:*"    ///证券字段排序结果(参数：板块基础id)(calc写入)
-	REDISKEY_STOCK_BLOCK_BASE = "hq:sort:11:%d" ///证券字段排序结果(参数：排序id)(calc写入)
+	REDISKEY_STOCK_BLOCK      = "hq:bk:%d:*"          ///板块信息(参数：板块基础id)(calc写入)
+	REDISKEY_STOCK_BLOCK_BASE = "hq:sort:11:%d"       ///板块信息(参数：排序id)(calc写入)
+	REDISKEY_STOCK_BLOCK_INFO = "hq:init:bk:%d:*"     ///板块信息(calc写入)
+	REDISKEY_STOCK_BLOCK_SHOT = "hq:bk:snap:%d"       ///板块快照信息(参数：板块基础id, 板块id)(calc写入)
+	REDISKEY_STOCK_BLOCK_SID  = "hq:init:bk:stock:%d" ///成分股所属板块
 )
 
 // 资金统计

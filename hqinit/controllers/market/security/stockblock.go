@@ -20,7 +20,7 @@ func UpdateStockBlockSet(cfg *config.AppConfig) {
 		logging.Info("创建文件失败！")
 	}
 	// 生成板块xml文件
-	//servers.NewStockBlockXML().CreateStockblockXML(cfg)
+	servers.NewStockBlockXML().CreateStockblockXML(cfg)
 	// 入redis
 	servers.NewStockBlockRedis().Block()
 }

@@ -76,7 +76,7 @@ func (this *StockBlockXML) CreateStockblockXML(cfg *config.AppConfig) {
 
 			var serv server
 
-			serv.Keycode = "8" + strings.Replace(string(boar2ji.KEYCODE.String), "CN", "", -1)
+			serv.Keycode = "81" + strings.Replace(string(boar2ji.KEYCODE.String), "CN", "", -1)
 			serv.Keyname = boar2ji.KEYNAME.String
 			serv.NPreCPx = "1000"
 

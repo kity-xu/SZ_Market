@@ -65,3 +65,14 @@ func (this *TQ_COMP_BOARDMAP) GetBoardmapInfoList(str string) ([]TQ_COMP_BOARDMA
 		LoadStructs(&boa)
 	return boa, err
 }
+
+// 根据sid查所属板块
+func (this *TQ_COMP_BOARDMAP) GetBoadBySID(sid string) ([]TQ_COMP_BOARDMAP, error) {
+	var boa []TQ_COMP_BOARDMAP
+	_, err := this.Db.Select("*").From("TQ_COMP_BOARDMAP").
+		Where("SECODE='" + sid + "'").
+		Where("BOARDCODE in('1102','1105','1109')").
+		Where("ISVALID=1").
+		LoadStructs(&boa)
+	return boa, err
+}

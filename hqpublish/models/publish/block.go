@@ -23,20 +23,28 @@ import (
 
 //板块排序结构体
 type TagBlockSortInfo struct {
-	NBlockID        int32                   //板块ID
-	SzBlockName     [12]byte                //板块名称
-	NAveChgRate     int32                   //平均涨跌幅*10000
+	NBlockID        int32                   // 板块ID
+	NTypeID         int32                   // 板块所属集合ID 行业 地区 概念
+	NTime           int32                   // 时间 hhmmss
+	NLastPx         uint32                  // 板块指数(*10000)
+	NPreClosePx     uint32                  // 板块指数昨收(*10000)
+	NOpenPx         uint32                  // 开盘价(*10000)
+	NHighPx         uint32                  // 最高价(*10000)
+	NLowPx          uint32                  // 最低价(*10000)
+	NPxChg          int32                   // 涨跌(*10000)
+	NPxAmplitude    int32                   // 振幅(*10000)
+	NAveChgRate     int32                   // 平均涨跌幅(*10000)
 	LlVolume        int64                   ///< 板块总成交量
 	LlValue         int64                   ///< 板块总成交额(*10000)
-	NStockID        int32                   ///领涨股ID
-	NStockChgRate   int32                   ///领涨股涨跌幅(*10000)
+	NStockID        int32                   // 领涨股
+	NStockChgRate   int32                   // 领涨股涨跌幅 (*10000)
+	NNum            int32                   // 成分股票个数
+	NLongNum        int32                   // 上涨家数
+	NShortNum       int32                   // 下跌家数
+	NChgRatio       int32                   // 上涨比例 (*10000)
+	LlValueOfInFlow int64                   ///< 资金净流入额(*10000)
+	SzBlockName     [12]byte                //板块名称
 	SzSName         [SECURITY_NAME_LEN]byte //领涨股名称
-	NNum            int32                   //成分股票个数
-	NChgRatio       int32                   //上涨比例(*10000)
-	NLongNum        int32                   //上涨家数
-	NShortNum       int32                   //下跌家数
-	LlValueOfInFlow int64                   ///<资金流入额(*10000)
-	NLastPx         int32                   ///板块指数（*10000）
 }
 
 type Block struct {
@@ -59,16 +67,32 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 	}
 
 	var blocks []*protocol.TagBlockSortInfo
+	var kvalue = 1100
+	if req.TypeID == 0 {
+		kvalue = 1100
+	} else if req.TypeID == 1 {
+		kvalue = 1109
+	} else if req.TypeID == 2 {
+		kvalue = 1102
+	} else if req.TypeID == 3 {
+		kvalue = 1105
+	}
 
+<<<<<<< HEAD
 	ckey := fmt.Sprintf(this.CacheKey, req.Classify)
+=======
+	ckey := fmt.Sprintf(REDIS_KEY_CACHE_BLOCK, kvalue)
+>>>>>>> 1d79db176363e62de01473b1210ed63b43f538fe
 	data, err := RedisCache.GetBytes(ckey)
 	if err != nil {
+
 		logging.Debug("cache redis is nil...%v", err.Error())
 		if err = this.GetBlockFromeRediaData(req, &blocks); err != nil {
 			logging.Error("%v", err.Error())
 			return nil, err
 		}
 	} else {
+
 		blist := &protocol.BlockList{}
 		if err = proto.Unmarshal(data, blist); err != nil {
 			logging.Error("-----------%v", err.Error())
@@ -76,6 +100,7 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 		}
 
 		dkey := fmt.Sprintf(REDISKEY_SORT_KDAY_H, protocol.HAINA_PUBLISH_SORT_BLOCKID_BK_S, absInt32(req.FieldID))
+
 		dblock, err := RedisStore.GetBytes(dkey)
 		if err != nil {
 			logging.Error("---***%v", err.Error())
@@ -96,19 +121,27 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 				if block.NBlockID == v.SetID {
 					pbk := &protocol.TagBlockSortInfo{
 						NBlockID:        block.NBlockID,
-						SzBlockName:     byte12ToString(block.SzBlockName),
+						NTypeID:         block.NTypeID,
+						NLastPx:         block.NLastPx,
+						NPreClosePx:     block.NPreClosePx,
 						NAveChgRate:     block.NAveChgRate,
 						LlVolume:        block.LlVolume,
 						LlValue:         block.LlValue,
 						NStockID:        block.NStockID,
 						NStockChgRate:   block.NStockChgRate,
-						SzSName:         byte40ToString(block.SzSName),
 						NNum:            block.NNum,
-						NChgRatio:       block.NChgRatio,
 						NLongNum:        block.NLongNum,
 						NShortNum:       block.NShortNum,
+						NChgRatio:       block.NChgRatio,
 						LlValueOfInFlow: block.LlValueOfInFlow,
-						NLastPx:         block.NLastPx,
+						SzBlockName:     byte12ToString(block.SzBlockName),
+						SzSName:         byte40ToString(block.SzSName),
+						NTime:           block.NTime,
+						NOpenPx:         block.NOpenPx,
+						NHighPx:         block.NHighPx,
+						NLowPx:          block.NLowPx,
+						NPxChg:          block.NPxChg,
+						NPxAmplitude:    block.NPxAmplitude,
 					}
 					blocks = append(blocks, pbk)
 					break
@@ -118,6 +151,7 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 	}
 
 	if len(blocks)-1 < int(req.Begin) {
+
 		return nil, INVALID_REQUEST_PARA
 	}
 
@@ -138,18 +172,29 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 	}
 
 	payload := &protocol.PayloadBlock{
-		Classify: req.Classify,
-		FieldID:  req.FieldID,
-		Total:    int32(len(blocks)),
-		Begin:    req.Begin,
-		Num:      int32(len(board)),
-		List:     board,
+		TypeID:  req.TypeID,
+		FieldID: req.FieldID,
+		Total:   int32(len(blocks)),
+		Begin:   req.Begin,
+		Num:     int32(len(board)),
+		List:    board,
 	}
+
 	return payload, nil
 }
 
 func (this *Block) GetBlockFromeRediaData(req *protocol.RequestBlock, blocks *[]*protocol.TagBlockSortInfo) error {
-	key := fmt.Sprintf(this.CacheKey, req.Classify)
+	var kvalue = 1100
+	if req.TypeID == 0 {
+		kvalue = 1100
+	} else if req.TypeID == 1 {
+		kvalue = 1109
+	} else if req.TypeID == 2 {
+		kvalue = 1102
+	} else if req.TypeID == 3 {
+		kvalue = 1105
+	}
+	key := fmt.Sprintf(this.CacheKey, kvalue)
 	data, err := RedisStore.GetBytes(key)
 	if err != nil {
 		return err
@@ -183,6 +228,7 @@ func (this *Block) GetBlockFromeRediaData(req *protocol.RequestBlock, blocks *[]
 			if block.NBlockID == v.SetID {
 				pbk := &protocol.TagBlockSortInfo{
 					NBlockID:        block.NBlockID,
+					NTime:           block.NTime,
 					SzBlockName:     byte12ToString(block.SzBlockName),
 					NAveChgRate:     block.NAveChgRate,
 					LlVolume:        block.LlVolume,
@@ -196,6 +242,13 @@ func (this *Block) GetBlockFromeRediaData(req *protocol.RequestBlock, blocks *[]
 					NShortNum:       block.NShortNum,
 					LlValueOfInFlow: block.LlValueOfInFlow,
 					NLastPx:         block.NLastPx,
+					NTypeID:         block.NTypeID,
+					NPreClosePx:     block.NPreClosePx,
+					NOpenPx:         block.NOpenPx,
+					NHighPx:         block.NHighPx,
+					NLowPx:          block.NLowPx,
+					NPxChg:          block.NPxChg,
+					NPxAmplitude:    block.NPxAmplitude,
 				}
 				*blocks = append(*blocks, pbk)
 
@@ -214,7 +267,11 @@ func (this *Block) GetBlockFromeRediaData(req *protocol.RequestBlock, blocks *[]
 	if err != nil {
 		return err
 	}
+<<<<<<< HEAD
 	ckey := fmt.Sprintf(this.CacheKey, req.Classify)
+=======
+	ckey := fmt.Sprintf(REDIS_KEY_CACHE_BLOCK, kvalue)
+>>>>>>> 1d79db176363e62de01473b1210ed63b43f538fe
 
 	if err = RedisCache.Set(ckey, dCache); err != nil {
 		return err

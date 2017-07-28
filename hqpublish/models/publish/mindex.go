@@ -69,10 +69,10 @@ func (this MIndex) GetMIndexObj() (*pro.PayloadMIndex, error) {
 
 	{ //HotBlockList // 板块排序 热点
 		req := pro.RequestBlock{
-			Classify: 1100,
-			FieldID:  -4006,
-			Begin:    0,
-			Num:      3,
+			TypeID:  1100,
+			FieldID: -4006,
+			Begin:   0,
+			Num:     3,
 		}
 		block, err := NewBlock(REDISKEY_BLOCK).GetBlockReplyByRequest(&req)
 		if err != nil {
