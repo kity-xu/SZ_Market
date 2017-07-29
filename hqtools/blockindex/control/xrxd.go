@@ -105,10 +105,12 @@ func CalcBeforeRightRecoverKList(fgs []*FactorGroup) {
 
 func CalcBeforeRightRecoverKLine(k *protocol.KInfo, factor float64) {
 	//fmt.Println("Before Right calc origin", factor, k)
+	k.NPreCPx = int32(float64(k.NPreCPx) / factor) // 昨收价
 	k.NOpenPx = int32(float64(k.NOpenPx) / factor) // 开盘价
 	k.NHighPx = int32(float64(k.NHighPx) / factor) // 最高价
 	k.NLowPx = int32(float64(k.NLowPx) / factor)   // 最低价
 	k.NLastPx = int32(float64(k.NLastPx) / factor) // 收盘价(最新价)
+
 	//fmt.Println("Before Right calc result", factor, k)
 }
 

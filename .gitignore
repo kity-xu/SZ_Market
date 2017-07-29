@@ -30,3 +30,4 @@ hqinit/bin/
 test/test.go
 hqpublish/debug
 *.zip
+hqtools/blockindex/bin/

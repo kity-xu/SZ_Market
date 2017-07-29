@@ -79,6 +79,7 @@
 		<hmin15>hmin15.dat</hmin15>
 		<hmin30>hmin30.dat</hmin30>
 		<hmin60>hmin60.dat</hmin60>
+		<blockindex>E:/opt/develop/hgs/filestore/blockindex/</blockindex>
 	</fileStore>
 	<filecatalog>
 		<url>http://47.93.102.171/</url>

@@ -8,7 +8,7 @@ import (
 	"os"
 	"strconv"
 
-	"haina.com/market/hqtools/stockindex/finchina"
+	"haina.com/market/hqtools/blockindex/finchina"
 	"haina.com/share/kityxu/utils"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
@@ -99,29 +99,32 @@ func Operation() {
 	}
 
 	for _, b := range block.List { // 板块id
-		logging.Info("板块ID----：%v", b.SetID)
-		if b.SetID == 81150000 {
-			getEleStockByBlockID(b.SetID)
-			break
+		indexTable, err := getBlockIndexByBlockID(b.SetID)
+		if err != nil {
+			return
+		}
+		if err = writeFile(b.SetID, indexTable); err != nil {
+			logging.Error("write file error:%v", err.Error())
+			return
 		}
 	}
 }
 
-//获取某一板块下的成份股
-func getEleStockByBlockID(bid int32) {
+//获取某板块指数
+func getBlockIndexByBlockID(bid int32) (*protocol.KInfoTable, error) {
 	ekey := fmt.Sprintf(REDIS_BLOCK_ELEMENT_ID_LSIT, bid)
 
 	ele, err := RedisStore.GetBytes(ekey)
 	if err != nil {
 		logging.Error("%v", err.Error())
-		return
+		return nil, err
 	}
 
 	element := &protocol.ElementList{}
 
 	if err = proto.Unmarshal(ele, element); err != nil {
 		logging.Error("%v", err.Error())
-		return
+		return nil, err
 	}
 
 	binfos := make(map[int32][]*protocol.KInfo) //该板块该交易日下的所有成分股
@@ -164,51 +167,106 @@ func getEleStockByBlockID(bid int32) {
 			//logging.Debug("len-binfos[bv.NTime]:%v", len(binfos[bv.NTime]))
 		}
 	}
-	blockIndexCoreAlgorithm(bid, binfos, tradDay)
+
+	indexTable := blockIndexCoreAlgorithm(bid, binfos, tradDay) //板块指数
+	if len(indexTable.List) == 0 {
+		return nil, fmt.Errorf("Get block stocks failed...")
+	}
+	return indexTable, nil
 }
 
 //板块指数的核心算法
 //通过板块ID(bid)、该板块成份股以交易日为分割的日K线(bmap)、所有交易日期(tradDay)
-func blockIndexCoreAlgorithm(bid int32, bmap map[int32][]*protocol.KInfo, tradDay []int32) (*protocol.KInfoTable, error) {
+func blockIndexCoreAlgorithm(bid int32, bmap map[int32][]*protocol.KInfo, tradDay []int32) *protocol.KInfoTable {
 	//tradDay 中时间是有序的， 而map无序
 	if len(tradDay) == 0 {
 		logging.Error("获取板块交易日失败")
-		return nil, nil
+		return nil
 	}
 
+	var tmp *protocol.KInfo
+	var intable = &protocol.KInfoTable{}
 	for i, key := range tradDay {
 		//logging.Debug("板块ID:%v---交易日：%v", bid, key)
 		var (
-			toValue  int64   = 0 //计算开盘价的总市值
-			tcValue  int64   = 0 //计算收盘价的总市值
-			yesValue int64   = 0 //昨天总市值
-			orate    float32     //开盘价涨幅
-			crate    float32     //收盘价涨幅
+			//yesValue int64   = 0 //昨天总市值
+			K float64 //系数
 
-			openValue  float32 //指数开盘价
-			closeValue float32 //指数收盘价
+			preCPx int64       // 昨收zhishu
+			openPx int64       // 开盘
+			highPx int32       // 最高
+			lowPx  int32  = -1 // 最低
+			lastPx int64       // 最新
+			volume int64       //成交量 * 10000
+			value  int64       //成交额 * 10000
+			avgPx  uint32      //平均价
+
+			count uint32 //成份股有效个数
 		)
 		for _, kinfo := range bmap[key] {
-			//	logging.Debug("板块ID:%v-----该交易日下的成分股：%v", bid, kinfo)
-			//logging.Debug("板块ID:%v--NUM:%v---kinfo:%v", bid, i, kinfo)
-			curcu := Circu[kinfo.NSID]
-			toValue += curcu * int64(kinfo.NOpenPx) //流通股本*开盘价 累计（总市值）
-			tcValue += curcu * int64(kinfo.NLastPx)
-			yesValue += curcu * int64(kinfo.NAvgPx) //流通股本*昨收价 累计（昨天总市值）
+			//logging.Debug("kinfo.NPreCPx:%v   NOpenPx:%v   NLastPx:%v-----%v", kinfo.NPreCPx, kinfo.NOpenPx, kinfo.NLastPx, circu)
+
+			circu := Circu[kinfo.NSID] //某板块 某日 某成份股的流通盘
+
+			preCPx += circu * int64(kinfo.NPreCPx) //昨收价 累计（昨天总市值）
+			openPx += circu * int64(kinfo.NOpenPx) //开盘价
+			lastPx += circu * int64(kinfo.NLastPx) //收盘价
+			if highPx < kinfo.NHighPx {
+				highPx = kinfo.NHighPx //最高价
+			}
+			if kinfo.NOpenPx != 0 { //该成份股在市交易
+				if lowPx == -1 {
+					lowPx = kinfo.NLowPx
+				} else {
+					if lowPx > kinfo.NLowPx {
+						lowPx = kinfo.NLowPx
+					}
+				}
+				count++
+			}
+
+			avgPx += kinfo.NAvgPx
+			volume += kinfo.LlVolume
+			value += kinfo.LlValue
 		}
-		orate = float32(toValue-yesValue) / float32(yesValue)
-		crate = float32(tcValue-yesValue) / float32(yesValue)
+		opRate := (float64(openPx-preCPx)/float64(preCPx) + float64(1)) //C
+		coRate := (float64(lastPx-preCPx)/float64(preCPx) + float64(1))
+
+		//	logging.Debug("opRate:%v  coRate:%v ", opRate, coRate)
+		var pinjun uint32
+		var precpx int32
 		if i != 0 {
-
+			K = float64(tmp.NLastPx)
+			precpx = int32(K)
 		} else {
-			openValue = 1000 * orate
-			closeValue = 1000 * crate
+			K = float64(1000) * 10000
+			precpx = 1000 * 10000
 		}
 
-		break
+		if count != 0 {
+			pinjun = avgPx / count
+		}
+		//logging.Debug("BID:%v  time:%v K:%v preCPx=%v openPx=%v  highPx=%v  lowPx=%v  lastPx=%v  volume=%v  value=%v  avgPx=%v",
+		//	bid, key, K, preCPx, openPx, highPx, lowPx, lastPx, volume, value, avgPx)
+
+		indexInfo := &protocol.KInfo{
+			NSID:     bid,
+			NTime:    key,
+			NPreCPx:  precpx,
+			NOpenPx:  int32(opRate * K),
+			NHighPx:  highPx * 10000,
+			NLowPx:   lowPx * 10000,
+			NLastPx:  int32(coRate * K),
+			NAvgPx:   pinjun,
+			LlVolume: volume,
+			LlValue:  value,
+		}
+		tmp = indexInfo
+		//logging.Debug("BID:%v  time:%v  indexInfo:%v", bid, key, indexInfo)
+		intable.List = append(intable.List, indexInfo)
 	}
 
-	return nil, nil
+	return intable
 }
 
 //初始化所有证券历史日K线入Map(前复权后)
@@ -311,8 +369,8 @@ func getCirculationFromSecurityStaitc(sid int32) (int64, error) {
  *
  * 返回: error nil:写文件成功  其他：失败
  */
-func WriteFile(bid int32, table []*protocol.KInfo) error {
-	dir := "E:/opt/development/hgs/filestore/block"
+func writeFile(bid int32, table *protocol.KInfoTable) error {
+	dir := "/opt/develop/hgs/filestore/blockindex"
 	filepath := fmt.Sprintf("%s/%d", dir, bid)
 
 	// golang 先创建目录 再创建文件；如果目录不存在，直接全路劲创建文件是会失败的
@@ -320,13 +378,12 @@ func WriteFile(bid int32, table []*protocol.KInfo) error {
 
 	file, err := os.OpenFile(filepath, os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
-		logging.Error("%v", err.Error())
 		return err
 	}
 	defer file.Close()
 
 	buffer := new(bytes.Buffer)
-	for _, v := range table {
+	for _, v := range table.List {
 		if err := binary.Write(buffer, binary.LittleEndian, v); err != nil {
 			return err
 		}
