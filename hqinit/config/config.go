@@ -59,6 +59,7 @@ type FileStore struct {
 	Securitiesplate    string `xml:"securitiesplate"`
 	Sjsxxdbfpath       string `xml:"sjsxxdbfpath"`
 	Cpxxtxtpath        string `xml:"cpxxtxtpath"`
+	BlockKLinePath     string `xml:"blockklinepath"`
 }
 
 type CorsSetting struct {

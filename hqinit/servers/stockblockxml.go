@@ -1,14 +1,19 @@
 package servers
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/xml"
+	"io"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 	"haina.com/market/hqinit/config"
 	"haina.com/market/hqinit/models/fcmysql"
+	tool "haina.com/market/hqtools/printfiletools/util"
 	"haina.com/share/logging"
 	. "haina.com/share/models"
 )
@@ -48,6 +53,22 @@ type SerINfo struct {
 	Name string `xml:"name"`
 }
 
+// 板块K线结构
+type BlockStruct struct {
+	NSID     int32
+	NTime    int32
+	NPreCPx  int32
+	NOpenPx  int32
+	NHighPx  int32
+	NLowPx   int32
+	NLastPx  int32 // K线最新价 收盘价
+	LlVolume int64
+	LlValue  int64
+	NAvgPx   uint32
+}
+
+var BLOCKSIZE int
+
 func (this *StockBlockXML) CreateStockblockXML(cfg *config.AppConfig) {
 	logging.Info("stockblock xml begin ...")
 
@@ -78,7 +99,49 @@ func (this *StockBlockXML) CreateStockblockXML(cfg *config.AppConfig) {
 
 			serv.Keycode = "81" + strings.Replace(string(boar2ji.KEYCODE.String), "CN", "", -1)
 			serv.Keyname = boar2ji.KEYNAME.String
-			serv.NPreCPx = "1000"
+
+			//---------------------------------------------------------处理板块昨收价
+			upath := cfg.File.BlockKLinePath + serv.Keycode
+
+			// 打开文件
+			file, err := tool.OpenFile(upath)
+			if err != nil {
+				serv.NPreCPx = "1000"
+			} else {
+
+				var bkline BlockStruct
+				BLOCKSIZE = binary.Size(&bkline)
+				var bklines []BlockStruct
+				for {
+					des := make([]byte, BLOCKSIZE)
+
+					num, err := tool.ReadFiles(file, des)
+					if err != nil {
+						if err == io.EOF { //读到了文件末尾
+
+							break
+						}
+						logging.Error("Read file error...%v", err.Error())
+						return
+					}
+
+					if num < BLOCKSIZE && 0 < num {
+						logging.Error("Stock struct size error... or hqtools write file error")
+						return
+					}
+					buffer := bytes.NewBuffer(des)
+					binary.Read(buffer, binary.LittleEndian, &bkline)
+					bklines = append(bklines, bkline)
+				}
+				if len(bklines) > 0 {
+					zpre := strconv.Itoa(int(bklines[len(bklines)-1].NLastPx))
+					serv.NPreCPx = zpre
+				}
+
+				file.Close()
+			}
+
+			//----------------------------------------------------------
 
 			// 根据KeyCode查询ComCODE
 			boarinfo, err := fcmysql.NewTQ_COMP_BOARDMAP().GetBoardmapInfoList(boar2ji.KEYCODE.String)
