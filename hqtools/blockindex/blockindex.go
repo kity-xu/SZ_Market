@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	"haina.com/market/hqtools/stockindex/control"
+	"haina.com/market/hqtools/blockindex/control"
 	"haina.com/share/logging"
 )
 

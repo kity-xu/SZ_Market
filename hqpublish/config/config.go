@@ -107,6 +107,8 @@ type FileStore struct {
 	Min15 string `xml:"hmin15"`
 	Min30 string `xml:"hmin30"`
 	Min60 string `xml:"hmin60"`
+
+	Bindex string `xml:"blockindex"`
 }
 
 // 公告附件目录 url地址
