@@ -7,7 +7,7 @@ import (
 type TQ_QT_INDEX struct {
 	TRADEDATE dbr.NullFloat64 `db:"TRADEDATE"` // 交易日期
 	SECODE    dbr.NullFloat64 `db:"SECODE"`    // 证券内码
-	EXCHANGE  dbr.NullFloat64 `db:"EXCHANGE"`  // 交易市场
+	EXCHANGE  dbr.NullString  `db:"EXCHANGE"`  // 交易市场
 	LCLOSE    dbr.NullFloat64 `db:"LCLOSE"`    // 前收盘价
 	TOPEN     dbr.NullFloat64 `db:"TOPEN"`     // 开盘价
 	TCLOSE    dbr.NullFloat64 `db:"TCLOSE"`    // 收盘价
