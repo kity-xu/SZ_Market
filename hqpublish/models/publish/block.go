@@ -68,7 +68,7 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 
 	var blocks []*protocol.TagBlockSortInfo
 	var kvalue = 1100
-	if req.TypeID == 0 {
+	if req.TypeID == 1111 {
 		kvalue = 1100
 	} else if req.TypeID == 1 {
 		kvalue = 1109
@@ -76,6 +76,8 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 		kvalue = 1102
 	} else if req.TypeID == 3 {
 		kvalue = 1105
+	} else {
+		return nil, errors.New("40002")
 	}
 
 	ckey := fmt.Sprintf(REDIS_KEY_CACHE_BLOCK, kvalue)
@@ -181,7 +183,7 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 
 func (this *Block) GetBlockFromeRediaData(req *protocol.RequestBlock, blocks *[]*protocol.TagBlockSortInfo) error {
 	var kvalue = 1100
-	if req.TypeID == 0 {
+	if req.TypeID == 1111 {
 		kvalue = 1100
 	} else if req.TypeID == 1 {
 		kvalue = 1109
