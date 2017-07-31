@@ -136,6 +136,8 @@ func (this *StockBlockXML) CreateStockblockXML(cfg *config.AppConfig) {
 				if len(bklines) > 0 {
 					zpre := strconv.Itoa(int(bklines[len(bklines)-1].NLastPx))
 					serv.NPreCPx = zpre
+				} else {
+					serv.NPreCPx = "1000"
 				}
 
 				file.Close()
