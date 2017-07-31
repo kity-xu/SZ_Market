@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/protobuf/proto"
 	"haina.com/market/hqinit/models/fcmysql"
 	"haina.com/share/logging"
 	. "haina.com/share/models"
+	"haina.com/share/store/redis"
 )
 
 type StockBlockRedis struct {
@@ -39,12 +39,6 @@ func (this *StockBlockRedis) Block() {
 	start := time.Now()
 
 	logging.Info("begin ...")
-	c, errr := redis.Dial("tcp", "127.0.0.1:61380")
-	//c, errr := redis.Dial("tcp", "47.94.16.69:61380")
-	c.Send("AUTH", "8dc40c2c4598ae5a")
-	if errr != nil {
-		logging.Info("redis conn error %v", errr)
-	}
 
 	boar1j, err := fcmysql.NewTQ_COMP_BOARDMAP().GetBoardmapRedis()
 	if err != nil {
@@ -134,17 +128,22 @@ func (this *StockBlockRedis) Block() {
 			return
 		}
 		key := fmt.Sprintf(REDISKEY_BLOCK_BOARD, protocol.REDIS_BLOCK_CLASSIFY_District, bid)
-		if _, err = c.Do("SET", key, data); err != nil {
-			logging.Error("%v", err.Error())
+
+		if err := redis.Set(key, data); err != nil {
+			logging.Fatal("%v", err)
 			return
 		}
+		redis.Do("EXPIREAT", key, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+		redis.Do("EXEC", "")
 
 		//所有板块下成份股
 		keyall := fmt.Sprintf(REDISKEY_BLOCK_BOARD, protocol.REDIS_BLOCK_CLASSIFY_All, bid)
-		if _, err = c.Do("SET", keyall, data); err != nil {
+		if err = redis.Set(keyall, data); err != nil {
 			logging.Error("%v", err.Error())
 			return
 		}
+		redis.Do("EXPIREAT", keyall, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+		redis.Do("EXEC", "")
 
 		//以类型分类的板块
 		board := &protocol.Block{
@@ -161,10 +160,12 @@ func (this *StockBlockRedis) Block() {
 	}
 
 	key1 := fmt.Sprintf(REDISKEY_BLOCK_CLASSIFY, protocol.REDIS_BLOCK_CLASSIFY_District)
-	if _, err = c.Do("SET", key1, data1); err != nil {
+	if err = redis.Set(key1, data1); err != nil {
 		logging.Error("%v", err.Error())
 		return
 	}
+	redis.Do("EXPIREAT", key1, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+	redis.Do("EXEC", "")
 
 	//-------------------------------------------------------------------------------//
 	var boards2 = &protocol.BlockList{}
@@ -208,16 +209,20 @@ func (this *StockBlockRedis) Block() {
 			return
 		}
 		key := fmt.Sprintf(REDISKEY_BLOCK_BOARD, protocol.REDIS_BLOCK_CLASSIFY_Concept, bid)
-		if _, err = c.Do("SET", key, data); err != nil {
+		if err = redis.Set(key, data); err != nil {
 			logging.Error("%v", err.Error())
 			return
 		}
+		redis.Do("EXPIREAT", key, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+		redis.Do("EXEC", "")
 		//所有板块下成份股
 		keyall := fmt.Sprintf(REDISKEY_BLOCK_BOARD, protocol.REDIS_BLOCK_CLASSIFY_All, bid)
-		if _, err = c.Do("SET", keyall, data); err != nil {
+		if err = redis.Set(keyall, data); err != nil {
 			logging.Error("%v", err.Error())
 			return
 		}
+		redis.Do("EXPIREAT", keyall, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+		redis.Do("EXEC", "")
 
 		//以类型分类的板块
 		board := &protocol.Block{
@@ -236,10 +241,12 @@ func (this *StockBlockRedis) Block() {
 
 	key2 := fmt.Sprintf(REDISKEY_BLOCK_CLASSIFY, protocol.REDIS_BLOCK_CLASSIFY_Concept)
 
-	if _, err = c.Do("SET", key2, data2); err != nil {
+	if err = redis.Set(key2, data2); err != nil {
 		logging.Error("%v", err.Error())
 		return
 	}
+	redis.Do("EXPIREAT", key2, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+	redis.Do("EXEC", "")
 	//-------------------------------------------------------------------------------//
 	var boards3 = &protocol.BlockList{}
 	var sid int32
@@ -285,16 +292,20 @@ func (this *StockBlockRedis) Block() {
 			return
 		}
 		key := fmt.Sprintf(REDISKEY_BLOCK_BOARD, protocol.REDIS_BLOCK_CLASSIFY_Industry, bid)
-		if _, err = c.Do("SET", key, data); err != nil {
+		if err = redis.Set(key, data); err != nil {
 			logging.Error("%v", err.Error())
 			return
 		}
+		redis.Do("EXPIREAT", key, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+		redis.Do("EXEC", "")
 		//所有板块下成份股
 		keyall := fmt.Sprintf(REDISKEY_BLOCK_BOARD, protocol.REDIS_BLOCK_CLASSIFY_All, bid)
-		if _, err = c.Do("SET", keyall, data); err != nil {
+		if err = redis.Set(keyall, data); err != nil {
 			logging.Error("%v", err.Error())
 			return
 		}
+		redis.Do("EXPIREAT", keyall, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+		redis.Do("EXEC", "")
 
 		//以类型分类的板块
 		board := &protocol.Block{
@@ -313,11 +324,12 @@ func (this *StockBlockRedis) Block() {
 	}
 
 	key3 := fmt.Sprintf(REDISKEY_BLOCK_CLASSIFY, protocol.REDIS_BLOCK_CLASSIFY_Industry)
-	if _, err = c.Do("SET", key3, data3); err != nil {
+	if err = redis.Set(key3, data3); err != nil {
 		logging.Error("%v", err.Error())
 		return
 	}
-
+	redis.Do("EXPIREAT", key3, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+	redis.Do("EXEC", "")
 	//-------------------------------------------------------------------------------//
 	boards1.List = append(boards1.List, boards2.List...)
 	boards1.List = append(boards1.List, boards3.List...)
@@ -329,11 +341,12 @@ func (this *StockBlockRedis) Block() {
 	}
 
 	key4 := fmt.Sprintf(REDISKEY_BLOCK_CLASSIFY, protocol.REDIS_BLOCK_CLASSIFY_All)
-	if _, err = c.Do("SET", key4, data4); err != nil {
+	if err = redis.Set(key4, data4); err != nil {
 		logging.Error("%v", err.Error())
 		return
 	}
-
+	redis.Do("EXPIREAT", key4, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+	redis.Do("EXEC", "")
 	//-------------------------------------------------------处理证券查板块
 	stockL, err := fcmysql.NewFcSecuNameTab().GetSecuNmList()
 	if err != nil {
@@ -377,10 +390,12 @@ func (this *StockBlockRedis) Block() {
 		if err != nil {
 			return
 		}
-		if _, err = c.Do("SET", bkkey, bkdata); err != nil {
+		if err = redis.Set(bkkey, bkdata); err != nil {
 			logging.Error("%v", err.Error())
 			return
 		}
+		redis.Do("EXPIREAT", bkkey, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+		redis.Do("EXEC", "")
 	}
 	//-------------------------------------------------------处理证券查板块
 	end := time.Now()
@@ -397,4 +412,20 @@ func stringToInt32(str string) int32 {
 
 func int32Tostring(dd int32) string {
 	return strconv.Itoa(int(dd))
+}
+
+func ExpireAt(hour int, min int, sec int) time.Time {
+	now := time.Now()
+	nowhms := now.Hour()*10000 + now.Minute()*100 + now.Second()
+	ttlhms := hour*10000 + min*100 + sec
+	stop := now
+
+	if nowhms >= ttlhms {
+		stop = stop.AddDate(0, 0, 1)
+	}
+
+	local, _ := time.LoadLocation("Local")
+	v := fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", stop.Year(), int(stop.Month()), stop.Day(), hour, min, sec)
+	stop, _ = time.ParseInLocation("2006-01-02 15:04:05", v, local)
+	return stop
 }
