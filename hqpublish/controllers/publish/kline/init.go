@@ -2,6 +2,7 @@ package kline
 
 import (
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
+	"time"
 
 	"haina.com/market/hqpublish/models/publish"
 	"haina.com/share/logging"
@@ -12,6 +13,22 @@ var (
 	Trade_100 int32 = 0
 	Trade_200 int32 = 0
 )
+
+func init() {
+	go func() {
+		for {
+			//f()
+			Trade_100 = 0
+			Trade_200 = 0
+			now := time.Now()
+			// 计算下一个零点
+			next := now.Add(time.Hour * 1)
+			next = time.Date(next.Year(), next.Month(), next.Day(), next.Hour(), 0, 0, 0, next.Location())
+			t := time.NewTimer(next.Sub(now))
+			<-t.C
+		}
+	}()
+}
 
 func initMarketTradeDate() {
 	if Trade_100 != 0 && Trade_200 != 0 {
