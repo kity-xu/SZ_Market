@@ -38,6 +38,7 @@ func (this *HisEventinfo) GetHisevent(req *protocol.RequestHisevent) (*protocol.
 	anncmt, err := fcmysql.NewTQ_OA_ANNTFILE().GetAnntfile(hsi.ANNOUNCEMTID.String)
 	if err != nil {
 		logging.Info("查询公告目录 error %v", err)
+		return nil, err
 	}
 	//if hsi.ANNTEXT.String == "公告内容详见附件" {
 	str := strings.Replace(anncmt.FILELINK.String, `\`, "/", -1)
