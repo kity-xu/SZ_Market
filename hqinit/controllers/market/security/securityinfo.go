@@ -118,6 +118,8 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 		if err := redis.Set(key, data); err != nil {
 			logging.Fatal("%v", err)
 		}
+		redis.Do("EXPIREAT", key, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+		redis.Do("EXEC", "")
 
 		/*************************OVER******************************/
 
@@ -165,6 +167,8 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 	if err := redis.Set(key_sh, data_sh); err != nil {
 		logging.Fatal("%v", err)
 	}
+	redis.Do("EXPIREAT", key_sh, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+	redis.Do("EXEC", "")
 
 	//深圳入redis
 	data_sz, err := proto.Marshal(&sec_sz)
@@ -178,5 +182,7 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 	if err := redis.Set(key_sz, data_sz); err != nil {
 		logging.Fatal("%v", err)
 	}
+	redis.Do("EXPIREAT", key_sz, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+	redis.Do("EXEC", "")
 
 }

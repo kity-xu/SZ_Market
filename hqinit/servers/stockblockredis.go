@@ -59,7 +59,7 @@ func (this *StockBlockRedis) Block() {
 		case DISTRICT: //地区
 			ele := &protocol.Element{
 				NSid:    stringToInt32((v.SECODE.String)),
-				Keyname: v.KEYNAME.String,
+				Keyname: strings.Replace(v.KEYNAME.String, "\u0000", "", -1),
 			}
 			index := stringToInt32("81" + ((v.KEYCODE.String)[2:]))
 
@@ -67,14 +67,14 @@ func (this *StockBlockRedis) Block() {
 		case CONCEPT: //概念
 			ele := &protocol.Element{
 				NSid:    stringToInt32(v.SECODE.String),
-				Keyname: v.KEYNAME.String,
+				Keyname: strings.Replace(v.KEYNAME.String, "\u0000", "", -1),
 			}
 			index := stringToInt32("81" + v.KEYCODE.String)
 			conMap[index] = append(conMap[index], ele)
 		case INDUSTRY: //行业
 			ele := &protocol.Element{
 				NSid:    stringToInt32(v.SECODE.String),
-				Keyname: v.KEYNAME.String,
+				Keyname: strings.Replace(v.KEYNAME.String, "\u0000", "", -1),
 			}
 			index := stringToInt32("81" + v.KEYCODE.String)
 			indusMap[index] = append(indusMap[index], ele)

@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 	"haina.com/market/hqinit/config"
@@ -146,6 +147,8 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 		if err := redis.Set(key, data); err != nil {
 			logging.Fatal("%v", err)
 		}
+		redis.Do("EXPIREAT", key, ExpireAt(8, 30, 0).Unix()) // 缓存Redis this.Key设置自动删除
+		redis.Do("EXEC", "")
 
 		//缓冲二进制数据
 		if err := binary.Write(buffer, binary.LittleEndian, &biny); err != nil {
@@ -165,4 +168,20 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 	}
 
 	defer file.Close()
+}
+
+func ExpireAt(hour int, min int, sec int) time.Time {
+	now := time.Now()
+	nowhms := now.Hour()*10000 + now.Minute()*100 + now.Second()
+	ttlhms := hour*10000 + min*100 + sec
+	stop := now
+
+	if nowhms >= ttlhms {
+		stop = stop.AddDate(0, 0, 1)
+	}
+
+	local, _ := time.LoadLocation("Local")
+	v := fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", stop.Year(), int(stop.Month()), stop.Day(), hour, min, sec)
+	stop, _ = time.ParseInLocation("2006-01-02 15:04:05", v, local)
+	return stop
 }
