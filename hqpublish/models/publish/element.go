@@ -114,7 +114,7 @@ func (this *Element) GetBlockElementReply(req *protocol.RequestElement) (*protoc
 	}
 
 	if req.FieldID < 0 {
-		swapElement(&stocks)
+		reverseStocks(&stocks)
 	}
 
 	var board []*protocol.TagStockSortInfo
@@ -141,13 +141,19 @@ func (this *Element) GetBlockElementReply(req *protocol.RequestElement) (*protoc
 	return payload, nil
 }
 
-func swapElement(table *[]*protocol.TagStockSortInfo) {
-	lengh := len(*table)
+//func swapElement(table *[]*protocol.TagStockSortInfo) {
+//	lengh := len(*table)
 
-	for i := 0; i < lengh; i++ {
-		(*table)[i], (*table)[lengh-i-1] = (*table)[lengh-i-1], (*table)[i]
-		if i == lengh-i-2 || i == lengh-i-3 {
-			break
-		}
+//	for i := 0; i < lengh; i++ {
+//		(*table)[i], (*table)[lengh-i-1] = (*table)[lengh-i-1], (*table)[i]
+//		if i == lengh-i-2 || i == lengh-i-3 {
+//			break
+//		}
+//	}
+//}
+
+func reverseStocks(s *[]*protocol.TagStockSortInfo) {
+	for i, j := 0, len(*s)-1; i < j; i, j = i+1, j-1 {
+		(*s)[i], (*s)[j] = (*s)[j], (*s)[i]
 	}
 }

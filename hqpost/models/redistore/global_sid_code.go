@@ -3,6 +3,7 @@ package redistore
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"haina.com/share/logging"
 
@@ -52,20 +53,18 @@ func NewGlobalSid(key string) *GlobalSid {
 }
 
 func (this *GlobalSid) GetGlobalSidFromRedis() (*[]int32, error) {
-	sids, err := redis.LRange(this.CacheKey, 0, -1)
+	keys, err := redis.Keys(this.CacheKey)
 	if err != nil {
 		return nil, err
 	}
-	if len(sids) < 1 {
-		return nil, fmt.Errorf("sids list is null...")
+	if len(keys) < 1 {
+		return nil, fmt.Errorf("keys list is null...")
 	}
 
 	var NSids []int32
-	for _, sid := range sids {
-		nsid, err := strconv.Atoi(sid)
-		if err != nil { //此处出错误是因为出现了非数字字符
-			return nil, fmt.Errorf("The sid is not numeric types...%s", sid)
-		}
+	for _, key := range keys {
+		sid := strings.Split(key, ":")[3]
+		nsid, _ := strconv.Atoi(sid)
 		NSids = append(NSids, int32(nsid))
 	}
 	return &NSids, nil

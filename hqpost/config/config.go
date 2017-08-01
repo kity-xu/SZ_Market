@@ -61,6 +61,8 @@ type FileStore struct {
 	Min15 string `xml:"hmin15"`
 	Min30 string `xml:"hmin30"`
 	Min60 string `xml:"hmin60"`
+
+	BlockPath string `xml:"blockindex"`
 }
 
 type CorsSetting struct {

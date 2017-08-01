@@ -14,6 +14,7 @@ const (
 //---------------------------------------------------------------------------------
 const (
 	REDISKEY_SECURITY_NAME_ID = "hq:st:name:%d" ///<证券代码(参数：sid) (hq-init写入)
+	REDISKEY_BLOCKINDEX_MIN   = "hq:st:min:%s"  ///板块指数快照
 )
 
 var (

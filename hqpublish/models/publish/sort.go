@@ -183,7 +183,7 @@ func (this *Sort) GetPayloadSort(req *protocol.RequestSort) (*protocol.PayloadSo
 				return nil, err
 			}
 
-			swapSort(original) //逆序排序
+			reverseSort(original) //逆序排序
 			//入 redis cache
 			data, err := proto.Marshal(original)
 			if err != nil {
@@ -279,15 +279,10 @@ func byte12ToString(src [12]byte) string {
 	return string(ss)
 }
 
-//首尾交换未知
-func swapSort(table *protocol.RedisSortTable) {
-	lengh := len(table.List)
-
-	for i := 0; i < lengh; i++ {
-		table.List[i], table.List[lengh-i-1] = table.List[lengh-i-1], table.List[i]
-		if i == lengh-i-2 || i == lengh-i-3 {
-			break
-		}
+//翻转排序结果
+func reverseSort(s *protocol.RedisSortTable) {
+	for i, j := 0, len(s.List)-1; i < j; i, j = i+1, j-1 {
+		s.List[i], s.List[j] = s.List[j], s.List[i]
 	}
 }
 

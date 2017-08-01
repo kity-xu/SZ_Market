@@ -111,7 +111,7 @@ func (this *UserDefine) GetSecurityUserdefine(req *protocol.RequestUserdef) (*pr
 		return nil, err
 	}
 	if req.FieldID < 0 {
-		swapSort(userdef)
+		reverseSort(userdef)
 	}
 
 	payload := &protocol.PayloadUserdef{

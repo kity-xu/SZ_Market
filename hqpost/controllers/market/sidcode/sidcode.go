@@ -6,7 +6,7 @@ import (
 )
 
 func GetSecurityTable() (*[]int32, error) {
-	codes, err := redistore.NewGlobalSid("hq:st:nsid").GetGlobalSidFromRedis()
+	codes, err := redistore.NewGlobalSid("hq:st:name:*").GetGlobalSidFromRedis()
 	if err != nil {
 		logging.Error("%v", err.Error())
 		return nil, err

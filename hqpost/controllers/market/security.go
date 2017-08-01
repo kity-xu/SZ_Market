@@ -6,6 +6,7 @@ import (
 	"haina.com/market/hqpost/controllers/market/sidcode"
 
 	. "haina.com/market/hqpost/controllers"
+	"haina.com/market/hqpost/controllers/market/bline"
 	"haina.com/market/hqpost/controllers/market/kline"
 	"haina.com/market/hqpost/controllers/market/minline"
 
@@ -25,7 +26,8 @@ func Update(cfg *config.AppConfig) {
 	}
 
 	security := kline.NewSecurityKLine(sids, cfg)
-	//--------------------------------------------------/
+
+	//---------------------日周月年线---------------------/
 	//K线
 	security.DayLine()
 	security.WeekLine()
@@ -41,6 +43,11 @@ func Update(cfg *config.AppConfig) {
 	min.HMinLine_15()
 	min.HMinLine_30()
 	min.HMinLine_60()
+	//--------------------------------------------------/
+
+	//----------------------板块指数线----------------------/
+	bline.NewBlockIndex().UpdateBlockIndexDayLine(cfg)
+	//--------------------------------------------------/
 
 	end := time.Now()
 	logging.Info("Update Kline historical data successed, and running time:%v", end.Sub(start))

@@ -35,7 +35,7 @@ func RegPublish(rg *gin.RouterGroup) {
 	//rg.POST("/element", publish.NewStockElement().POST) // 后期会废弃此接口
 
 	//板块指数历史K线
-	rg.POST("/blockindex", publish.NewBlockIndex().POST)
+	rg.POST("/block/index", publish.NewBlockIndex().POST)
 
 	//A股市场代码表、市场代码表、证券基本信息、股票静态数据
 	rg.GET("/sntab/astock", security.NewSecurityTable().GET) //默认pb模式
