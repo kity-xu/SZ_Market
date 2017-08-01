@@ -36,13 +36,13 @@ func (this *TQ_SK_ANNOUNCEMT) GetNoticeInfo(ccode string, num int32) ([]*TQ_SK_A
 
 	var bulid *dbr.SelectBuilder
 	if num != 0 {
-		bulid = this.Db.Select("ID,ANNTYPE,DECLAREDATE,ANNTITLE,LEVEL1").
+		bulid = this.Db.Select("ID,ANNOUNCEMTID,ANNTYPE,DECLAREDATE,ANNTITLE,LEVEL1").
 			From(this.TableName).
 			Where("COMPCODE='" + ccode + "'").
 			Where("ISVALID=1").
 			OrderBy("DECLAREDATE desc").Limit(uint64(num))
 	} else {
-		bulid = this.Db.Select("ID,ANNTYPE,DECLAREDATE,ANNTITLE,LEVEL1").
+		bulid = this.Db.Select("ID,ANNOUNCEMTID,ANNTYPE,DECLAREDATE,ANNTITLE,LEVEL1").
 			From(this.TableName).
 			Where("COMPCODE='" + ccode + "'").
 			Where("ISVALID=1").
@@ -60,7 +60,7 @@ func (this *TQ_SK_ANNOUNCEMT) GetNoticeInfo(ccode string, num int32) ([]*TQ_SK_A
 
 func (this *TQ_SK_ANNOUNCEMT) GetHisEvent(heid string) (*TQ_SK_ANNOUNCEMT, error) {
 	var tsa TQ_SK_ANNOUNCEMT
-	bulid := this.Db.Select("ID,ANNTYPE,DECLAREDATE,ANNTITLE,ANNTEXT,LEVEL1").
+	bulid := this.Db.Select("ID,ANNOUNCEMTID,ANNTYPE,DECLAREDATE,ANNTITLE,ANNTEXT,LEVEL1").
 		From(this.TableName).
 		Where("ID='" + heid + "'").
 		Where("ISVALID=1")
