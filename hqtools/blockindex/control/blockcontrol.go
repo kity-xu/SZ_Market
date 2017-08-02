@@ -63,7 +63,7 @@ func initRedis() {
 	//		return err
 	//	}
 	//	return nil
-	RedisStore = redis.NewRedisPool("47.94.16.69:61380", "0", "8dc40c2c4598ae5a", 3)
+	RedisStore = redis.NewRedisPool("127.0.0.1:61380", "0", "8dc40c2c4598ae5a", 3)
 }
 
 func initMysql() error {
@@ -254,8 +254,8 @@ func blockIndexCoreAlgorithm(bid int32, bmap map[int32][]*protocol.KInfo, tradDa
 			NTime:    key,
 			NPreCPx:  precpx,
 			NOpenPx:  int32(opRate * K),
-			NHighPx:  highPx * 10000,
-			NLowPx:   lowPx * 10000,
+			NHighPx:  highPx,
+			NLowPx:   lowPx,
 			NLastPx:  int32(coRate * K),
 			NAvgPx:   pinjun,
 			LlVolume: volume,

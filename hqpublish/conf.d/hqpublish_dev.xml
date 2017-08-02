@@ -47,6 +47,12 @@
         <driverName>mysql</driverName>
         <dataSource>finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8</dataSource>
     </database>
+	
+	<dbMicroLink>
+		<driverName>mysql</driverName>  <!-- 米领database -->
+        <dataSource>web:!!!Passw0rd@tcp(123.56.30.141:3306)/haina_major?charset=utf8</dataSource>
+	</dbMicroLink>
+	
     <redisStore>
 		<!--
 			47.93.102.171   ali_pro   # bj 生产 北京大兴
@@ -61,11 +67,19 @@
         <timeout>3</timeout> 
     </redisStore>
     <redisCache>
-         <addr>47.94.16.69:60000</addr>  
+        <addr>47.94.16.69:60000</addr>  
         <auth>T_vYzoqa0Qn7Pa4T</auth>
         <db>7</db>
         <timeout>3</timeout> 
     </redisCache>
+	
+	<redisMicroLink>  <!-- 米领redis -->
+		<addr>123.56.30.141:6379</addr>
+        <auth>8zsKY0aiUZpubczG</auth>
+        <db>1</db>
+        <timeout>3</timeout> 
+	</redisMicroLink>
+	
 	<fileStore>
 		<path>E:/opt/develop/store/kline</path>
 		<day>dk.dat</day>

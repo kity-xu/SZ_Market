@@ -75,8 +75,14 @@ func RegPublish(rg *gin.RouterGroup) {
 	// 复权因子
 	rg.POST("/factor", publish.NewFactor().POST)
 	//自选股
-	rg.POST("/userdef", publish.NewUserDefine().POST)
+	rg.POST("/optstock", publish.NewOptionalStocks().POST)
 
 	// 移动端首页
 	rg.GET("/mindex", publish.NewMIndex().GET)
+
+	// 更新会员自选股
+	rg.POST("/optstock/put", publish.NewOptionalSids().POST)
+
+	// 查询会员自选股
+	rg.GET("/optstock/get", publish.NewOptionalSids().GET)
 }

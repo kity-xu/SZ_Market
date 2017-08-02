@@ -78,21 +78,23 @@ type LogServer struct {
 }
 
 type AppConfig struct {
-	File       FileStore      `xml:"fileStore"`
-	TTL        CacheTTL       `xml:"cacheTTL"`
-	AccessKeys AccessKeys     `xml:"accessKeys"`
-	Cors       CorsSetting    `xml:"cors"`
-	Db         Database       `xml:"database"`
-	Email      EmailSetting   `xml:"emailSetting"`
-	Mns        MnsSetting     `xml:"mns"`
-	Mongo      MongoStore     `xml:"mongoStore"`
-	Redis      RedisStore     `xml:"redisStore"`
-	RedisCache RedisStore     `xml:"redisCache"`
-	Serve      ListenAndServe `xml:"listenAndServe"`
-	Session    SessionSetting `xml:"session"`
-	Settings   AppSettings    `xml:"appSettings"`
-	Log        LogServer      `xml:"logServer"`
-	Catalog    FileCatalog    `xml:"filecatalog"`
+	File           FileStore      `xml:"fileStore"`
+	TTL            CacheTTL       `xml:"cacheTTL"`
+	AccessKeys     AccessKeys     `xml:"accessKeys"`
+	Cors           CorsSetting    `xml:"cors"`
+	Db             Database       `xml:"database"`
+	DbMicroLink    Database       `xml:"dbMicroLink"` //米领后台
+	Email          EmailSetting   `xml:"emailSetting"`
+	Mns            MnsSetting     `xml:"mns"`
+	Mongo          MongoStore     `xml:"mongoStore"`
+	Redis          RedisStore     `xml:"redisStore"`
+	RedisCache     RedisStore     `xml:"redisCache"`
+	RedisMicroLink RedisStore     `xml:"redisMicroLink"` //米领后台
+	Serve          ListenAndServe `xml:"listenAndServe"`
+	Session        SessionSetting `xml:"session"`
+	Settings       AppSettings    `xml:"appSettings"`
+	Log            LogServer      `xml:"logServer"`
+	Catalog        FileCatalog    `xml:"filecatalog"`
 }
 type FileStore struct {
 	Path  string `xml:"path"`

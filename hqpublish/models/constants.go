@@ -1,5 +1,9 @@
 package models
 
+import (
+	"errors"
+)
+
 // App Setting
 //---------------------------------------------------------------------------------
 const (
@@ -9,11 +13,26 @@ const (
 )
 
 const (
-	CONTEXT_FORMAT = "format"   // 数据格式
-	CONTEXt_MARKET = "marketID" //市场ID
-	CONTEXT_SNID   = "snid"     // snid
+	CONTEXT_FORMAT = "format"       // 数据格式
+	ACCESS_TOKEN   = "access_token" // access_token
+	CONTEXt_MARKET = "marketID"     // 市场ID
+	CONTEXT_SNID   = "snid"         // snid
 )
 
 const (
 	REDISKEY_HQPOST_EXECUTED_TIME = "hq:post:time:executed" ///hqpost 上次执行完毕时的时间戳
+)
+
+//MicroLink 数据库（123.56.30.141）表名
+const (
+	TABLE_HN_OPT_STOCK = "hn_opt_stock" //自选股
+)
+
+//MicroLink Redis 键值
+const (
+	REDIS_ACCESS_TOKEN_MEMBERID = "m:token:%s" //会员ID
+)
+
+var (
+	REDIS_MEMBERID_NOT_FIND = errors.New("The member id is not found")
 )

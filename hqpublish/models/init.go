@@ -23,10 +23,17 @@ func init() {
 		return
 	}
 
+	//初始化 米领 MySQL 配置
+	err = models.InitMicrolink(cfg.DbMicroLink.DriverName, cfg.DbMicroLink.DataSource)
+	if err != nil {
+		logging.Fatal(err)
+		return
+	}
+
 	FStore = &cfg.File
 	TTL = &cfg.TTL
 	FCat = &cfg.Catalog
 
 	// 初始化 Redis 配置
-	InitRedisFrame(&cfg.RedisCache, &cfg.Redis)
+	InitRedisFrame(&cfg.RedisCache, &cfg.Redis, &cfg.RedisMicroLink)
 }

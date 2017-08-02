@@ -16,12 +16,12 @@ import (
 	. "haina.com/market/hqpublish/models"
 )
 
-type UserDefine struct {
+type OptionalStocks struct {
 	Model `db:"-"`
 }
 
-func NewUserDefine(redis_key string) *UserDefine {
-	return &UserDefine{
+func NewOptionalStocks(redis_key string) *OptionalStocks {
+	return &OptionalStocks{
 		Model: Model{
 			CacheKey: redis_key,
 		},
@@ -30,7 +30,7 @@ func NewUserDefine(redis_key string) *UserDefine {
 
 //ret := uint32(bs[0]) | uint32(bs[1])<<8 | uint32(bs[2])<<16 | uint32(bs[3])<<24 //小端
 // binary.LittleEndian.Uint32(bs)
-func (this *UserDefine) GetSortByFieldID(req *protocol.RequestUserdef) (*protocol.RedisSortTable, error) {
+func (this *OptionalStocks) GetSortByFieldID(req *protocol.RequestUserdef) (*protocol.RedisSortTable, error) {
 	key := fmt.Sprintf(this.CacheKey, 2, absInt32(req.FieldID)) //个股
 
 	bdata, err := RedisStore.GetBytes(key)
@@ -41,15 +41,15 @@ func (this *UserDefine) GetSortByFieldID(req *protocol.RequestUserdef) (*protoco
 		return nil, ERROR_REDIS_DATE_NULL
 	}
 
-	//	ikey := fmt.Sprintf(this.CacheKey, 1, absInt32(req.FieldID)) //指数
-	//	idata, err := RedisStore.GetBytes(ikey)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	if len(idata) == 0 {
-	//		return nil, ERROR_REDIS_DATE_NULL
-	//	}
-	//	bdata = append(bdata, idata...) // 个股+指数
+	ikey := fmt.Sprintf(this.CacheKey, 1, absInt32(req.FieldID)) //指数
+	idata, err := RedisStore.GetBytes(ikey)
+	if err != nil {
+		return nil, err
+	}
+	if len(idata) == 0 {
+		return nil, ERROR_REDIS_DATE_NULL
+	}
+	bdata = append(bdata, idata...) // 个股+指数
 
 	var table = &protocol.RedisSortTable{}
 	var sortSize = &TagStockSortInfo{}
@@ -100,7 +100,7 @@ func (this *UserDefine) GetSortByFieldID(req *protocol.RequestUserdef) (*protoco
 	return table, nil
 }
 
-func (this *UserDefine) GetSecurityUserdefine(req *protocol.RequestUserdef) (*protocol.PayloadUserdef, error) {
+func (this *OptionalStocks) GetSecurityOptStocks(req *protocol.RequestUserdef) (*protocol.PayloadUserdef, error) {
 	table, err := this.GetSortByFieldID(req)
 	if err != nil {
 		return nil, err

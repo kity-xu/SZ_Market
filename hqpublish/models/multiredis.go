@@ -15,6 +15,7 @@ var _ = logging.Info
 var (
 	RedisStore *redis.RedisPool // 数据源   存放着从数据源生产者产生的数据(pb,bin)
 	RedisCache *redis.RedisPool // 应答缓存 缓存PB,json,bin 等直接返回给客户端的内容
+	RedisML    *redis.RedisPool // 米领后台redis
 )
 
 func NewRedisPool(r *config.RedisStore) *redis.RedisPool {
@@ -23,12 +24,13 @@ func NewRedisPool(r *config.RedisStore) *redis.RedisPool {
 
 // 初始化 Redis 配置(应答缓存Cache + 数据Store 架构)
 //   根据架构设计进行灵活调配
-func InitRedisFrame(response_cache *config.RedisStore, data_source *config.RedisStore) {
-	if response_cache == nil || data_source == nil {
+func InitRedisFrame(response_cache *config.RedisStore, data_source *config.RedisStore, microlink *config.RedisStore) {
+	if response_cache == nil || data_source == nil || microlink == nil {
 		logging.Fatal(" InitRedisFrame failed !!!")
 	}
 	RedisCache = NewRedisPool(response_cache)
 	RedisStore = NewRedisPool(data_source)
+	RedisML = NewRedisPool(microlink)
 }
 
 //------------------------------------------------------------------------------

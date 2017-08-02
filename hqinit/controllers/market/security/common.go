@@ -44,9 +44,9 @@ const (
 //证券类型
 const (
 	///第0字节(注意区分证券代码中的市场定义）
-	SECURITY_TYPE_UNKNOW    = 0x00 ///< 未定义
-	SECURITY_TYPE_MARKET_SH = '1'  ///< 沪市
-	SECURITY_TYPE_MARKET_SZ = '2'  ///< 深市
+	SECURITY_TYPE_UNKNOW    = '-' ///< 未定义
+	SECURITY_TYPE_MARKET_SH = '1' ///< 沪市
+	SECURITY_TYPE_MARKET_SZ = '2' ///< 深市
 	///证券类型第1字节
 	SECURITY_TYPE_INDEX   = 'I' ///< 指数
 	SECURITY_TYPE_STOCK   = 'S' ///< 股票
@@ -91,14 +91,14 @@ const (
 ///证券状态 (Security::Status) char[4]
 const (
 	/// 第0位
-	SECURITY_STATUS_UNKNOW = 0x00 ///< 未定义
-	SECURITY_STATUS_NM     = '0'  ///< 正常(normal)
-	SECURITY_STATUS_FDL    = 'N'  ///< 上市首日(First day of listing)
-	SECURITY_STATUS_FDR    = 'R'  ///< 恢复上市首日(First day of resumption of listing)
-	SECURITY_STATUS_DL     = 'D'  ///< 退市(Delisting)
-	SECURITY_STATUS_SP     = 'S'  ///< 停牌(suspended)
-	SECURITY_STATUS_SL     = 'L'  ///< 长期停牌
-	SECURITY_STATUS_TSP    = 'T'  ///< 临时停牌
+	SECURITY_STATUS_UNKNOW = '-' ///< 未定义
+	SECURITY_STATUS_NM     = '0' ///< 正常(normal)
+	SECURITY_STATUS_FDL    = 'N' ///< 上市首日(First day of listing)
+	SECURITY_STATUS_FDR    = 'R' ///< 恢复上市首日(First day of resumption of listing)
+	SECURITY_STATUS_DL     = 'D' ///< 退市(Delisting)
+	SECURITY_STATUS_SP     = 'S' ///< 停牌(suspended)
+	SECURITY_STATUS_SL     = 'L' ///< 长期停牌
+	SECURITY_STATUS_TSP    = 'T' ///< 临时停牌
 	/// 第1位
 	SECURITY_STATUS_ER  = 'R' ///< 除权(ex-rights)
 	SECURITY_STATUS_ED  = 'D' ///< 除息(ex-divid)
@@ -192,8 +192,8 @@ func HainaSecurityStatus(status string) (string, error) {
 	} else {
 		return "", errors.New("其他未知状态...")
 	}
-	result[1] = '-' // 考虑到用SECURITY_STATUS_UNKNOW（0）来代替的话，无占位符，没办法区分
-	result[2] = '-' // "-" 表示尚不知该状态如何
-	result[3] = '-'
+	result[1] = SECURITY_STATUS_UNKNOW // 考虑到用SECURITY_STATUS_UNKNOW（0）来代替的话，无占位符，没办法区分
+	result[2] = SECURITY_STATUS_UNKNOW // "-" 表示尚不知该状态如何
+	result[3] = SECURITY_STATUS_UNKNOW
 	return string(result), nil
 }

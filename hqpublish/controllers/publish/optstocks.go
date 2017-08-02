@@ -13,13 +13,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserDefine struct{}
+type OptionalStocks struct{}
 
-func NewUserDefine() *UserDefine {
-	return &UserDefine{}
+func NewOptionalStocks() *OptionalStocks {
+	return &OptionalStocks{}
 }
 
-func (this *UserDefine) POST(c *gin.Context) {
+func (this *OptionalStocks) POST(c *gin.Context) {
 	replayfmt := c.Query(models.CONTEXT_FORMAT)
 	if len(replayfmt) == 0 {
 		replayfmt = "pb" // 默认
@@ -35,7 +35,7 @@ func (this *UserDefine) POST(c *gin.Context) {
 	}
 }
 
-func (this *UserDefine) PostJson(c *gin.Context) {
+func (this *OptionalStocks) PostJson(c *gin.Context) {
 	var req protocol.RequestUserdef
 	code, err := RecvAndUnmarshalJson(c, 1024, &req)
 	if err != nil {
@@ -45,7 +45,7 @@ func (this *UserDefine) PostJson(c *gin.Context) {
 	}
 	logging.Info("Request %+v", req)
 
-	reply, err := publish.NewUserDefine(publish.REDISKEY_SORT_KDAY_H).GetSecurityUserdefine(&req)
+	reply, err := publish.NewOptionalStocks(publish.REDISKEY_SORT_KDAY_H).GetSecurityOptStocks(&req)
 	if err != nil {
 		logging.Error("%v", err)
 		WriteJson(c, 40002, nil)
@@ -54,7 +54,7 @@ func (this *UserDefine) PostJson(c *gin.Context) {
 	WriteJson(c, 200, reply)
 }
 
-func (this *UserDefine) PostPB(c *gin.Context) {
+func (this *OptionalStocks) PostPB(c *gin.Context) {
 	var req protocol.RequestUserdef
 	code, err := RecvAndUnmarshalPB(c, 1024, &req)
 	if err != nil {
@@ -64,7 +64,7 @@ func (this *UserDefine) PostPB(c *gin.Context) {
 	}
 	logging.Info("Request %+v", req)
 
-	reply, err := publish.NewUserDefine(publish.REDISKEY_SORT_KDAY_H).GetSecurityUserdefine(&req)
+	reply, err := publish.NewOptionalStocks(publish.REDISKEY_SORT_KDAY_H).GetSecurityOptStocks(&req)
 	if err != nil {
 		logging.Error("%v", err.Error())
 		WriteDataErrCode(c, 40002)
