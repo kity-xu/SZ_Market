@@ -86,7 +86,7 @@ func (this *OptionalSids) PostPB(c *gin.Context) {
 		WriteDataErrCode(c, 40002)
 		return
 	}
-	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_USERDEFSEC, nil)
+	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_OPTSTOCK_GET, nil)
 }
 
 func (this *OptionalSids) GetJson(c *gin.Context) {
@@ -110,5 +110,5 @@ func (this *OptionalSids) GetPB(c *gin.Context) {
 		WriteJson(c, 40002, nil)
 		return
 	}
-	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_USERDEFSEC, sidList)
+	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_OPTSTOCK_GET, sidList)
 }

@@ -44,11 +44,8 @@ func (this *MOptSids) SelectAllSidsByAccessToken(access_token string) (*protocol
 	}
 
 	var sidList []int32
-	sids := strings.Split(optstocks, " ")
+	sids := strings.Split(optstocks, ",")
 	for _, sid := range sids {
-		if sid == "" {
-			continue
-		}
 		nid, e := strconv.Atoi(sid)
 		if e != nil {
 			return nil, e
@@ -73,9 +70,11 @@ func (this *MOptSids) OperationStockSids(req *protocol.RequestOptstockPut, acces
 	}
 	var sids string
 	for _, v := range req.Sids {
-		sids += (strconv.Itoa(int(v)) + " ")
+		sids += ("," + strconv.Itoa(int(v)))
 	}
-
+	if len(sids) > 2 {
+		sids = sids[1:]
+	}
 	params := map[string]interface{}{
 		"MemberID": mid,
 		"OptStock": sids,
