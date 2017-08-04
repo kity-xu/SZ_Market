@@ -156,12 +156,13 @@ func (this *TQ_FIN_PROINDICDATA) GetListByEnddates(scode string, market string, 
 // 该处是财务数据部分字段
 
 type F10_MB_PROINDICDATA struct {
-	Model     `db:"-" `
-	ROEAVG    dbr.NullFloat64 //净资产收益率_平均(%)
-	ASSLIABRT dbr.NullFloat64 //资产负债率(%)
-	CRPS      dbr.NullFloat64 //每股资本公积金(元)
-	UPPS      dbr.NullFloat64 //每股未分配利润(元)
-	ENDDATE   dbr.NullString  //截止时间
+	Model `db:"-" `
+	//OEAVG     dbr.NullFloat64 //净资产收益率_平均(%)
+	ROEDILUTED dbr.NullFloat64 //摊薄净资产收益率
+	ASSLIABRT  dbr.NullFloat64 //资产负债率(%)
+	CRPS       dbr.NullFloat64 //每股资本公积金(元)
+	UPPS       dbr.NullFloat64 //每股未分配利润(元)
+	ENDDATE    dbr.NullString  //截止时间
 }
 
 func NewF10_MB_PROINDICDATA() *F10_MB_PROINDICDATA {

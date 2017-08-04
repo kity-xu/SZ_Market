@@ -145,13 +145,12 @@ func (this *CompInfo) GetCompInfo(compCode string) (*CompInfo, error) {
 func (this *CompInfo) GetCompTrade(compCode string) (string, error) {
 	comp := NewTQ_COMP_INDUSTRY()
 
-	exps := map[string]interface{}{
-		"COMPCODE=?":     compCode,
-		"INDCLASSCODE=?": 2107, //申万行业分类(2011新版)
-		"ISVALID=?":      1,
-	}
 	builder := comp.Db.Select("*").From(comp.TableName)
-	err := comp.SelectWhere(builder, exps).Limit(1).LoadStruct(comp)
+	err := builder.Where("COMPCODE=?", compCode).
+		Where("ISVALID=1").
+		Where("INDCLASSCODE=2107 or INDCLASSCODE=2214 or INDCLASSCODE=2016").
+		Limit(1).
+		LoadStruct(comp)
 	if err != nil {
 		logging.Error("%s", err.Error())
 		return "", err

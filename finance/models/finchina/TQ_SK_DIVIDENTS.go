@@ -72,6 +72,9 @@ type DividendRO struct {
 	models.Model       `db:"-" `
 	DIVIYEAR           dbr.NullString  //年度
 	PRETAXCASHMAXDVCNY dbr.NullFloat64 //分红
+	PROBONUSRT         dbr.NullFloat64 //送股比例(10:X)
+	TRANADDRT          dbr.NullFloat64 //转增比例(10:X)
+	BONUSRT            dbr.NullFloat64 //赠股比例(10:X)
 	EQURECORDDATE      dbr.NullString  //股权登记日
 }
 
@@ -90,10 +93,11 @@ func (this *DividendRO) GetDividendRO(compCode string) (*[]DividendRO, error) {
 		"COMPCODE=?":    compCode,
 		"DATETYPE=?":    "4",
 		"GRAOBJTYPE!=?": "99",
+		"CUR=?":         "CNY",
 		"ISVALID=?":     1,
 	}
 	builder := this.Db.Select("*").From(this.TableName)
-	_, err := this.SelectWhere(builder, exps).OrderBy("DIVIYEAR desc").Limit(5).LoadStructs(&divs)
+	_, err := this.SelectWhere(builder, exps).OrderBy("DIVIYEAR desc").Limit(10).LoadStructs(&divs)
 	if err != nil {
 		return nil, err
 	}

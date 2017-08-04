@@ -102,10 +102,10 @@ func (this *TQ_FIN_PROINCSTATEMENTNEW) GetList(scode string, market string, repo
 // 该处是财务数据
 
 type F10_MB_PROINCSTATEMENTNEW struct {
-	Model       `db:"-" `
-	MAINBIZINCO dbr.NullFloat64 //主营业务收入（元）
-	BASICEPS    dbr.NullFloat64 //基本每股收益（元）
-	NETPROFIT   dbr.NullFloat64 //净利润（元）
+	Model    `db:"-" `
+	BIZINCO  dbr.NullFloat64 //营业收入（元）
+	BASICEPS dbr.NullFloat64 //基本每股收益（元）
+	PARENETP dbr.NullFloat64 //归属净利润（元）
 }
 
 func NewF10_MB_PROINCSTATEMENTNEW() *F10_MB_PROINCSTATEMENTNEW {
@@ -117,16 +117,18 @@ func NewF10_MB_PROINCSTATEMENTNEW() *F10_MB_PROINCSTATEMENTNEW {
 	}
 }
 
-func (this *F10_MB_PROINCSTATEMENTNEW) GetF10_MB_PROINCSTATEMENTNEW(compCode string) (*F10_MB_PROINCSTATEMENTNEW, error) {
+func (this *F10_MB_PROINCSTATEMENTNEW) GetF10_MB_PROINCSTATEMENTNEW(compCode string) ([]F10_MB_PROINCSTATEMENTNEW, error) {
+	var res []F10_MB_PROINCSTATEMENTNEW
+
 	exps := map[string]interface{}{
 		"COMPCODE=?":   compCode,
 		"REPORTTYPE=?": 1,
 		"ISVALID=?":    1,
 	}
 	builder := this.Db.Select("*").From(this.TableName).OrderBy("ENDDATE desc") //变动起始日
-	err := this.SelectWhere(builder, exps).Limit(1).LoadStruct(this)
+	err := this.SelectWhere(builder, exps).Limit(5).LoadStruct(&res)
 	if err != nil {
-		return this, err
+		return nil, err
 	}
-	return this, nil
+	return res, nil
 }

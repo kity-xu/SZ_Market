@@ -82,6 +82,7 @@ type ShareHoldersTop10 struct {
 	SHHOLDERNAME dbr.NullString  //股东名称
 	RANK         dbr.NullInt64   //股东排名
 	HOLDERRTO    dbr.NullFloat64 //持股数量占总股本比例
+	ENDDATE      dbr.NullString  //截止日期
 }
 
 func NewShareHoldersTop10() *ShareHoldersTop10 {
@@ -93,14 +94,15 @@ func NewShareHoldersTop10() *ShareHoldersTop10 {
 	}
 }
 
-func (this *ShareHoldersTop10) GetShareHoldersTop10(compCode string) (*[]ShareHoldersTop10, error) {
+func (this *ShareHoldersTop10) GetShareHoldersTop10(compCode, diviTime string) (*[]ShareHoldersTop10, error) {
 	var top10 []ShareHoldersTop10
 	exps := map[string]interface{}{
 		"COMPCODE=?": compCode,
+		"ENDDATE=?":  diviTime,
 		"ISVALID=?":  1,
 	}
-	builder := this.Db.Select("*").From(this.TableName).OrderBy("PUBLISHDATE desc") //变动起始日
-	_, err := this.SelectWhere(builder, exps).Limit(10).LoadStructs(&top10)
+	builder := this.Db.Select("*").From(this.TableName).OrderBy("ENDDATE desc") //变动起始日
+	_, err := this.SelectWhere(builder, exps).LoadStructs(&top10)
 	if err != nil {
 		return nil, err
 	}

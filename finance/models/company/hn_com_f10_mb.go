@@ -36,9 +36,12 @@ type F10_Dividend_Ro struct {
 }
 
 type DividendRo struct {
-	Date     string  `json:"Date"`     //年度
-	Dividend float64 `json:"Dividend"` //分红（元，税前）
-	RegDate  string  `json:"RegDate"`  //股权登记日
+	Date      string  `json:"Date"`      //年度
+	Dividend  float64 `json:"Dividend"`  //分红（元，税前）
+	PRO       float64 `json:"PRO"`       //送股（股）
+	TranAddRT float64 `json:"TranAddRT"` //转增（股）
+	BonusRT   float64 `json:"BonusRT"`   //赠股（股）
+	RegDate   string  `json:"RegDate"`   //股权登记日
 }
 
 //4.财务数据
@@ -77,6 +80,60 @@ func F10Mobile(scode string, market string) (*F10MobileTerminal, *string, error)
 	}
 
 	/*-------------------------------------------------------------------*/
+	/*--------------------------分红配股----------------------------------*/
+	divs, err := finchina.NewDividendRO().GetDividendRO(sc.COMPCODE.String)
+	if err != nil {
+		logging.Debug("%v", err.Error())
+		return nil, nil, err
+	}
+
+	t3 := F10_Dividend_Ro{}
+	for _, v := range *divs {
+		div := DividendRo{
+			Date:      v.DIVIYEAR.String,
+			Dividend:  v.PRETAXCASHMAXDVCNY.Float64, //分红
+			PRO:       v.PROBONUSRT.Float64,         //送股（股）
+			TranAddRT: v.TRANADDRT.Float64,          //转增（股）
+			BonusRT:   v.BONUSRT.Float64,            //赠股（股）
+			RegDate:   v.EQURECORDDATE.String,
+		}
+		t3.List = append(t3.List, div)
+	}
+
+	/*-------------------------------------------------------------------*/
+	/*--------------------------财务数据----------------------------------*/
+	f1, err := finchina.NewF10_MB_PROINCSTATEMENTNEW().GetF10_MB_PROINCSTATEMENTNEW(sc.COMPCODE.String)
+	if err != nil || len(f1) == 0 {
+		logging.Debug("%v", err.Error())
+		return nil, nil, err
+	}
+
+	var bizRate float64 //营业收入同比增长
+	if len(f1) < 5 || f1[4].BIZINCO.Float64 == float64(0.0) {
+		bizRate = 1.0
+	} else {
+		bizRate = (f1[0].BIZINCO.Float64 - f1[4].BIZINCO.Float64) / f1[4].BIZINCO.Float64
+	}
+
+	f2, err := finchina.NewF10_MB_PROINDICDATA().GetF10_MB_PROINDICDATA(sc.COMPCODE.String)
+	if err != nil {
+		logging.Debug("%v", err.Error())
+		return nil, nil, err
+	}
+
+	t4 := F10_Finance{
+		MainIncome:  f1[0].BIZINCO.Float64 / float64(100000000),
+		MainBizRate: bizRate,
+		EPS:         f1[0].BASICEPS.Float64,
+		NetProfit:   f1[0].PARENETP.Float64 / float64(100000000),
+		CapReserve:  f2.CRPS.Float64,
+		NetYield:    f2.ROEDILUTED.Float64,
+		Ratio:       f2.ASSLIABRT.Float64,
+		UPPS:        f2.UPPS.Float64,
+		EndDate:     f2.ENDDATE.String,
+	}
+
+	/*-------------------------------------------------------------------*/
 	/*-------------------------股本股东-----------------------------------*/
 	equity, err := finchina.NewEquity().GetEquity(sc.COMPCODE.String)
 	if err != nil {
@@ -90,7 +147,7 @@ func F10Mobile(scode string, market string) (*F10MobileTerminal, *string, error)
 		return nil, nil, err
 	}
 
-	top10, err := finchina.NewShareHoldersTop10().GetShareHoldersTop10(sc.COMPCODE.String)
+	top10, err := finchina.NewShareHoldersTop10().GetShareHoldersTop10(sc.COMPCODE.String, t4.EndDate)
 	if err != nil {
 		logging.Debug("%v", err.Error())
 		return nil, nil, err
@@ -113,58 +170,17 @@ func F10Mobile(scode string, market string) (*F10MobileTerminal, *string, error)
 	} else {
 		shrto = 99999.9999 //上期为0
 	}
+
+	num := finchina.NewTQ_SK_IINVHOLDCHG().GetInstitutionStockNum(sc.COMPCODE.String, t4.EndDate)
+
 	t2 := F10_Equity_Shareholder{
-		Totalshare: equity.TOTALSHARE.Float64,
-		Circskamt:  equity.CIRCSKAMT.Float64,
-		Totalshamt: shnum.TOTALSHAMT.Float64,
-		Totalshrto: shrto,
-		Top1sha:    nametop1,
-		Top10Rate:  top10rate,
-		//LegalPersonsRate: shnum.CORPSHAMT / float32(shnum.TOTALSHAMT*1.0),
-	}
-
-	/*-------------------------------------------------------------------*/
-	/*--------------------------分红配股----------------------------------*/
-	divs, err := finchina.NewDividendRO().GetDividendRO(sc.COMPCODE.String)
-	if err != nil {
-		logging.Debug("%v", err.Error())
-		return nil, nil, err
-	}
-
-	t3 := F10_Dividend_Ro{}
-	for _, v := range *divs {
-		div := DividendRo{
-			Date:     v.DIVIYEAR.String,
-			Dividend: v.PRETAXCASHMAXDVCNY.Float64,
-			RegDate:  v.EQURECORDDATE.String,
-		}
-		t3.List = append(t3.List, div)
-	}
-
-	/*-------------------------------------------------------------------*/
-	/*--------------------------财务数据----------------------------------*/
-	f1, err := finchina.NewF10_MB_PROINCSTATEMENTNEW().GetF10_MB_PROINCSTATEMENTNEW(sc.COMPCODE.String)
-	if err != nil {
-		logging.Debug("%v", err.Error())
-		return nil, nil, err
-	}
-
-	f2, err := finchina.NewF10_MB_PROINDICDATA().GetF10_MB_PROINDICDATA(sc.COMPCODE.String)
-	if err != nil {
-		logging.Debug("%v", err.Error())
-		return nil, nil, err
-	}
-
-	t4 := F10_Finance{
-		MainIncome:  f1.MAINBIZINCO.Float64,
-		MainBizRate: 0,
-		EPS:         f1.BASICEPS.Float64,
-		NetProfit:   f1.NETPROFIT.Float64,
-		CapReserve:  f2.CRPS.Float64,
-		NetYield:    f2.ROEAVG.Float64,
-		Ratio:       f2.ASSLIABRT.Float64,
-		UPPS:        f2.UPPS.Float64,
-		EndDate:     f2.ENDDATE.String,
+		Totalshare:       equity.TOTALSHARE.Float64,
+		Circskamt:        equity.CIRCSKAMT.Float64,
+		Totalshamt:       shnum.TOTALSHAMT.Float64,
+		Totalshrto:       shrto,
+		Top1sha:          nametop1,
+		Top10Rate:        top10rate,
+		LegalPersonsRate: num / (equity.TOTALSHARE.Float64 * 10000),
 	}
 
 	f10 := &F10MobileTerminal{

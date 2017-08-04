@@ -20,6 +20,7 @@ const (
 	TABLE_TQ_SK_SHAREHOLDER    = "TQ_SK_SHAREHOLDER"    // 股东名单信息表
 	TABLE_TQ_SK_SHARESTRUCHG   = "TQ_SK_SHARESTRUCHG"   // 股本结构变化
 	TABLE_TQ_SK_LCPERSON       = "TQ_SK_LCPERSON"       // 上市公司董事名单
+	TABLE_TQ_SK_IINVHOLDCHG    = "TQ_SK_IINVHOLDCHG"    //机构持股明细表
 )
 
 //--------------------------------------------------------------------------------

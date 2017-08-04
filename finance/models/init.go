@@ -4,7 +4,7 @@ import (
 	"haina.com/market/finance/config"
 	"haina.com/share/logging"
 	"haina.com/share/models"
-	//	"haina.com/share/store/redis"
+	"haina.com/share/store/redis"
 )
 
 func init() {
