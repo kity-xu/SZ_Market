@@ -52,7 +52,7 @@ type TagStockStatic struct {
 	LlNetProfit       int64  `bson:"llNetProfit"`       // 净利润
 	NHolders          int32  `bson:"nHolders"`          // 股东总数
 	NReportDate       int32  `bson:"nReportDate"`       // 发布日期
-	NCurrentRatio     int32  `bson:"nCurrentRatio"`     // 流通比例
+	NCurrentRatio     int32  `bson:"nCurrentRatio"`     // 流动比率
 	NQuickMovingRatio int32  `bson:"nQuickMovingRatio"` // 速动比率
 	// 后加
 	NEUndisProfit      int32 `bson:"nEUndisProfit"`      // 每股未分配利润
@@ -61,6 +61,8 @@ type TagStockStatic struct {
 	NTotalHolderEquity int64 `bson:"nTotalHolderEquity"` // 股东权益合计
 	NCapitalReserve    int64 `bson:"nCapitalReserve"`    // 资本公积金
 	NIncomeInvestments int64 `bson:"nIncomeInvestments"` // 投资收益
+	// 净利润处理给计算市盈率使用
+	LlNetProfitS int64 `bson:"llNetProfitS"` // 净利润统计
 }
 
 // 整理静态数据放到monogoDB中
@@ -70,8 +72,8 @@ func (this *TagStockStatic) GetStaticDataList(cfg *config.AppConfig) []*TagStock
 
 	// 把静态数据传到文件解析进行比对校验
 
-	return AnalysisFileUpMongodb(tatic, cfg)
-
+	//return AnalysisFileUpMongodb(tatic, cfg)
+	return tatic
 }
 
 // 处理个股静态数据
@@ -82,6 +84,11 @@ func StockTreatingData() []*TagStockStatic {
 
 	if err != nil {
 		logging.Info("查询finance出错 %v", err)
+	}
+	// 查询所有停牌股票
+	ntrdule, err := stf.NewTQ_OA_NTRDSCHEDULE().GetNtrdsList()
+	if err != nil {
+		logging.Error("select TQ_OA_NTRDSCHEDULE error:%v", err)
 	}
 	// 遍历所有沪深股票
 	for index, item := range secNm {
@@ -114,7 +121,27 @@ func StockTreatingData() []*TagStockStatic {
 			}
 		}
 		tss.SzSType = item.SETYPE.String
-		tss.SzStatus = item.LISTSTATUS.String
+
+		// 证券状态 处理停牌非停牌---------------------------------------------
+
+		var isasis = false // 判断是佛有停牌
+		for _, nitel := range ntrdule {
+			// 有停牌
+			if item.SECODE.String == nitel.SECODE.String {
+				isasis = true
+				break
+			} else {
+				isasis = false
+			}
+		}
+		if isasis == true {
+			tss.SzStatus = "0"
+		}
+		if isasis == false {
+			tss.SzStatus = "1"
+		}
+		// ----------------------------------------------------------------
+
 		lde, err := strconv.Atoi(basinfo.LISTDATE.String)
 		tss.NListDate = int32(lde)
 		dse, err := strconv.Atoi(basinfo.DELISTDATE.String)
@@ -166,24 +193,69 @@ func StockTreatingData() []*TagStockStatic {
 		}
 		tss.NEPS = int32(tspe.BASICEPS.Float64 * 10000)
 		tss.LlTotalProfit = int64(tspe.TOTPROFIT.Float64)
-		tss.LlNetProfit = int64(tspe.NETPROFIT.Float64)
-		tss.NReportDate = int32(tspe.PUBLISHDATE.Int64)
+		tss.LlNetProfit = int64(tspe.PARENETP.Float64)
+		// 净利润特殊处理------------------------------------------------------
+		//		Proin, err := stf.NewTQ_FIN_PROINCSTATEMENTNEW().GetProinList(item.COMPCODE.String)
+		//		if err != nil {
+		//			logging.Error("seelct TQ_FIN_PROINCSTATEMENTNEW error")
+		//		}
+		//		// 获取当前年份
+		//		year := time.Now().Year()
+		//		var yint = 0
+
+		//		for _, pite := range Proin {
+		//			// 统计当前年份数据条数
+		//			endint, err := strconv.Atoi(pite.ENDDATE.String[:4])
+		//			if err != nil {
+		//				logging.Error("ENDDATE type conversion error:%v", err)
+		//			}
+		//			profs := int64(pite.NETPROFIT.Float64)
+		//			if endint == year {
+		//				tss.LlNetProfitS += profs
+		//				// 计算今年发布了几次
+		//				yint += 1
+		//			}
+		//		}
+		//		if len(Proin) == 5 {
+		//			switch yint {
+		//			case 0: // 如果今年没发布 取数组第 [4]
+		//				tss.LlNetProfitS = int64(Proin[4].NETPROFIT.Float64)
+		//			case 1: // 如果今年发布一个 取数组第 [4]+([3]-[0])
+		//				val1 := int64(Proin[4].NETPROFIT.Float64 + (Proin[3].NETPROFIT.Float64 - Proin[0].NETPROFIT.Float64))
+		//				tss.LlNetProfitS = val1
+		//			case 2: // 如果今年发布二个 取数组第 [4]+([2]-[0])
+		//				val2 := int64(Proin[4].NETPROFIT.Float64 + (Proin[2].NETPROFIT.Float64 - Proin[0].NETPROFIT.Float64))
+		//				tss.LlNetProfitS = val2
+		//			case 3: // 如果今年发布三个 取数组第 [4]+([1]-[0])
+		//				val3 := int64(Proin[4].NETPROFIT.Float64 + (Proin[1].NETPROFIT.Float64 - Proin[0].NETPROFIT.Float64))
+		//				tss.LlNetProfitS = val3
+		//			case 4: //  今年数据 [4]
+		//				tss.LlNetProfitS = int64(Proin[4].NETPROFIT.Float64)
+		//			}
+		//		}
+
+		// ------------------------------------------------------------------
+		endt, err := strconv.Atoi(tspe.ENDDATE.String)
+		if err != nil {
+			logging.Error("ENDDATE2 type conversion error:%v", err)
+		}
+		tss.NReportDate = int32(endt)
 
 		tss.LlMainIncoming = int64(tspe.BIZINCO.Float64)
 		tss.LlMainProfit = int64(tspe.PERPROFIT.Float64)
 		tss.NIncomeInvestments = int64(tspe.INVEINCO.Float64)
-		// 上市公司业绩快报 填充总资产
-		tspce, err := stf.NewTQ_SK_PERFORMANCE().GetSingleInfo(item.COMPCODE.String)
+		// 上市公司业绩快报 填充总资产  -- 改为取 负债表中数据
+		//		tspce, err := stf.NewTQ_SK_PERFORMANCE().GetSingleInfo(item.COMPCODE.String)
 
-		if err != nil {
-			if err == dbr.ErrNotFound {
-				logging.Info("上市公司业绩快报信息未找到数据 %v", err)
-			} else {
-				logging.Info("查询上市公司业绩快报信息出错 error %v", err)
-			}
-		} else {
-			tss.NTotalHolderEquity = int64(tspce.TOTSHAREQUI.Float64 * 10000)
-		}
+		//		if err != nil {
+		//			if err == dbr.ErrNotFound {
+		//				logging.Info("上市公司业绩快报信息未找到数据 %v", err)
+		//			} else {
+		//				logging.Info("查询上市公司业绩快报信息出错 error %v", err)
+		//			}
+		//		} else {
+		//			tss.NTotalHolderEquity = int64(tspce.TOTSHAREQUI.Float64 * 10000)
+		//		}
 
 		//查询一般企业资产负债信息 填充流动资产
 		tfp, err := stf.NewTQ_FIN_PROBALSHEETNEW().GetSingleInfo(item.COMPCODE.String)
@@ -200,9 +272,20 @@ func StockTreatingData() []*TagStockStatic {
 		tss.NFlowLiab = int64(tfp.TOTALCURRLIAB.Float64)
 		tss.NTotalLiabilities = int64(tfp.TOTLIAB.Float64)
 		tss.NCapitalReserve = int64(tfp.CAPISURP.Float64)
-		// 每股净值= 总资产除以总股本得到
-		tss.NAVPS = int32((tss.LlTotalProperty / tss.LlTotalShare) * 10000)
+		tss.NTotalHolderEquity = int64(tfp.RIGHAGGR.Float64 * 10000) // 股东权益
+		// 每股净值= 归属母公司净利润/总股本
+		if tss.LlTotalShare > 0 {
+			tss.NAVPS = int32((tfp.PARESHARRIGH.Float64 / float64(tss.LlTotalShare)) * 10000)
+		} else {
+			tss.NAVPS = 0
+		}
 
+		//		profindex, err := stf.NewTQ_FIN_PROFINMAININDEX().GetSingleInfo(item.COMPCODE.String)
+		//		if err != nil {
+		//			logging.Error("select TQ_FIN_PROFINMAININDEX error :%v", err)
+		//		}
+
+		//		tss.NAVPS = int32(profindex.NAPS.Float64 * 10000)
 		// 查询衍生财务指标信息 流动比率和速动比率
 		tfpr, err := stf.NewTQ_FIN_PROINDICDATA().GetSingleInfo(item.COMPCODE.String)
 
@@ -366,18 +449,18 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic, cfg *config.AppConfig) []*TagS
 				item.SzSType = item.SzSType
 				item.SzStatus = item.SzStatus
 
-				item.NListDate = ite.NListDate
+				item.NListDate = item.NListDate
 				item.NLastTradeDate = item.NLastTradeDate
 				item.NDelistDate = item.NDelistDate
 				item.LlCircuShare = item.LlCircuShare
 				item.LlTotalShare = item.LlTotalShare
 				item.LlLast5Volume = item.LlLast5Volume
-				item.NEPS = int32(ite.NEPS * 10000)
+				//item.NEPS = int32(ite.NEPS * 10000)
 				item.LlTotalProperty = item.LlTotalProperty
 				item.LlFlowProperty = item.LlFlowProperty
 
-				item.NAVPS = int32(ite.NAVPS * 10000)
-
+				item.NAVPS = item.NAVPS * 10000
+				item.NEPS = item.NEPS * 10000
 				item.LlMainIncoming = item.LlMainIncoming
 				item.LlMainProfit = item.LlMainProfit
 				item.LlTotalProfit = item.LlTotalProfit
@@ -398,13 +481,13 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic, cfg *config.AppConfig) []*TagS
 		if isis == false {
 			var tssc TagStockStatic
 			tssc.NSID = ite.NSID
-			tssc.SzStatus = "1"
+			//tssc.SzStatus = "1"
 			tssc.SzSType = "101"
 			tssc.NListDate = ite.NListDate
 			tssc.LlCircuShare = ite.LlCircuShare
-			tssc.LlTotalShare = ite.LlTotalShare
-			tssc.NEPS = int32(ite.NEPS * 10000)
-			tssc.NAVPS = int32(ite.NAVPS * 10000)
+			//tssc.LlTotalShare = ite.LlTotalShare
+			//tssc.NEPS = int32(ite.NEPS * 10000)
+			//tssc.NAVPS = int32(ite.NAVPS * 10000)
 			tss = append(tss, &tssc)
 		}
 

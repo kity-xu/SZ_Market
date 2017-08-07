@@ -13,4 +13,6 @@ const (
 	TABLE_TQ_FIN_PROBALSHEETNEW     = "TQ_FIN_PROBALSHEETNEW"     // 一般企业资产负债表(新准则产品表)
 	TABLE_TQ_FIN_PROINDICDATA       = "TQ_FIN_PROINDICDATA"       // 衍生财务指标（产品表）
 	TABLE_TQ_COMP_BOARDMAP          = "TQ_COMP_BOARDMAP"          // 股板对照表
+	TABLE_TQ_OA_NTRDSCHEDULE        = "TQ_OA_NTRDSCHEDULE"        // 非交易股票表
+	TABLE_TQ_FIN_PROFINMAININDEX    = "TQ_FIN_PROFINMAININDEX"    // 主要财务指标
 )

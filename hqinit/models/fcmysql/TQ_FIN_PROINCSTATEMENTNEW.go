@@ -17,6 +17,8 @@ type TQ_FIN_PROINCSTATEMENTNEW struct {
 	BIZINCO     dbr.NullFloat64 `db:"BIZINCO"`     // 主营业务收入
 	PERPROFIT   dbr.NullFloat64 `db:"PERPROFIT"`   // 主营业务利润
 	INVEINCO    dbr.NullFloat64 `db:"INVEINCO"`    // 投资收益
+	ENDDATE     dbr.NullString  `db:"ENDDATE"`     // 截止日期
+	PARENETP    dbr.NullFloat64 `db:"PARENETP"`    // 归属母公司净利润
 }
 
 func NewTQ_FIN_PROINCSTATEMENTNEW() *TQ_FIN_PROINCSTATEMENTNEW {
@@ -31,12 +33,26 @@ func NewTQ_FIN_PROINCSTATEMENTNEW() *TQ_FIN_PROINCSTATEMENTNEW {
 func (this *TQ_FIN_PROINCSTATEMENTNEW) GetSingleInfo(comc string) (TQ_FIN_PROINCSTATEMENTNEW, error) {
 	var tsp TQ_FIN_PROINCSTATEMENTNEW
 
-	err := this.Db.Select("BASICEPS,TOTPROFIT,NETPROFIT,PUBLISHDATE,BIZINCO,PERPROFIT,INVEINCO").
+	err := this.Db.Select("BASICEPS,TOTPROFIT,NETPROFIT,PUBLISHDATE,BIZINCO,PERPROFIT,INVEINCO,ENDDATE,PARENETP").
 		From(this.TableName).
 		Where("COMPCODE=" + comc + " and  ISVALID=1").
 		Where("REPORTTYPE=1").
 		OrderBy("ENDDATE DESC ").
 		Limit(1).
+		LoadStruct(&tsp)
+	return tsp, err
+}
+
+// 倒序查询五期 净利润
+func (this *TQ_FIN_PROINCSTATEMENTNEW) GetProinList(comc string) ([]*TQ_FIN_PROINCSTATEMENTNEW, error) {
+	var tsp []*TQ_FIN_PROINCSTATEMENTNEW
+
+	err := this.Db.Select("NETPROFIT,ENDDATE ").
+		From(this.TableName).
+		Where("COMPCODE=" + comc + " and  ISVALID=1").
+		Where("REPORTTYPE=1").
+		OrderBy("ENDDATE DESC ").
+		Limit(5).
 		LoadStruct(&tsp)
 	return tsp, err
 }
