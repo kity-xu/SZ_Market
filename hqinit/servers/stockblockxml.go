@@ -106,7 +106,7 @@ func (this *StockBlockXML) CreateStockblockXML(cfg *config.AppConfig) {
 			// 打开文件
 			file, err := tool.OpenFile(upath)
 			if err != nil {
-				serv.NPreCPx = "1000"
+				serv.NPreCPx = "10000000"
 			} else {
 
 				var bkline BlockStruct
@@ -137,7 +137,7 @@ func (this *StockBlockXML) CreateStockblockXML(cfg *config.AppConfig) {
 					zpre := strconv.Itoa(int(bklines[len(bklines)-1].NLastPx))
 					serv.NPreCPx = zpre
 				} else {
-					serv.NPreCPx = "1000"
+					serv.NPreCPx = "10000000"
 				}
 
 				file.Close()

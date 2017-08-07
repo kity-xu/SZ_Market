@@ -15,6 +15,8 @@ type TQ_FIN_PROBALSHEETNEW struct {
 	TOTLIAB       dbr.NullFloat64 `db:"TOTLIAB"`       // 负债合计
 	CAPISURP      dbr.NullFloat64 `db:"CAPISURP"`      // 资本公积
 	TOTCURRASSET  dbr.NullFloat64 `db:"TOTCURRASSET"`  // 流动资产合计
+	RIGHAGGR      dbr.NullFloat64 `db:"RIGHAGGR"`      // 所有股东权益合计
+	PARESHARRIGH  dbr.NullFloat64 `db:"PARESHARRIGH"`  // 归属于母公司股东权益合计(元)
 }
 
 func NewTQ_FIN_PROBALSHEETNEW() *TQ_FIN_PROBALSHEETNEW {
@@ -30,7 +32,7 @@ func NewTQ_FIN_PROBALSHEETNEW() *TQ_FIN_PROBALSHEETNEW {
 func (this *TQ_FIN_PROBALSHEETNEW) GetSingleInfo(comc string) (TQ_FIN_PROBALSHEETNEW, error) {
 	var tsp TQ_FIN_PROBALSHEETNEW
 
-	err := this.Db.Select("TOTASSET,TOTALCURRLIAB,TOTLIAB,CAPISURP,TOTCURRASSET").
+	err := this.Db.Select("TOTASSET,TOTALCURRLIAB,TOTLIAB,CAPISURP,TOTCURRASSET,RIGHAGGR,PARESHARRIGH").
 		From(this.TableName).
 		Where("COMPCODE=" + comc).
 		Where("REPORTTYPE=1").

@@ -38,6 +38,7 @@ const (
 	SECURITY_LIST      = '1' //上市
 	SECURITY_DELIST    = '2' //退市
 	SECURITY_NLIST     = '3' //非上市
+
 )
 
 /***********************haina**************************/
@@ -179,16 +180,19 @@ func HainaSecurityStatus(status string) (string, error) {
 	}
 	sp := []byte(status)[0]
 
-	if sp == SECURITY_READYLIST {
+	//	if sp == SECURITY_READYLIST {
+	//		result[0] = SECURITY_STATUS_SP
+	//	} else if sp == SECURITY_LIST {
+	//		result[0] = SECURITY_STATUS_NM
+
+	//	} else if sp == SECURITY_DELIST {
+	//		result[0] = SECURITY_STATUS_DL
+
+	//	} else if sp == SECURITY_NLIST {
+	if sp == '0' {
 		result[0] = SECURITY_STATUS_SP
-	} else if sp == SECURITY_LIST {
+	} else if sp == '1' {
 		result[0] = SECURITY_STATUS_NM
-
-	} else if sp == SECURITY_DELIST {
-		result[0] = SECURITY_STATUS_DL
-
-	} else if sp == SECURITY_NLIST {
-
 	} else {
 		return "", errors.New("其他未知状态...")
 	}

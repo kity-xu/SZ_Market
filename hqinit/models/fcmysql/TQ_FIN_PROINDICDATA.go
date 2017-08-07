@@ -27,10 +27,10 @@ func NewTQ_FIN_PROINDICDATA() *TQ_FIN_PROINDICDATA {
 // 查询公司业绩报表
 func (this *TQ_FIN_PROINDICDATA) GetSingleInfo(comc string) (TQ_FIN_PROINDICDATA, error) {
 	var tss TQ_FIN_PROINDICDATA
-	err := this.Db.Select("CURRENTRT,QUICKRT").
+	err := this.Db.Select("CURRENTRT,QUICKRT,UPPS").
 		From(this.TableName).
 		Where("COMPCODE='" + comc + "'").
-		Where("ISVALID=1").
+		Where("ISVALID=1 and REPORTTYPE=3").
 		OrderBy("ENDDATE DESC").
 		Limit(1).
 		LoadStruct(&tss)
