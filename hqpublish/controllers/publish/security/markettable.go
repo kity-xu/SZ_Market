@@ -4,6 +4,10 @@ package security
 import (
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
 
+	"bytes"
+	"compress/zlib"
+	"encoding/json"
+
 	"github.com/gin-gonic/gin"
 	. "haina.com/market/hqpublish/controllers"
 	"haina.com/market/hqpublish/models"
@@ -42,7 +46,21 @@ func (this *SecurityTable) GetJson(c *gin.Context) {
 		WriteJson(c, 40002, nil)
 		return
 	}
-	WriteJson(c, 200, table)
+
+	// 压缩处理
+	byt, err := json.Marshal(table)
+	if err != nil {
+		logging.Error("date zib error:%v", err)
+		WriteJson(c, 40002, nil)
+		return
+	}
+	var in bytes.Buffer
+	w := zlib.NewWriter(&in)
+	w.Write(byt)
+	w.Close()
+
+	data := in.Bytes()
+	WriteJson(c, 200, &data)
 }
 
 func (this *SecurityTable) GetPB(c *gin.Context) {
@@ -80,7 +98,6 @@ func (this *SecurityTable) PostJson(c *gin.Context) {
 		WriteJson(c, code, nil)
 		return
 	}
-
 	if request.MarketID == 0 {
 		WriteJson(c, 40004, nil)
 	}
@@ -91,6 +108,20 @@ func (this *SecurityTable) PostJson(c *gin.Context) {
 		WriteJson(c, 40002, nil)
 		return
 	}
+	//	// 压缩处理
+	//	byt, err := json.Marshal(table)
+	//	if err != nil {
+	//		logging.Error("date zib error:%v", err)
+	//		WriteJson(c, 40002, nil)
+	//		return
+	//	}
+	//	var in bytes.Buffer
+	//	w := zlib.NewWriter(&in)
+	//	w.Write(byt)
+	//	w.Close()
+
+	//	data := in.Bytes()
+	//	WriteJson(c, 200, &data)
 	WriteJson(c, 200, table)
 }
 func (this *SecurityTable) PostPB(c *gin.Context) {
