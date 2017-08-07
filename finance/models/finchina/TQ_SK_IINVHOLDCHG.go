@@ -34,8 +34,8 @@ func (this *TQ_SK_IINVHOLDCHG) GetInstitutionStockNum(compCode, reportDate strin
 
 	var num float64
 
-	builder := this.Db.Select("SUM(HOLDQTY)").From(this.TableName).OrderBy("REPORTDATE desc") //变动起始日
-	err := this.SelectWhere(builder, exps).Limit(1).LoadStruct(&num)
+	builder := this.Db.Select("SUM(HOLDQTY)").From(this.TableName) //变动起始日
+	err := this.SelectWhere(builder, exps).LoadStruct(&num)
 	if err != nil {
 		return float64(0)
 	}

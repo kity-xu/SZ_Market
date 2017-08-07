@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"haina.com/share/gocraft/dbr"
 	. "haina.com/share/models"
@@ -76,8 +77,9 @@ func (this *MOptSids) OperationStockSids(req *protocol.RequestOptstockPut, acces
 		sids = sids[1:]
 	}
 	params := map[string]interface{}{
-		"MemberID": mid,
-		"OptStock": sids,
+		"MemberID":   mid,
+		"OptStock":   sids,
+		"UpdateDate": time.Now().Unix(),
 	}
 
 	mids, err := this.SelectMemberIDs()
