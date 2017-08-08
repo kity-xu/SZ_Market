@@ -27,6 +27,7 @@ func Update(cfg *config.AppConfig) {
 
 	// 指数成分股
 	security.UpdateIndexComponent(cfg)
+
 	//证券静态数据
 	security.UpdateSecurityStaticInfo(cfg)
 

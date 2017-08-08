@@ -52,6 +52,7 @@ func (this *BlockIndex) PostJson(c *gin.Context) {
 		return
 	}
 	WriteJson(c, 200, reply)
+
 }
 
 func (this *BlockIndex) PostPB(c *gin.Context) {

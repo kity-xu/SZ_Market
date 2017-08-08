@@ -36,21 +36,23 @@ func (this *HisEventinfo) GetHisevent(req *protocol.RequestHisevent) (*protocol.
 	noti.SzHeadline = hsi.ANNTITLE.String
 	// 如果公告内容等于 “公告内容详见附件” 需查询公告目录表
 	anncmt, err := fcmysql.NewTQ_OA_ANNTFILE().GetAnntfile(hsi.ANNOUNCEMTID.String)
+
 	if err != nil {
 		logging.Info("查询公告目录 error %v", err)
 		return nil, err
 	}
-	//if hsi.ANNTEXT.String == "公告内容详见附件" {
-	str := strings.Replace(anncmt.FILELINK.String, `\`, "/", -1)
-	urlstr := FCat.Url + str
-	noti.SzWebtake = urlstr
-	// 公告内容类型
-	noti.SzAcsyType = "url"
-	//	} else {
-	//		noti.SzWebtake = hsi.ANNTEXT.String
-	//		// 公告内容类型
-	//		noti.SzAcsyType = "txt"
-	//	}
+
+	// 判断路径是否存在
+	if anncmt.FILELINK.String != "" {
+		str := strings.Replace(anncmt.FILELINK.String, `\`, "/", -1)
+		urlstr := FCat.Url + str
+		noti.SzWebtake = urlstr
+		// 公告内容类型
+		noti.SzAcsyType = "url"
+	} else {
+		noti.SzWebtake = hsi.ANNTEXT.String
+		noti.SzAcsyType = "txt"
+	}
 
 	noti.SzNoticeType = hsi.ANNTYPE.String
 	isif := hsi.LEVEL1.String
