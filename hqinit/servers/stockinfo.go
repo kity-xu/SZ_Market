@@ -96,6 +96,11 @@ func TreatingData(secNm []*fcm.FcSecuNameTab) {
 	if err != nil {
 		logging.Info("查询当日新股error %v", err)
 	}
+	// 查询所有停牌股票
+	ntrdule, err := fcm.NewTQ_OA_NTRDSCHEDULE().GetNtrdsList()
+	if err != nil {
+		logging.Error("select TQ_OA_NTRDSCHEDULE error:%v", err)
+	}
 	for _, item := range secNm {
 
 		var tsi TagSecurityInfo
@@ -141,7 +146,27 @@ func TreatingData(secNm []*fcm.FcSecuNameTab) {
 
 		tsi.SzSType = item.SETYPE.String
 
-		tsi.SzStatus = item.LISTSTATUS.String
+		// 证券状态 处理停牌非停牌---------------------------------------------
+
+		var isasis = false // 判断是佛有停牌
+		for _, nitel := range ntrdule {
+			// 有停牌
+			if item.SECODE.String == nitel.SECODE.String {
+				isasis = true
+				break
+			} else {
+				isasis = false
+			}
+		}
+		if isasis == true {
+			tsi.SzStatus = "0"
+		}
+		if isasis == false {
+			tsi.SzStatus = "1"
+		}
+		// ----------------------------------------------------------------
+		//tsi.SzStatus = item.LISTSTATUS.String
+
 		tsi.SzSymbol = item.SYMBOL.String
 		tsi.SzISIN = item.SECURITYID.String
 
