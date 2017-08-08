@@ -138,5 +138,30 @@ func sidSearch(table *protocol.RedisSortTable, src []int32) (*protocol.RedisSort
 			}
 		}
 	}
-	return result, nil
+
+	var res = &protocol.RedisSortTable{}
+	var rs = &protocol.RedisSortTable{}
+
+	if len(src) != len(result.List) {
+		for _, s := range src {
+			var cont int
+			for _, r := range result.List {
+				if s == r.NSID {
+					res.List = append(res.List, r)
+					break
+				}
+				cont++
+			}
+			if cont == len(result.List) {
+				r := &protocol.TagStockSortInfo{
+					NSID: s,
+				}
+				rs.List = append(rs.List, r)
+			}
+		}
+		rs.List = append(rs.List, res.List...)
+		return rs, nil
+	} else {
+		return result, nil
+	}
 }

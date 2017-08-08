@@ -64,6 +64,10 @@ func (this *OptionalSids) PostJson(c *gin.Context) {
 	err = publish.NewMOptSids().OperationStockSids(req, access_token)
 	if err != nil {
 		logging.Error("%v", err)
+		if err == models.REDIS_MEMBERID_NOT_FIND {
+			WriteJson(c, 40010, nil)
+			return
+		}
 		WriteJson(c, 40002, nil)
 		return
 	}
@@ -83,6 +87,10 @@ func (this *OptionalSids) PostPB(c *gin.Context) {
 	err := publish.NewMOptSids().OperationStockSids(req, access_token)
 	if err != nil {
 		logging.Error("%v", err.Error())
+		if err == models.REDIS_MEMBERID_NOT_FIND {
+			WriteJson(c, 40010, nil)
+			return
+		}
 		WriteDataErrCode(c, 40002)
 		return
 	}
@@ -95,6 +103,10 @@ func (this *OptionalSids) GetJson(c *gin.Context) {
 	sidList, err := publish.NewMOptSids().SelectAllSidsByAccessToken(access_token)
 	if err != nil {
 		logging.Error("%v", err)
+		if err == models.REDIS_MEMBERID_NOT_FIND {
+			WriteJson(c, 40010, nil)
+			return
+		}
 		WriteJson(c, 40002, nil)
 		return
 	}
@@ -107,6 +119,10 @@ func (this *OptionalSids) GetPB(c *gin.Context) {
 	sidList, err := publish.NewMOptSids().SelectAllSidsByAccessToken(access_token)
 	if err != nil {
 		logging.Error("%v", err)
+		if err == models.REDIS_MEMBERID_NOT_FIND {
+			WriteJson(c, 40010, nil)
+			return
+		}
 		WriteJson(c, 40002, nil)
 		return
 	}

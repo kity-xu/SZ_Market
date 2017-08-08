@@ -35,4 +35,5 @@ const (
 
 var (
 	REDIS_MEMBERID_NOT_FIND = errors.New("The member id is not found")
+	MYSQL_NOT_FIND          = errors.New("Mysql not found")
 )

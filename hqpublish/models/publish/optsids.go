@@ -44,6 +44,10 @@ func (this *MOptSids) SelectAllSidsByAccessToken(access_token string) (*protocol
 		return nil, err
 	}
 
+	if len(optstocks) == 0 {
+		return nil, MYSQL_NOT_FIND
+	}
+
 	var sidList []int32
 	sids := strings.Split(optstocks, ",")
 	for _, sid := range sids {
@@ -156,10 +160,7 @@ func (this *MOptSids) UpdateStockSidList(params map[string]interface{}) error {
 func (this *MOptSids) GetMemberIDByAccesstoken(access_token string) (int, error) {
 	key := fmt.Sprintf(REDIS_ACCESS_TOKEN_MEMBERID, access_token)
 	id, err := RedisML.GetString(key)
-	if err != nil {
-		return -1, err
-	}
-	if len(id) == 0 {
+	if err != nil || len(id) == 0 {
 		return -1, REDIS_MEMBERID_NOT_FIND
 	}
 
