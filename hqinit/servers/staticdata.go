@@ -72,8 +72,7 @@ func (this *TagStockStatic) GetStaticDataList(cfg *config.AppConfig) []*TagStock
 
 	// 把静态数据传到文件解析进行比对校验
 
-	//return AnalysisFileUpMongodb(tatic, cfg)
-	return tatic
+	return AnalysisFileUpMongodb(tatic, cfg)
 }
 
 // 处理个股静态数据
@@ -280,12 +279,6 @@ func StockTreatingData() []*TagStockStatic {
 			tss.NAVPS = 0
 		}
 
-		//		profindex, err := stf.NewTQ_FIN_PROFINMAININDEX().GetSingleInfo(item.COMPCODE.String)
-		//		if err != nil {
-		//			logging.Error("select TQ_FIN_PROFINMAININDEX error :%v", err)
-		//		}
-
-		//		tss.NAVPS = int32(profindex.NAPS.Float64 * 10000)
 		// 查询衍生财务指标信息 流动比率和速动比率
 		tfpr, err := stf.NewTQ_FIN_PROINDICDATA().GetSingleInfo(item.COMPCODE.String)
 
@@ -455,7 +448,6 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic, cfg *config.AppConfig) []*TagS
 				item.LlCircuShare = item.LlCircuShare
 				item.LlTotalShare = item.LlTotalShare
 				item.LlLast5Volume = item.LlLast5Volume
-				//item.NEPS = int32(ite.NEPS * 10000)
 				item.LlTotalProperty = item.LlTotalProperty
 				item.LlFlowProperty = item.LlFlowProperty
 
@@ -483,8 +475,8 @@ func AnalysisFileUpMongodb(tss []*TagStockStatic, cfg *config.AppConfig) []*TagS
 			tssc.NSID = ite.NSID
 			//tssc.SzStatus = "1"
 			tssc.SzSType = "101"
-			tssc.NListDate = ite.NListDate
-			tssc.LlCircuShare = ite.LlCircuShare
+			//tssc.NListDate = ite.NListDate
+			//tssc.LlCircuShare = ite.LlCircuShare
 			//tssc.LlTotalShare = ite.LlTotalShare
 			//tssc.NEPS = int32(ite.NEPS * 10000)
 			//tssc.NAVPS = int32(ite.NAVPS * 10000)

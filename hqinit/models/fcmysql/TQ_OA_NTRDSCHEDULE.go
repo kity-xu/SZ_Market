@@ -29,7 +29,7 @@ func (this *TQ_OA_NTRDSCHEDULE) GetNtrdsList() ([]*TQ_OA_NTRDSCHEDULE, error) {
 	var data []*TQ_OA_NTRDSCHEDULE
 	_, err := this.Db.Select("SECODE").
 		From(this.TableName).
-		Where("((RESUMEDATE='1900-01-01 00:00:00:000' and NTRADEENDDATE='" + time + "') or RESUMEDATE >='2017-08-03 00:00:00')and SETYPE=101 and ISVALID=1 ").
+		Where("((RESUMEDATE='1900-01-01 00:00:00:000' and  NTRADEBEGDATE  <='" + time + "') or ( NTRADEBEGDATE < '" + time + "' and NTRADEENDDATE > '" + time + "'))and SETYPE=101 and ISVALID=1 ").
 		OrderBy("SECODE").LoadStructs(&data)
 	return data, err
 }
