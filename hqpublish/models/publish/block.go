@@ -68,7 +68,7 @@ func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol
 
 	var blocks []*protocol.TagBlockSortInfo
 	var kvalue = 1100
-	if req.TypeID == 1111 {
+	if req.TypeID == 0 {
 		kvalue = 1100
 	} else if req.TypeID == 1 {
 		kvalue = 1109
