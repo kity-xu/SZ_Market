@@ -31,7 +31,7 @@ func NewTQ_SK_ANNOUNCEMT() *TQ_SK_ANNOUNCEMT {
 	}
 }
 
-func (this *TQ_SK_ANNOUNCEMT) GetNoticeInfo(ccode string, num int32) ([]*TQ_SK_ANNOUNCEMT, error) {
+func (this *TQ_SK_ANNOUNCEMT) GetNoticeInfo(ccode string, num int32, date string) ([]*TQ_SK_ANNOUNCEMT, error) {
 	var tsa []*TQ_SK_ANNOUNCEMT
 
 	var bulid *dbr.SelectBuilder
@@ -39,12 +39,14 @@ func (this *TQ_SK_ANNOUNCEMT) GetNoticeInfo(ccode string, num int32) ([]*TQ_SK_A
 		bulid = this.Db.Select("ID,ANNOUNCEMTID,ANNTYPE,DECLAREDATE,ANNTITLE,LEVEL1").
 			From(this.TableName).
 			Where("COMPCODE='" + ccode + "'").
+			Where("DECLAREDATE >='" + date + "'").
 			Where("ISVALID=1").
 			OrderBy("DECLAREDATE desc").Limit(uint64(num))
 	} else {
 		bulid = this.Db.Select("ID,ANNOUNCEMTID,ANNTYPE,DECLAREDATE,ANNTITLE,LEVEL1").
 			From(this.TableName).
 			Where("COMPCODE='" + ccode + "'").
+			Where("DECLAREDATE >='" + date + "'").
 			Where("ISVALID=1").
 			OrderBy("DECLAREDATE desc")
 	}

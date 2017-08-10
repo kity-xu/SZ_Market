@@ -115,7 +115,8 @@ type FileStore struct {
 
 // 公告附件目录 url地址
 type FileCatalog struct {
-	Url string `xml:"url"`
+	Url       string `xml:"url"`
+	ValidTime string `xml:"validtime"`
 }
 
 type CacheTTL struct {

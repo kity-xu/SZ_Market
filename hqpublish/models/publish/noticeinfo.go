@@ -5,6 +5,7 @@ import (
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
 	"strconv"
 
+	. "haina.com/market/hqpublish/models"
 	"haina.com/market/hqpublish/models/fcmysql"
 	"haina.com/share/logging"
 )
@@ -28,8 +29,10 @@ func (this *NoticeinfoL) GetNoticeInfoL(req *protocol.RequestNoticeInfo) (*proto
 	if err != nil {
 		logging.Info("select　TQ_OA_STCODE　error%v", err)
 	}
+	// 公告临时限制时间
+	date := FCat.ValidTime
 	// 根据证券id获取公告信息
-	noif, err := fcmysql.NewTQ_SK_ANNOUNCEMT().GetNoticeInfo(stc.COMPCODE.String, req.Num)
+	noif, err := fcmysql.NewTQ_SK_ANNOUNCEMT().GetNoticeInfo(stc.COMPCODE.String, req.Num, date)
 	if err != nil {
 		logging.Info("mysql select error %v", err)
 	}

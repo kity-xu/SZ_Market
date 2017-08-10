@@ -97,7 +97,10 @@
 	</fileStore>
 	<filecatalog>
 		<url>http://47.93.102.171/</url>
+		<validtime>20170101</validtime>
 	</filecatalog>
+	
+	
 	<cacheTTL>                          <!--   单位秒     -->
         <day>3600</day>                 <!--   60*60*1   -->
         <week>43200</week>              <!--   60*60*12  -->
