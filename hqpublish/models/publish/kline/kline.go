@@ -84,7 +84,6 @@ func getHisKlineFromeRedisStore(key string) (*kline.KInfoTable, error) {
 	if len(ss) == 0 {
 		return nil, publish.ERROR_REDIS_LIST_NULL
 	}
-
 	var table = &kline.KInfoTable{}
 	for _, v := range ss {
 		kinfo := &kline.KInfo{}

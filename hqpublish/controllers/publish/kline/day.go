@@ -38,6 +38,7 @@ func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHi
 	if e == nil {
 		models.GetASCStruct(dlines) //升序排序
 	}
+	logging.Debug("______--*******---%v_________", e)
 
 	over, err := kline.IsHQpostRunOver()
 	if err != nil {

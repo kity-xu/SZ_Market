@@ -36,9 +36,9 @@ func NewHMinKLine(redis_key string) *HMinKLine {
 // 获取某一NSID的某类历史分钟线（全部）
 func (this *HMinKLine) GetHMinKLineAll(req *protocol.RequestHisK) (*[]*protocol.KInfo, error) {
 	key := fmt.Sprintf(this.CacheKey, req.SID)
-	var kinfolist *[]*kline.KInfo = nil
+	var kinfolist *kline.KInfoTable
 
-	list, err := this.getHMinlineFromeRedisCache(key, req)
+	kinfolist, err := this.getHMinlineFromeRedisCache(key, req)
 	if err != nil {
 		if err != publish.ERROR_REDIS_LIST_NULL {
 			return nil, err
@@ -50,26 +50,8 @@ func (this *HMinKLine) GetHMinKLineAll(req *protocol.RequestHisK) (*[]*protocol.
 	}
 
 	var ktale []*protocol.KInfo
-	if list != nil {
-		for _, dayk := range list.List {
-			for _, v := range dayk.List { //某一日内的分钟K线
-				kinfo := &protocol.KInfo{
-					NSID:     v.NSID,
-					NTime:    v.NTime,
-					NPreCPx:  v.NPreCPx,
-					NOpenPx:  v.NOpenPx,
-					NHighPx:  v.NHighPx,
-					NLowPx:   v.NLowPx,
-					NLastPx:  v.NLastPx,
-					LlVolume: v.LlVolume,
-					LlValue:  v.LlValue,
-					NAvgPx:   v.NAvgPx,
-				}
-				ktale = append(ktale, kinfo)
-			}
-		}
-	} else if kinfolist != nil {
-		for _, v := range *kinfolist {
+	if kinfolist != nil {
+		for _, v := range kinfolist.List {
 			kinfo := &protocol.KInfo{
 				NSID:     v.NSID,
 				NTime:    v.NTime,
@@ -90,30 +72,30 @@ func (this *HMinKLine) GetHMinKLineAll(req *protocol.RequestHisK) (*[]*protocol.
 	return &ktale, nil
 }
 
-func (this *HMinKLine) getHMinlineFromeRedisCache(key string, req *protocol.RequestHisK) (*kline.HMinTable, error) {
-	var ktable = &kline.HMinTable{}
+func (this *HMinKLine) getHMinlineFromeRedisCache(key string, req *protocol.RequestHisK) (*kline.KInfoTable, error) {
+	var table = kline.KInfoTable{}
 	bs, err := GetCache(key)
 	if err != nil { //错误或没找到
-		if err = getHMinlineFromeRedisStore(key, ktable); err != nil {
+		if err = getHMinlineFromeRedisStore(key, &table); err != nil {
 			return nil, err
 		}
 
-		if len(ktable.List) < 1 {
+		if len(table.List) < 1 {
 			return nil, publish.READ_REDIS_STORE_NULL
 		}
 
-		if err = this.setPaylodToRedisCache(key, req.Type, ktable); err != nil {
+		if err = this.setPaylodToRedisCache(key, req.Type, &table); err != nil {
 			logging.Error("%v", err.Error())
 		}
 	} else {
-		if err = proto.Unmarshal(bs, ktable); err != nil {
+		if err = proto.Unmarshal(bs, &table); err != nil {
 			return nil, err
 		}
 	}
-	return ktable, nil
+	return &table, nil
 }
 
-func getHMinlineFromeRedisStore(key string, table *kline.HMinTable) error {
+func getHMinlineFromeRedisStore(key string, table *kline.KInfoTable) error {
 	ss, err := RedisStore.LRange(key, 0, -1)
 	if err != nil {
 		return err
@@ -124,7 +106,7 @@ func getHMinlineFromeRedisStore(key string, table *kline.HMinTable) error {
 	}
 
 	for _, v := range ss {
-		kinfo := &kline.HMinLineDay{}
+		kinfo := &kline.KInfo{}
 		if err := proto.Unmarshal([]byte(v), kinfo); err != nil {
 			return err
 		}
@@ -133,7 +115,7 @@ func getHMinlineFromeRedisStore(key string, table *kline.HMinTable) error {
 	return nil
 }
 
-func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.RequestHisK) (*[]*kline.KInfo, error) {
+func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.RequestHisK) (*kline.KInfoTable, error) {
 	var dir, filename string
 
 	market := req.SID / 1000000
@@ -178,11 +160,11 @@ func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.Reque
 	var line kline.KInfo
 	size := binary.Size(&line)
 
-	var table []*kline.KInfo
-	var cache *kline.HMinLineDay //指针
-	var cacheTable = &kline.HMinTable{}
+	var table = &kline.KInfoTable{}
+	//var cache *kline.HMinLineDay //指针
+	//	var cacheTable = &kline.HMinTable{}
 
-	var tmpTime int32
+	//var tmpTime int32
 
 	lengh := len(data)
 
@@ -193,38 +175,37 @@ func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.Reque
 		if err = binary.Read(buffer, binary.LittleEndian, &kinfo); err != nil && err != io.EOF {
 			return nil, err
 		}
-		table = append(table, &kinfo)
+		table.List = append(table.List, &kinfo)
+		//		if tmpTime == 0 {
+		//			cache = &kline.HMinLineDay{}
+		//			cache.List = append(cache.List, &kinfo)
+		//			tmpTime = kinfo.NTime / 10000
+		//			continue
+		//		}
 
-		if tmpTime == 0 {
-			cache = &kline.HMinLineDay{}
-			cache.List = append(cache.List, &kinfo)
-			tmpTime = kinfo.NTime / 10000
-			continue
-		}
+		//		if tmpTime == kinfo.NTime/10000 {
+		//			cache.List = append(cache.List, &kinfo)
+		//			if i == lengh-size { //防止最后一条数据丢失、
+		//				cache.Date = 20*1000000 + tmpTime
+		//				cacheTable.List = append(cacheTable.List, cache)
+		//			}
+		//		} else {
+		//			cache.Date = 20*1000000 + tmpTime
+		//			cacheTable.List = append(cacheTable.List, cache) //得到了一天的分钟线，cache加入cacheTable
 
-		if tmpTime == kinfo.NTime/10000 {
-			cache.List = append(cache.List, &kinfo)
-			if i == lengh-size { //防止最后一条数据丢失、
-				cache.Date = 20*1000000 + tmpTime
-				cacheTable.List = append(cacheTable.List, cache)
-			}
-		} else {
-			cache.Date = 20*1000000 + tmpTime
-			cacheTable.List = append(cacheTable.List, cache) //得到了一天的分钟线，cache加入cacheTable
-
-			cache = &kline.HMinLineDay{}            //重新创建HMinLineDay结构，cache指向它
-			cache.List = append(cache.List, &kinfo) //本次kinfo加入新cache
-			tmpTime = kinfo.NTime / 10000           //更新时间
-		}
+		//			cache = &kline.HMinLineDay{}            //重新创建HMinLineDay结构，cache指向它
+		//			cache.List = append(cache.List, &kinfo) //本次kinfo加入新cache
+		//			tmpTime = kinfo.NTime / 10000           //更新时间
+		//		}
 	}
 
-	if err = this.setPaylodToRedisCache(key, req.Type, cacheTable); err != nil { //这里文件存储结构转换为redis存储结构
+	if err = this.setPaylodToRedisCache(key, req.Type, table); err != nil { //这里文件存储结构转换为redis存储结构
 		logging.Error("%v", err.Error()) //此处不能因为该错误而返回，但又不能忽略错误，故打印
 	}
-	return &table, nil
+	return table, nil
 }
 
-func (this *HMinKLine) setPaylodToRedisCache(key string, stype int32, table *kline.HMinTable) error {
+func (this *HMinKLine) setPaylodToRedisCache(key string, stype int32, table *kline.KInfoTable) error {
 	var ttl int
 	switch protocol.HAINA_KLINE_TYPE(stype) {
 	case protocol.HAINA_KLINE_TYPE_KMIN1:

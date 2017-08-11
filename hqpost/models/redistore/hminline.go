@@ -27,16 +27,19 @@ func NewHMinKLine(key string) *HMinKLine {
 	}
 }
 
-func (this *HMinKLine) LPushHMinKLine(sid int32, kinfo *protocol.HMinLineDay) error {
+func (this *HMinKLine) LPushHMinKLine(sid int32, infos *[]*protocol.KInfo) error {
 	key := fmt.Sprintf(this.CacheKey, sid)
-	data, err := proto.Marshal(kinfo)
-	if err != nil {
-		logging.Error("%v", err.Error())
-		return err
-	}
-	if err = redis.Lpush(key, data); err != nil {
-		logging.Error("%v", err.Error())
-		return err
+
+	for _, kinfo := range *infos {
+		data, err := proto.Marshal(kinfo)
+		if err != nil {
+			logging.Error("%v", err.Error())
+			return err
+		}
+		if err = redis.Lpush(key, data); err != nil {
+			logging.Error("%v", err.Error())
+			return err
+		}
 	}
 	return nil
 }

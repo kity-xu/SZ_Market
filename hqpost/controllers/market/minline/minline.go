@@ -80,12 +80,11 @@ func (this *MinKline) getBasicMinDataToday(sid int32) (*SingleMin, error) {
 //当天分钟线并入历史
 func (this *MinKline) mergeMin(sid int32, rs *redistore.HMinKLine, dmin *[]*protocol.KInfo) {
 	if rs.Ktype != REDISKEY_SECURITY_HMIN1 { //如果不是历史1分钟线的话，进行redis操作（也就是说minline_1不进redis）
-		kinfo := protocol.HMinLineDay{
-			Date: GetDateToday(),
-			List: *dmin,
-		}
-
-		if err := rs.LPushHMinKLine(sid, &kinfo); err != nil {
+		//		kinfo := protocol.HMinLineDay{
+		//			Date: GetDateToday(),
+		//			List: *dmin,
+		//		}
+		if err := rs.LPushHMinKLine(sid, dmin); err != nil {
 			return
 		}
 	}
