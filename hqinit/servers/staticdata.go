@@ -70,9 +70,9 @@ func (this *TagStockStatic) GetStaticDataList(cfg *config.AppConfig) []*TagStock
 
 	tatic := StockTreatingData()
 
-	// 把静态数据传到文件解析进行比对校验
-
-	return AnalysisFileUpMongodb(tatic, cfg)
+	return tatic
+	//// 把静态数据传到文件解析进行比对校验  -- 行情端文件已经废弃
+	//return AnalysisFileUpMongodb(tatic, cfg)
 }
 
 // 处理个股静态数据
