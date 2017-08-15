@@ -69,7 +69,7 @@ func (this MIndex) GetMIndexObj() (*pro.PayloadMIndex, error) {
 
 	{ //HotBlockList // 板块排序 热点
 		req := pro.RequestBlock{
-			TypeID:  1111,
+			TypeID:  0,
 			FieldID: -4006,
 			Begin:   0,
 			Num:     3,
