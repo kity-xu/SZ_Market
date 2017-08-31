@@ -216,8 +216,9 @@ func GetTodayDayLine(sid, precpx int32) (*protocol.KInfo, error) {
 		i++
 	}
 	tmp.NSID = sid
-	tmp.NTime = filestore.GetDateToday() //时间
-	tmp.NOpenPx = (*min)[0].NOpenPx      //开盘价
+	tmp.NTime = 20000000 + (*min)[0].NTime/10000
+	//tmp.NTime = filestore.GetDateToday() //时间
+	tmp.NOpenPx = (*min)[0].NOpenPx //开盘价
 	if precpx == 0 {
 		tmp.NPreCPx = (*min)[len(*min)-1].NPreCPx //昨收价
 	} else {

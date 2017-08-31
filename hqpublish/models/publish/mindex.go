@@ -159,7 +159,7 @@ func DataTreating(ind int, pst *pro.IndexSnapshot) *pro.Infobar {
 		sname = "上证指数"
 	}
 	if ind == 2 {
-		sname = "深圳成指"
+		sname = "深证成指"
 	}
 	if ind == 3 {
 		sname = "创业板指"
@@ -192,7 +192,7 @@ func SetInfoList(ilist []*pro.Infobar) ([]*pro.Infobar, error) {
 		logging.Error("%v", err)
 		return nil, err
 	}
-	req.SID = 200399001 // 深圳成指
+	req.SID = 200399001 // 深证成指
 	datasz, err := NewIndexSnapshot().GetIndexSnapshotObj(&req)
 	if err != nil {
 		logging.Error("%v", err)

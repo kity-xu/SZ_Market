@@ -85,4 +85,7 @@ func RegPublish(rg *gin.RouterGroup) {
 
 	// 查询会员自选股
 	rg.GET("/optstock/get", publish.NewOptionalSids().GET)
+
+	// 自选股操作(单挑增加、删除)
+	rg.POST("/optstock/operate", publish.NewOptionalSids().Operate)
 }

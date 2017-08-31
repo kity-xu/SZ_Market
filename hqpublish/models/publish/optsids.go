@@ -8,9 +8,8 @@ import (
 	"time"
 
 	"haina.com/share/gocraft/dbr"
+	"haina.com/share/logging"
 	. "haina.com/share/models"
-
-	//	"haina.com/share/logging"
 
 	. "haina.com/market/hqpublish/models"
 )
@@ -32,36 +31,19 @@ func NewMOptSids() *MOptSids {
 
 // get
 func (this *MOptSids) SelectAllSidsByAccessToken(access_token string) (*protocol.PayloadOptstockGet, error) {
-	var optstocks string
 
 	mid, err := this.GetMemberIDByAccesstoken(access_token)
 	if err != nil {
 		return nil, err
 	}
-
-	builder := this.Db.Select("OptStock").From(this.TableName).Where("MemberID=" + strconv.Itoa(mid))
-	if err = this.SelectWhere(builder, nil).LoadValue(&optstocks); err != nil {
+	nsids, err := this.selectSidsByMemberID(mid)
+	if err != nil {
 		return nil, err
 	}
 
-	if len(optstocks) == 0 {
-		return nil, MYSQL_NOT_FIND
-	}
-
-	var sidList []int32
-	sids := strings.Split(optstocks, ",")
-	for _, sid := range sids {
-		nid, e := strconv.Atoi(sid)
-		if e != nil {
-			return nil, e
-		}
-		sidList = append(sidList, int32(nid))
-	}
-
 	paystocksids := protocol.PayloadOptstockGet{
-		SidList: sidList,
+		SidList: nsids,
 	}
-
 	return &paystocksids, err
 }
 
@@ -104,18 +86,116 @@ func (this *MOptSids) OperationStockSids(req *protocol.RequestOptstockPut, acces
 		}
 	}
 
+	var tp int
+	var param_log map[string]interface{}
 	if isMidExist {
+		tp = 3
 		if err = this.UpdateStockSidList(params); err != nil {
 			return err
 		}
-		return nil
+		param_log = map[string]interface{}{
+			"MemberID": mid,
+			"Sids":     sids,
+			"OpeType":  tp,
+			"OpeTime":  time.Now().Unix(),
+		}
 	} else {
+		tp = 4
 		if err = this.InsertStockSidList(params); err != nil {
 			return err
 		}
-		return nil
+		param_log = map[string]interface{}{
+			"MemberID": mid,
+			"Sids":     sids,
+			"OpeType":  tp,
+			"OpeTime":  time.Now().Unix(),
+		}
+	}
+	if err = NewOptSidlog().insertOptLog(param_log); err != nil {
+		logging.Debug("%v", err.Error())
+		return err
+	}
+	return nil
+}
+
+// 单条删除(新增)自选股
+func (this *MOptSids) OperateSids(req *protocol.RequestOptstockOperate, access_token string) error {
+	mid, err := this.GetMemberIDByAccesstoken(access_token)
+	if err != nil {
+		return err
+	}
+	nsids, err := this.selectSidsByMemberID(mid)
+	if err != nil {
+		return err
 	}
 
+	var upsids string
+	var tp int
+
+	switch req.Type {
+	case 1: //删除
+		tp = 1
+		for _, nsid := range nsids {
+			if req.Sid != nsid {
+				upsids += ("," + strconv.Itoa(int(nsid)))
+			}
+		}
+	case 2: //新增
+		tp = 2
+		for _, nsid := range nsids {
+			upsids += ("," + strconv.Itoa(int(nsid)))
+		}
+		upsids += ("," + strconv.Itoa(int(req.Sid)))
+	}
+
+	upsids = upsids[1:]
+	params := map[string]interface{}{
+		"MemberID":   mid,
+		"OptStock":   upsids,
+		"UpdateDate": time.Now().Unix(),
+	}
+
+	if err = this.UpdateStockSidList(params); err != nil {
+		logging.Debug("%v", err)
+		return err
+	}
+
+	// 操作入日志表
+	param_log := map[string]interface{}{
+		"MemberID": mid,
+		"Sids":     strconv.Itoa(int(req.Sid)),
+		"OpeType":  tp,
+		"OpeTime":  time.Now().Unix(),
+	}
+
+	if err = NewOptSidlog().insertOptLog(param_log); err != nil {
+		logging.Debug("%v", err.Error())
+		return err
+	}
+	return nil
+}
+
+// 查询会员sids
+func (this *MOptSids) selectSidsByMemberID(mid int) ([]int32, error) {
+	var optstocks string
+	builder := this.Db.Select("OptStock").From(this.TableName).Where("MemberID=" + strconv.Itoa(mid))
+	if err := this.SelectWhere(builder, nil).LoadValue(&optstocks); err != nil {
+		return nil, err
+	}
+
+	if len(optstocks) == 0 {
+		logging.Debug("%v", MYSQL_NOT_FIND)
+		return nil, MYSQL_NOT_FIND
+	}
+
+	var nsids []int32
+	sids := strings.Split(optstocks, ",")
+
+	for _, sid := range sids {
+		nsid, _ := strconv.Atoi(sid)
+		nsids = append(nsids, int32(nsid))
+	}
+	return nsids, nil
 }
 
 // Mysql 查询所有会员ID

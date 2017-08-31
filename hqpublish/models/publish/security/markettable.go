@@ -48,7 +48,7 @@ func (this *SecurityNameTable) getSecurityTableAStockFromeCache() (*protocol.Pay
 		}
 
 		market_100.MarketID = 0
-		market_100.TimeStamp = market_100.TimeStamp
+		//market_100.TimeStamp = market_100.TimeStamp
 		market_100.Num = market_100.Num + market_200.Num
 
 		for _, v := range market_200.SNList {

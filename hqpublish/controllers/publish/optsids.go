@@ -50,6 +50,22 @@ func (this *OptionalSids) POST(c *gin.Context) {
 	}
 }
 
+func (this *OptionalSids) Operate(c *gin.Context) {
+	replayfmt := c.Query(models.CONTEXT_FORMAT)
+	if len(replayfmt) == 0 {
+		replayfmt = "pb" // 默认
+	}
+
+	switch replayfmt {
+	case "json":
+		this.OperateSidsJson(c)
+	case "pb":
+		this.OperateSidsPB(c)
+	default:
+		return
+	}
+}
+
 func (this *OptionalSids) PostJson(c *gin.Context) {
 	access_token := c.Query(models.ACCESS_TOKEN)
 
@@ -127,4 +143,54 @@ func (this *OptionalSids) GetPB(c *gin.Context) {
 		return
 	}
 	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_OPTSTOCK_GET, sidList)
+}
+
+// OperateSids 用于新增、 删除 自选股sid
+// type:  操作类型 1：删除---2：新增
+// sids: 自选股列表
+func (this *OptionalSids) OperateSidsJson(c *gin.Context) {
+	access_token := c.Query(models.ACCESS_TOKEN)
+	req := &protocol.RequestOptstockOperate{}
+
+	if code, err := RecvAndUnmarshalJson(c, 1024, req); err != nil {
+		logging.Error("post json %v", err)
+		WriteJson(c, code, nil)
+		return
+	}
+
+	err := publish.NewMOptSids().OperateSids(req, access_token)
+	if err != nil {
+		logging.Error("%v", err)
+		if err == models.REDIS_MEMBERID_NOT_FIND {
+			WriteJson(c, 40010, nil)
+			return
+		}
+		WriteJson(c, 40002, nil)
+		return
+	}
+	WriteJson(c, 200, nil)
+	return
+}
+
+func (this *OptionalSids) OperateSidsPB(c *gin.Context) {
+	access_token := c.Query(models.ACCESS_TOKEN)
+	req := &protocol.RequestOptstockOperate{}
+	if code, err := RecvAndUnmarshalPB(c, 1024, req); err != nil {
+		logging.Error("post pb %v", err)
+		WriteDataErrCode(c, code)
+		return
+	}
+
+	err := publish.NewMOptSids().OperateSids(req, access_token)
+	if err != nil {
+		logging.Error("%v", err)
+		if err == models.REDIS_MEMBERID_NOT_FIND {
+			WriteJson(c, 40010, nil)
+			return
+		}
+		WriteJson(c, 40002, nil)
+		return
+	}
+	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_OPTSTOCK_GET, nil)
+	return
 }

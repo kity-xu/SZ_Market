@@ -25,7 +25,8 @@ const (
 
 //MicroLink 数据库（123.56.30.141）表名
 const (
-	TABLE_HN_OPT_STOCK = "hn_opt_stock" //自选股
+	TABLE_HN_OPT_STOCK    = "hn_opt_stock"    //自选股
+	TABLE_HN_OPT_STOCKLOG = "hn_opt_stocklog" //自选股操作日志表
 )
 
 //MicroLink Redis 键值
