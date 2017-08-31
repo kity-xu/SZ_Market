@@ -32,7 +32,7 @@ func (this *NoticeinfoL) GetNoticeInfoL(req *protocol.RequestNoticeInfo) (*proto
 	// 公告临时限制时间
 	date := FCat.ValidTime
 	// 根据证券id获取公告信息
-	noif, err := fcmysql.NewTQ_SK_ANNOUNCEMT().GetNoticeInfo(stc.COMPCODE.String, req.Num, date)
+	noif, err := fcmysql.NewTQ_SK_ANNOUNCEMT().GetNoticeInfo(stc.COMPCODE.String, req.Num, date, req.Limit, req.Page)
 	if err != nil {
 		logging.Info("mysql select error %v", err)
 	}

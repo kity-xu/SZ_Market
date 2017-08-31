@@ -31,23 +31,34 @@ func NewTQ_SK_ANNOUNCEMT() *TQ_SK_ANNOUNCEMT {
 	}
 }
 
-func (this *TQ_SK_ANNOUNCEMT) GetNoticeInfo(ccode string, num int32, date string) ([]*TQ_SK_ANNOUNCEMT, error) {
+func (this *TQ_SK_ANNOUNCEMT) GetNoticeInfo(ccode string, num int32, date string, limit, page int32) ([]*TQ_SK_ANNOUNCEMT, error) {
 	var tsa []*TQ_SK_ANNOUNCEMT
 
 	var bulid *dbr.SelectBuilder
-	if num != 0 {
+
+	if num == 0 && limit == 0 && page == 0 {
+		//  pc端查询全部公告
+		bulid = this.Db.Select("ID,ANNOUNCEMTID,ANNTYPE,DECLAREDATE,ANNTITLE,LEVEL1").
+			From(this.TableName).
+			Where("COMPCODE='" + ccode + "'").
+			Where("DECLAREDATE >='" + date + "'").
+			Where("ISVALID=1").
+			OrderBy("DECLAREDATE desc")
+	} else if num > 0 && limit == 0 && page == 0 {
 		bulid = this.Db.Select("ID,ANNOUNCEMTID,ANNTYPE,DECLAREDATE,ANNTITLE,LEVEL1").
 			From(this.TableName).
 			Where("COMPCODE='" + ccode + "'").
 			Where("DECLAREDATE >='" + date + "'").
 			Where("ISVALID=1").
 			OrderBy("DECLAREDATE desc").Limit(uint64(num))
-	} else {
+	} else if num == 0 && limit > 0 && page > 0 {
 		bulid = this.Db.Select("ID,ANNOUNCEMTID,ANNTYPE,DECLAREDATE,ANNTITLE,LEVEL1").
 			From(this.TableName).
 			Where("COMPCODE='" + ccode + "'").
 			Where("DECLAREDATE >='" + date + "'").
 			Where("ISVALID=1").
+			Limit(uint64(limit)).
+			Offset(uint64((page - 1) * limit)).
 			OrderBy("DECLAREDATE desc")
 	}
 
