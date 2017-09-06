@@ -31,7 +31,7 @@ func NewOptionalStocks(redis_key string) *OptionalStocks {
 //ret := uint32(bs[0]) | uint32(bs[1])<<8 | uint32(bs[2])<<16 | uint32(bs[3])<<24 //小端
 // binary.LittleEndian.Uint32(bs)
 func (this *OptionalStocks) GetSortByFieldID(req *protocol.RequestUserdef) (*protocol.RedisSortTable, error) {
-	key := fmt.Sprintf(this.CacheKey, 2, absInt32(req.FieldID)) //个股
+	key := fmt.Sprintf(this.CacheKey, 12, absInt32(req.FieldID)) //个股+指数
 
 	bdata, err := RedisStore.GetBytes(key)
 	if err != nil {
@@ -40,16 +40,6 @@ func (this *OptionalStocks) GetSortByFieldID(req *protocol.RequestUserdef) (*pro
 	if len(bdata) == 0 {
 		return nil, ERROR_REDIS_DATE_NULL
 	}
-
-	ikey := fmt.Sprintf(this.CacheKey, 1, absInt32(req.FieldID)) //指数
-	idata, err := RedisStore.GetBytes(ikey)
-	if err != nil {
-		return nil, err
-	}
-	if len(idata) == 0 {
-		return nil, ERROR_REDIS_DATE_NULL
-	}
-	bdata = append(bdata, idata...) // 个股+指数
 
 	var table = &protocol.RedisSortTable{}
 	var sortSize = &TagStockSortInfo{}

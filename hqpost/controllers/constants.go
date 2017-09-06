@@ -10,6 +10,8 @@ const (
 	REDISKEY_SECURITY_NAME_ID      = "hq:st:name:%d"         ///<证券代码(参数：sid) (hq-init写入)
 	REDISKEY_SECURITY_NAME_CODE    = "hq:st:name:%s"         ///<证券代码(参数：scode) (hq-init写入)
 	REDISKEY_HQPOST_EXECUTED_TIME  = "hq:post:time:executed" ///hqpost 上次执行完毕时的时间戳
+
+	REDISKEY_SECURITY_SNAP = "hq:st:snap:%d" ///<证券快照数据(参数：sid) (calc写入)
 )
 
 var (

@@ -60,7 +60,7 @@
         <timeout>3</timeout> 
     </redisStore>
 	<fileStore>
-		<finpath>E:/hqpost/hqdata518</finpath>	<!--finchina 日k线路劲-->
+		<finpath>E:/hqdata/hqdata</finpath>	<!--finchina 日k线路劲-->
 		<finday>dk.dat</finday>  		<!--finchina 日k线文件名-->
 		<findex>index.dat</findex>		<!--finchina 指数文件名-->
 		

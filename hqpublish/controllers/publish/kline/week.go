@@ -52,11 +52,14 @@ func maybeAddWeekLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 		return fmt.Errorf("PayloadHisK is null...")
 	}
 
+	var kinfo = protocol.KInfo{}
+	kinfo = *(*reply)[len(*reply)-1]
+
+	lday := kinfo.NTime
 	today := models.GetCurrentTime()
-	if (*reply)[0].NSID/1000000 == 100 {
-		if today == Trade_100 { //是交易日
-			var kinfo = protocol.KInfo{}
-			kinfo = *(*reply)[len(*reply)-1]
+
+	if kinfo.NSID/1000000 == 100 {
+		if lday < Trade_100 { //是交易日
 
 			//判断是否同属一周
 			b1, _ := models.DateAdd(kinfo.NTime) //找到该日期所在周日的那天
@@ -69,10 +72,8 @@ func maybeAddWeekLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 				*reply = append(*reply, &kinfo)
 			}
 		}
-	} else if (*reply)[0].NSID/1000000 == 200 {
-		if today == Trade_200 {
-			var kinfo = protocol.KInfo{}
-			kinfo = *(*reply)[len(*reply)-1]
+	} else if kinfo.NSID/1000000 == 200 {
+		if lday < Trade_200 {
 
 			//判断是否同属一周
 			b1, _ := models.DateAdd(kinfo.NTime) //找到该日期所在周日的那天

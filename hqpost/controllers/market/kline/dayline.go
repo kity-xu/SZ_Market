@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	. "haina.com/market/hqpost/controllers"
 	"haina.com/market/hqpost/models/filestore"
 	"haina.com/market/hqpost/models/lib"
 	"haina.com/market/hqpost/models/redistore"
@@ -176,7 +177,7 @@ func (this *Security) DayLine() {
 				continue
 			}
 		} else {
-			logging.Debug("Gets the minute line of today failed...%v", sid)
+			logging.Error("Generate the dayline failed...%v", sid)
 		}
 		sigList.Sid = sid
 		sigList.Date = date
@@ -189,43 +190,6 @@ func (this *Security) DayLine() {
 
 //获取今天分钟线生成的日线
 func GetTodayDayLine(sid, precpx int32) (*protocol.KInfo, error) {
-	min, err := redistore.NewMinKLine(REDISKEY_SECURITY_MIN).GetMinKLineToday(sid)
-	if err != nil {
-		//logging.Debug("%v", err.Error())
-		return nil, err
-	}
-	var tmp protocol.KInfo //pb类型
-
-	var (
-		i          int = 0
-		AvgPxTotal uint32
-	)
-
-	lib.GetASCStruct(min) //按时间升序排序
-	for _, v := range *min {
-		if tmp.NHighPx < v.NHighPx || tmp.NHighPx == 0 { //最高价
-			tmp.NHighPx = v.NHighPx
-		}
-		if tmp.NLowPx > v.NLowPx || tmp.NLowPx == 0 { //最低价
-			tmp.NLowPx = v.NLowPx
-		}
-		tmp.LlVolume += v.LlVolume //成交量
-		tmp.LlValue += v.LlValue   //成交额
-		AvgPxTotal += v.NAvgPx
-
-		i++
-	}
-	tmp.NSID = sid
-	tmp.NTime = 20000000 + (*min)[0].NTime/10000
-	//tmp.NTime = filestore.GetDateToday() //时间
-	tmp.NOpenPx = (*min)[0].NOpenPx //开盘价
-	if precpx == 0 {
-		tmp.NPreCPx = (*min)[len(*min)-1].NPreCPx //昨收价
-	} else {
-		tmp.NPreCPx = precpx
-	}
-	tmp.NLastPx = (*min)[len(*min)-1].NLastPx //最新价
-	tmp.NAvgPx = AvgPxTotal / uint32(i+1)     //平均价
-
-	return &tmp, nil
+	key := fmt.Sprintf(REDISKEY_SECURITY_SNAP, sid)
+	return redistore.GetStockSnapshotObj(key)
 }

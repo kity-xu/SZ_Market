@@ -53,12 +53,13 @@ func maybeAddYearLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 		return fmt.Errorf("PayloadHisK is null...")
 	}
 
-	today := models.GetCurrentTime()
-	if (*reply)[0].NSID/1000000 == 100 {
-		if today == Trade_100 { //是交易日
-			var kinfo = protocol.KInfo{}
-			kinfo = *(*reply)[len(*reply)-1]
+	var kinfo = protocol.KInfo{}
+	kinfo = *(*reply)[len(*reply)-1]
 
+	lday := kinfo.NTime
+	today := models.GetCurrentTime()
+	if kinfo.NSID/1000000 == 100 {
+		if lday < Trade_100 { //是交易日
 			if kinfo.NTime/10000 != today/10000 { //不同年
 				kinfo.NTime = today
 				kinfo.LlValue = 0
@@ -66,11 +67,8 @@ func maybeAddYearLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 				*reply = append(*reply, &kinfo)
 			}
 		}
-	} else if (*reply)[0].NSID/1000000 == 200 {
-		if today == Trade_200 {
-			var kinfo = protocol.KInfo{}
-			kinfo = *(*reply)[len(*reply)-1]
-
+	} else if kinfo.NSID/1000000 == 200 {
+		if lday < Trade_200 {
 			if kinfo.NTime/10000 != today/10000 { //不同年
 				kinfo.NTime = today
 				kinfo.LlValue = 0

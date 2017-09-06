@@ -160,7 +160,7 @@ func DataTreating(ind int, pst *protocol.IndexSnapshot) *protocol.Infobar {
 		sname = "上证指数"
 	}
 	if ind == 2 {
-		sname = "深圳成指"
+		sname = "深证成指"
 	}
 	if ind == 3 {
 		sname = "创业板指"

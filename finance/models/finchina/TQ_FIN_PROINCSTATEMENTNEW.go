@@ -125,7 +125,7 @@ func (this *F10_MB_PROINCSTATEMENTNEW) GetF10_MB_PROINCSTATEMENTNEW(compCode str
 		"REPORTTYPE=?": 1,
 		"ISVALID=?":    1,
 	}
-	builder := this.Db.Select("*").From(this.TableName).OrderBy("ENDDATE desc") //变动起始日
+	builder := this.Db.Select("BIZINCO,BASICEPS,PARENETP").From(this.TableName).OrderBy("ENDDATE desc") //变动起始日
 	err := this.SelectWhere(builder, exps).Limit(5).LoadStruct(&res)
 	if err != nil {
 		return nil, err

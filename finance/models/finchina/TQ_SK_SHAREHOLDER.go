@@ -101,7 +101,7 @@ func (this *ShareHoldersTop10) GetShareHoldersTop10(compCode, diviTime string) (
 		"ENDDATE=?":  diviTime,
 		"ISVALID=?":  1,
 	}
-	builder := this.Db.Select("*").From(this.TableName).OrderBy("ENDDATE desc") //变动起始日
+	builder := this.Db.Select("SHHOLDERNAME,RANK,HOLDERRTO,ENDDATE").From(this.TableName).OrderBy("ENDDATE desc") //变动起始日
 	_, err := this.SelectWhere(builder, exps).LoadStructs(&top10)
 	if err != nil {
 		return nil, err

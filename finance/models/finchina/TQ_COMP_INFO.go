@@ -131,7 +131,7 @@ func (this *CompInfo) GetCompInfo(compCode string) (*CompInfo, error) {
 		"COMPCODE=?": compCode,
 		"ISVALID=?":  1,
 	}
-	builder := this.Db.Select("*").From(this.TableName)
+	builder := this.Db.Select("COMPSNAME, REGION, MAJORBIZ").From(this.TableName)
 	err := this.SelectWhere(builder, exps).LoadStruct(this)
 	if err != nil {
 		logging.Error("%s", err.Error())

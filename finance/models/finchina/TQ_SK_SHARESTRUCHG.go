@@ -158,6 +158,7 @@ func (this *TQ_SK_SHARESTRUCHG) GetChangesStrGroup(enddate string, scode string,
 
 type Equity struct {
 	Model      `db:"-" `
+	ASK        dbr.NullFloat64 //A股(万股)
 	TOTALSHARE dbr.NullFloat64 //总股本(万股)
 	CIRCSKAMT  dbr.NullFloat64 //流通股本(万股)
 }
@@ -176,7 +177,7 @@ func (this *Equity) GetEquity(compCode string) (*Equity, error) {
 		"COMPCODE=?": compCode,
 		"ISVALID=?":  1,
 	}
-	builder := this.Db.Select("*").From(this.TableName).OrderBy("BEGINDATE desc") //变动起始日
+	builder := this.Db.Select("ASK, TOTALSHARE, CIRCSKAMT").From(this.TableName).OrderBy("BEGINDATE desc") //变动起始日
 	err := this.SelectWhere(builder, exps).Limit(1).LoadStruct(this)
 	if err != nil {
 		logging.Error("%s", err.Error())

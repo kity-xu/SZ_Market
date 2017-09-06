@@ -180,7 +180,7 @@ func F10Mobile(scode string, market string) (*F10MobileTerminal, *string, error)
 		Totalshrto:       shrto,
 		Top1sha:          nametop1,
 		Top10Rate:        top10rate,
-		LegalPersonsRate: num / (equity.TOTALSHARE.Float64 * 10000),
+		LegalPersonsRate: num / (equity.ASK.Float64 * 10000),
 	}
 
 	f10 := &F10MobileTerminal{

@@ -38,7 +38,6 @@ func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHi
 	if e == nil {
 		models.GetASCStruct(dlines) //升序排序
 	}
-	logging.Debug("______--*******---%v_________", e)
 
 	over, err := kline.IsHQpostRunOver()
 	if err != nil {
@@ -216,24 +215,22 @@ func maybeAddKline(reply *[]*protocol.KInfo, Sid int32, e error) error {
 	if len(*reply) < 1 {
 		return fmt.Errorf("PayloadHisK is null...")
 	}
-	logging.Debug("Trade_100:%v------Trade_200:%v", Trade_100, Trade_200)
+	//logging.Debug("Trade_100:%v------Trade_200:%v", Trade_100, Trade_200)
+	var kinfo = protocol.KInfo{}
+	kinfo = *(*reply)[len(*reply)-1]
 
+	lday := kinfo.NTime
 	today := models.GetCurrentTime()
-	if (*reply)[0].NSID/1000000 == 100 {
-		if today == Trade_100 {
-			var kinfo = protocol.KInfo{}
 
-			kinfo = *(*reply)[len(*reply)-1]
+	if kinfo.NSID/1000000 == 100 {
+		if lday < Trade_100 { //如果K线最后一天的日期小于交易日  则新增
 			kinfo.NTime = today
 			kinfo.LlValue = 0
 			kinfo.LlVolume = 0
 			*reply = append(*reply, &kinfo)
 		}
-	} else if (*reply)[0].NSID/1000000 == 200 {
-		if today == Trade_200 {
-			var kinfo = protocol.KInfo{}
-
-			kinfo = *(*reply)[len(*reply)-1]
+	} else if kinfo.NSID/1000000 == 200 {
+		if lday < Trade_200 {
 			kinfo.NTime = today
 			kinfo.LlValue = 0
 			kinfo.LlVolume = 0
