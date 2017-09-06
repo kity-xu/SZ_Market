@@ -56,6 +56,10 @@ func (this *NoticeInfo) PostJson(c *gin.Context) {
 		WriteJson(c, 40002, nil)
 		return
 	}
+	if len(data.List) <= 0 {
+		WriteJson(c, 40002, nil)
+		return
+	}
 	WriteJson(c, 200, data)
 }
 
@@ -77,6 +81,10 @@ func (this *NoticeInfo) PostPB(c *gin.Context) {
 	if err != nil {
 		logging.Error("%v", err)
 		WriteDataErrCode(c, 40002)
+		return
+	}
+	if len(data.List) <= 0 {
+		WriteJson(c, 40002, nil)
 		return
 	}
 	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_NOTICEINFO, data)

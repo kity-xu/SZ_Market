@@ -123,7 +123,7 @@ func (this *StockSnapshot) GetStockSnapshotObj(req *protocol.RequestSnapshot) (*
 			LlInnerValue:  data.LlInnerValue,
 			LlOuterValue:  data.LlOuterValue,
 			NPxChg:        data.NPxChg,
-			PxChgRatio:    data.PxChgRatio,
+			NPxChgRatio:   data.PxChgRatio,
 			NPxAmplitude:  data.NPxAmplitude,
 			NLiangbi:      data.NLiangbi,
 			NWeibi:        data.NWeibi,
