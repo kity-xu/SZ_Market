@@ -31,3 +31,5 @@ test/test.go
 hqpublish/debug
 *.zip
 hqtools/blockindex/bin/
+hqtools/indexlinetools/bin/hqtools_indexline
+hqtools/dklinetools/bin/hqtools_dkline
