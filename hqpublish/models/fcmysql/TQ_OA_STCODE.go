@@ -25,13 +25,14 @@ func NewTQ_OA_STCODE() *TQ_OA_STCODE {
 	}
 }
 
+// 获取公司内码	 COMPCODE
 func (this *TQ_OA_STCODE) GetStcodeInfo(sid string) (TQ_OA_STCODE, error) {
 	var tsa TQ_OA_STCODE
 
 	bulid := this.Db.Select("COMPCODE").
 		From(this.TableName).
 		Where("EXCHANGE in('001002','001003')").
-		Where("SETYPE='101'").
+		Where("SETYPE in('101','701')").
 		Where("SYMBOL='" + sid + "'").Limit(1)
 
 	_, err := this.SelectWhere(bulid, nil).LoadStructs(&tsa)
@@ -42,13 +43,15 @@ func (this *TQ_OA_STCODE) GetStcodeInfo(sid string) (TQ_OA_STCODE, error) {
 	}
 	return tsa, err
 }
+
+// 获取证券内码	 SECODE
 func (this *TQ_OA_STCODE) GetSecode(sid string) (string, error) {
 	var v TQ_OA_STCODE
 
 	bulid := this.Db.Select("SECODE").
 		From(this.TableName).
 		Where("EXCHANGE in('001002','001003')").
-		Where("SETYPE='101'").
+		Where("SETYPE in('101','701')").
 		Where("SYMBOL='" + sid + "'").Limit(1)
 
 	_, err := this.SelectWhere(bulid, nil).LoadStructs(&v)

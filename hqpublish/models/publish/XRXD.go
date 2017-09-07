@@ -370,6 +370,18 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 	if err != nil {
 		return nil, err
 	}
+	// 指数的情况下，造了一根假的除权因子参于后续运算，否则改动调整很大
+	if fcs == nil {
+		fcs = make([]*pro.Factor, 0, 1)
+		fc1 := &pro.Factor{
+			NBeginDate:  19000101,
+			NEndDate:    99999999,
+			DfXDY:       1,
+			DfLTDXDY:    1,
+			DfTHELTDXDY: 1,
+		}
+		fcs = append(fcs, fc1)
+	}
 
 	// 解码
 	ls, err := this.Decode(lsbin)
