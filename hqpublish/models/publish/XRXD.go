@@ -370,7 +370,7 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 	if err != nil {
 		return nil, err
 	}
-	// 指数的情况下，造了一根假的除权因子参于后续运算，否则改动调整很大
+	// 指数没有复权因子，此处造了一根假数据
 	if fcs == nil {
 		fcs = make([]*pro.Factor, 0, 1)
 		fc1 := &pro.Factor{
@@ -389,6 +389,7 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 		return nil, err
 	}
 
+	// 根据K线的日期关联到复权因子进行后续处理
 	switch req.Type {
 	case 1: //日线
 		fgs, err = this.FactorGroupOp(req, fcs, ls)

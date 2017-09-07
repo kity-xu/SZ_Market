@@ -66,6 +66,7 @@ func (this Factor) GetReferFactors(sid int32) ([]*pro.Factor, error) {
 		return nil, err
 	}
 	trap := ssid[3:5]
+
 	switch kind {
 	case 1:
 		if trap == "00" { // 沪指
@@ -82,7 +83,7 @@ func (this Factor) GetReferFactors(sid int32) ([]*pro.Factor, error) {
 	}
 
 	real_sid := sid % 1000000
-	secode, err := fcmysql.NewTQ_OA_STCODE().GetSecode(fmt.Sprintf("%06d", real_sid))
+	secode, err := fcmysql.NewTQ_OA_STCODE().GetStockSecode(fmt.Sprintf("%06d", real_sid))
 	if err != nil {
 		logging.Error("%v", err)
 		return nil, err
