@@ -13,6 +13,7 @@ var (
 	ERROR_INVALID_DATA     = errors.New("Invalid data or data is null")
 
 	INVALID_FILE_PATH    = errors.New("Invalid file path")
+	FILE_HMINDATA_NULL   = errors.New("the file is empty")
 	INVALID_REQUEST_PARA = errors.New("Invalid request parameter type")
 
 	READ_REDIS_STORE_NULL = errors.New("redis store is null")

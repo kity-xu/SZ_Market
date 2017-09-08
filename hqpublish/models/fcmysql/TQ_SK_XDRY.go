@@ -44,6 +44,8 @@ func (this *TQ_SK_XDRY) GetFactorsBySecode(secode string) ([]*XDRYFactor, error)
 		Where(`BEGINDATE <= DATE_FORMAT(now(),'%Y%m%d')`).
 		OrderBy("BEGINDATE")
 
+	logging.Debug("secode:%v", secode)
+
 	_, err := cond.LoadStructs(&rows)
 	if err != nil {
 		logging.Error("%v", err)

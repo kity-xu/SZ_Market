@@ -167,6 +167,9 @@ func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.Reque
 	//var tmpTime int32
 
 	lengh := len(data)
+	if lengh == 0 {
+		return nil, publish.FILE_HMINDATA_NULL
+	}
 
 	for i := 0; i < lengh; i += size {
 		v := data[i : i+size]

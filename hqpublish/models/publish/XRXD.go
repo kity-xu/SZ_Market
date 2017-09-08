@@ -385,6 +385,7 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 		}
 	case 2, 3, 4: // 其他K线
 		fgs, err = this.FactorGroupTotal(req, fcs, ls)
+
 		if err != nil {
 			return nil, err
 		}

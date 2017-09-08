@@ -15,6 +15,13 @@ func (this *Kline) MinJson_01(c *gin.Context, request *protocol.RequestHisK) {
 	reply, err := this.PayLoadMinLineData(publish.REDISKEY_SECURITY_HMIN1, request)
 	if err != nil {
 		logging.Error("%v", err.Error())
+		if err == publish.INVALID_FILE_PATH || err == publish.FILE_HMINDATA_NULL {
+			ret := &protocol.KInfo{
+				NSID: request.SID,
+			}
+			WriteJson(c, 200, ret)
+			return
+		}
 		WriteJson(c, 40002, nil)
 		return
 	}
@@ -25,6 +32,13 @@ func (this *Kline) MinPB_01(c *gin.Context, request *protocol.RequestHisK) {
 	reply, err := this.PayLoadMinLineData(publish.REDISKEY_SECURITY_HMIN1, request)
 	if err != nil {
 		logging.Error("%v", err.Error())
+		if err == publish.INVALID_FILE_PATH || err == publish.FILE_HMINDATA_NULL {
+			ret := &protocol.KInfo{
+				NSID: request.SID,
+			}
+			WriteJson(c, 200, ret)
+			return
+		}
 		WriteDataErrCode(c, 40002)
 		return
 	}
@@ -37,6 +51,7 @@ func (this *Kline) PayLoadMinLineData(redisKey string, request *protocol.Request
 	if err != nil {
 		return nil, err
 	}
+
 	total := int32(len(*mlines))
 
 	if request.Num > total {
