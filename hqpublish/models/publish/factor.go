@@ -16,6 +16,8 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
+	"strconv"
+
 	"haina.com/market/hqpublish/models/fcmysql"
 	hsgrr "haina.com/share/garyburd/redigo/redis"
 	"haina.com/share/logging"
@@ -54,8 +56,34 @@ func (this Factor) ErrDataInvalid(fields string, sid int32, secode string) error
 
 // 从财汇数据库获取 *股票除权因子*
 func (this Factor) GetReferFactors(sid int32) ([]*pro.Factor, error) {
+	ssid := fmt.Sprintf("%v", sid)
+	if len(ssid) != len("100600000") {
+		return nil, errors.New(fmt.Sprintf("Unknown format sid %v", ssid))
+	}
+
+	kind, err := strconv.ParseInt(string(ssid[0]), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	trap := ssid[3:5]
+
+	switch kind {
+	case 1:
+		if trap == "00" { // 沪指
+			logging.Debug("Shanghai Composite Index sid %v", ssid)
+			return nil, nil
+		}
+	case 2:
+		if trap == "39" { // 深指
+			logging.Debug("Shenzhen Composite Index sid %v", ssid)
+			return nil, nil
+		}
+	default:
+		return nil, fmt.Errorf("Unknown type sid %v", ssid)
+	}
+
 	real_sid := sid % 1000000
-	secode, err := fcmysql.NewTQ_OA_STCODE().GetSecode(fmt.Sprintf("%06d", real_sid))
+	secode, err := fcmysql.NewTQ_OA_STCODE().GetStockSecode(fmt.Sprintf("%06d", real_sid))
 	if err != nil {
 		logging.Error("%v", err)
 		return nil, err
