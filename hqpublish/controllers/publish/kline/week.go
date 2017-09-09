@@ -19,6 +19,16 @@ func (this *Kline) WeekJson(c *gin.Context, request *protocol.RequestHisK) {
 	reply, err := this.PayLoadKLineData(publish.REDISKEY_SECURITY_HWEEK, request)
 	if err != nil {
 		logging.Error("%v", err.Error())
+		if err == publish.INVALID_FILE_PATH || err == publish.FILE_HMINDATA_NULL || err == publish.ERROR_KLINE_DATA_NULL {
+			ret := &protocol.PayloadHisK{
+				SID:   request.SID,
+				Type:  request.Type,
+				Total: -1,
+				Num:   -1,
+			}
+			WriteJson(c, 200, ret)
+			return
+		}
 		WriteJson(c, 40002, nil)
 		return
 	}
@@ -29,6 +39,16 @@ func (this *Kline) WeekPB(c *gin.Context, request *protocol.RequestHisK) {
 	reply, err := this.PayLoadKLineData(publish.REDISKEY_SECURITY_HWEEK, request)
 	if err != nil {
 		logging.Error("%v", err.Error())
+		if err == publish.INVALID_FILE_PATH || err == publish.FILE_HMINDATA_NULL || err == publish.ERROR_KLINE_DATA_NULL {
+			ret := &protocol.PayloadHisK{
+				SID:   request.SID,
+				Type:  request.Type,
+				Total: -1,
+				Num:   -1,
+			}
+			WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_HISKLINE, ret)
+			return
+		}
 		WriteDataErrCode(c, 40002)
 		return
 	}

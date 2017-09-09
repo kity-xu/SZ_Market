@@ -138,6 +138,10 @@ func (this *KLine) getHisKlineFromeFileStore(key string, req *protocol.RequestHi
 		return nil, err
 	}
 
+	if len(data) == 0 {
+		return nil, publish.FILE_HMINDATA_NULL
+	}
+
 	var line kline.KInfo
 	size := binary.Size(&line)
 

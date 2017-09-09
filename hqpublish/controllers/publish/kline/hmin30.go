@@ -15,8 +15,11 @@ func (this *Kline) MinJson_30(c *gin.Context, request *protocol.RequestHisK) {
 	if err != nil {
 		logging.Error("%v", err.Error())
 		if err == publish.INVALID_FILE_PATH || err == publish.FILE_HMINDATA_NULL {
-			ret := &protocol.KInfo{
-				NSID: request.SID,
+			ret := &protocol.PayloadHisK{
+				SID:   request.SID,
+				Type:  request.Type,
+				Total: -1,
+				Num:   -1,
 			}
 			WriteJson(c, 200, ret)
 			return
@@ -33,10 +36,13 @@ func (this *Kline) MinPB_30(c *gin.Context, request *protocol.RequestHisK) {
 	if err != nil {
 		logging.Error("%v", err.Error())
 		if err == publish.INVALID_FILE_PATH || err == publish.FILE_HMINDATA_NULL {
-			ret := &protocol.KInfo{
-				NSID: request.SID,
+			ret := &protocol.PayloadHisK{
+				SID:   request.SID,
+				Type:  request.Type,
+				Total: -1,
+				Num:   -1,
 			}
-			WriteJson(c, 200, ret)
+			WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_HISKLINE, ret)
 			return
 		}
 		WriteDataErrCode(c, 40002)

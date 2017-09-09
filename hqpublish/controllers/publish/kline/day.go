@@ -17,6 +17,16 @@ func (this *Kline) DayJson(c *gin.Context, request *protocol.RequestHisK) {
 	reply, err := this.PayLoadKLineData(publish.REDISKEY_SECURITY_HDAY, request)
 	if err != nil {
 		logging.Error("%v", err.Error())
+		if err == publish.INVALID_FILE_PATH || err == publish.FILE_HMINDATA_NULL || err == publish.ERROR_KLINE_DATA_NULL {
+			ret := &protocol.PayloadHisK{
+				SID:   request.SID,
+				Type:  request.Type,
+				Total: -1,
+				Num:   -1,
+			}
+			WriteJson(c, 200, ret)
+			return
+		}
 		WriteJson(c, 40002, nil)
 		return
 	}
@@ -26,6 +36,16 @@ func (this *Kline) DayJson(c *gin.Context, request *protocol.RequestHisK) {
 func (this *Kline) DayPB(c *gin.Context, request *protocol.RequestHisK) {
 	reply, err := this.PayLoadKLineData(publish.REDISKEY_SECURITY_HDAY, request)
 	if err != nil {
+		if err == publish.INVALID_FILE_PATH || err == publish.FILE_HMINDATA_NULL || err == publish.ERROR_KLINE_DATA_NULL {
+			ret := &protocol.PayloadHisK{
+				SID:   request.SID,
+				Type:  request.Type,
+				Total: -1,
+				Num:   -1,
+			}
+			WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_HISKLINE, ret)
+			return
+		}
 		WriteDataErrCode(c, 40002)
 		return
 	}
@@ -35,46 +55,43 @@ func (this *Kline) DayPB(c *gin.Context, request *protocol.RequestHisK) {
 func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHisK) (*protocol.PayloadHisK, error) {
 	var ret *protocol.PayloadHisK
 	dlines, e := kline.NewKLine(redisKey).GetHisKLineAll(request)
+	if e == publish.INVALID_FILE_PATH || e == publish.FILE_HMINDATA_NULL || e == publish.ERROR_KLINE_DATA_NULL {
+		return nil, e
+	}
 	if e == nil {
 		models.GetASCStruct(dlines) //升序排序
 	}
 
-	over, err := kline.IsHQpostRunOver()
-	if err != nil {
-		logging.Debug("err:%v", err.Error())
-	}
-	if !over {
-		logging.Info("Create new kline...")
-		switch redisKey {
-		case publish.REDISKEY_SECURITY_HDAY:
-			e = maybeAddKline(dlines, request.SID, e)
-			if e != nil {
-				logging.Error(e.Error())
-				return nil, e
-			}
-			break
-		case publish.REDISKEY_SECURITY_HWEEK:
-			e = maybeAddWeekLine(dlines, request.SID, e)
-			if e != nil {
-				logging.Error(e.Error())
-				return nil, e
-			}
-			break
-		case publish.REDISKEY_SECURITY_HMONTH:
-			e = maybeAddMonthLine(dlines, request.SID, e)
-			if e != nil {
-				logging.Error(e.Error())
-				return nil, e
-			}
-			break
-		case publish.REDISKEY_SECURITY_HYEAR:
-			e = maybeAddYearLine(dlines, request.SID, e)
-			if e != nil {
-				logging.Error(e.Error())
-				return nil, e
-			}
-			break
+	logging.Info("Create new kline...")
+	switch redisKey {
+	case publish.REDISKEY_SECURITY_HDAY:
+		e = maybeAddKline(dlines, request.SID, e)
+		if e != nil {
+			logging.Error(e.Error())
+			return nil, e
 		}
+		break
+	case publish.REDISKEY_SECURITY_HWEEK:
+		e = maybeAddWeekLine(dlines, request.SID, e)
+		if e != nil {
+			logging.Error(e.Error())
+			return nil, e
+		}
+		break
+	case publish.REDISKEY_SECURITY_HMONTH:
+		e = maybeAddMonthLine(dlines, request.SID, e)
+		if e != nil {
+			logging.Error(e.Error())
+			return nil, e
+		}
+		break
+	case publish.REDISKEY_SECURITY_HYEAR:
+		e = maybeAddYearLine(dlines, request.SID, e)
+		if e != nil {
+			logging.Error(e.Error())
+			return nil, e
+		}
+		break
 	}
 
 	if len(*dlines) == 0 {
@@ -221,6 +238,8 @@ func maybeAddKline(reply *[]*protocol.KInfo, Sid int32, e error) error {
 
 	lday := kinfo.NTime
 	today := models.GetCurrentTime()
+
+	// 判断是否停牌
 
 	if kinfo.NSID/1000000 == 100 {
 		if lday < Trade_100 { //如果K线最后一天的日期小于交易日  则新增
