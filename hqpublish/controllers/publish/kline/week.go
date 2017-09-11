@@ -56,9 +56,16 @@ func (this *Kline) WeekPB(c *gin.Context, request *protocol.RequestHisK) {
 }
 
 func maybeAddWeekLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
-	if kline.IsDelist(Sid) { // 停盘
-		return nil
+	is, err := kline.IsIndex(Sid)
+	if err != nil {
+		logging.Debug("%v", e.Error())
 	}
+	if err == nil && !is {
+		if kline.IsDelist(Sid) { // 停盘
+			return nil
+		}
+	}
+
 	if e == publish.INVALID_FILE_PATH { //可能是今天上市的新股
 		key := fmt.Sprintf(publish.REDISKEY_SECURITY_NAME_ID, Sid) //去股票代码表查是否有此ID
 		if !kline.IsExistInRedis(key) {
@@ -91,6 +98,11 @@ func maybeAddWeekLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 
 			if !b1.Equal(b2) { //是交易日但不同属一周（周一）新建
 				kinfo.NTime = today
+				kinfo.NPreCPx = kinfo.NPreCPx
+				kinfo.NOpenPx = kinfo.NPreCPx
+				kinfo.NHighPx = kinfo.NPreCPx
+				kinfo.NLowPx = kinfo.NPreCPx
+				kinfo.NLastPx = kinfo.NPreCPx
 				kinfo.LlValue = 0
 				kinfo.LlVolume = 0
 				kinfo.NAvgPx = 1
@@ -106,6 +118,11 @@ func maybeAddWeekLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 
 			if !b1.Equal(b2) { //是交易日但不同属一周（周一）新建
 				kinfo.NTime = today
+				kinfo.NPreCPx = kinfo.NPreCPx
+				kinfo.NOpenPx = kinfo.NPreCPx
+				kinfo.NHighPx = kinfo.NPreCPx
+				kinfo.NLowPx = kinfo.NPreCPx
+				kinfo.NLastPx = kinfo.NPreCPx
 				kinfo.LlValue = 0
 				kinfo.LlVolume = 0
 				kinfo.NAvgPx = 1

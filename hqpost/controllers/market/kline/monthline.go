@@ -83,13 +83,9 @@ func produceMonthline(single *SingleSecurity) *protocol.KInfoTable {
 			AvgPxTotal += stockday.NAvgPx
 		}
 		tmp.NSID = single.Sid
-		tmp.NTime = single.SigStock[month[0]].NTime     //时间（取每周第一天）
-		tmp.NOpenPx = single.SigStock[month[0]].NOpenPx //开盘价（每周第一天的开盘价）
-		if len(tmps) > 0 {
-			tmp.NPreCPx = tmps[len(tmps)-1].NLastPx //昨收价(上周的最新价)
-		} else {
-			tmp.NPreCPx = 0
-		}
+		tmp.NTime = single.SigStock[month[0]].NTime     //时间
+		tmp.NOpenPx = single.SigStock[month[0]].NOpenPx //开盘价
+		tmp.NPreCPx = single.SigStock[month[0]].NPreCPx
 		tmp.NLastPx = single.SigStock[month[i]].NLastPx //最新价
 		tmp.NAvgPx = AvgPxTotal / uint32(i+1)           //平均价
 

@@ -81,11 +81,7 @@ func produceYearline(single *SingleSecurity) *protocol.KInfoTable {
 		tmp.NSID = single.Sid
 		tmp.NTime = single.SigStock[year[0]].NTime     //时间（取每周第一天）
 		tmp.NOpenPx = single.SigStock[year[0]].NOpenPx //开盘价（每周第一天的开盘价）
-		if len(klist.List) > 0 {
-			tmp.NPreCPx = klist.List[len(klist.List)-1].NLastPx //昨收价(上周的最新价)
-		} else {
-			tmp.NPreCPx = 0
-		}
+		tmp.NPreCPx = single.SigStock[year[0]].NPreCPx
 		tmp.NLastPx = single.SigStock[year[i]].NLastPx //最新价
 		tmp.NAvgPx = AvgPxTotal / uint32(i+1)          //平均价
 

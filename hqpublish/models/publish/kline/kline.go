@@ -285,3 +285,21 @@ func IsDelist(sid int32) bool {
 	}
 	return false
 }
+
+func IsIndex(sid int32) (bool, error) {
+	key := fmt.Sprintf("hq:st:name:%d", sid)
+	bs, err := RedisStore.GetBytes(key)
+	if err != nil {
+		return false, err
+	}
+
+	var kinfo = &protocol.SecurityName{}
+
+	if err = proto.Unmarshal(bs, kinfo); err != nil {
+		return false, err
+	}
+	if kinfo.SzSType[1] == 'I' {
+		return true, nil
+	}
+	return false, nil
+}

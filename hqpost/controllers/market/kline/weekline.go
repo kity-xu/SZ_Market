@@ -87,16 +87,11 @@ func produceWeeprotocol(single *SingleSecurity) *protocol.KInfoTable {
 		tmp.NSID = single.Sid
 		tmp.NTime = single.SigStock[week[0]].NTime     //时间（取每周第一天）
 		tmp.NOpenPx = single.SigStock[week[0]].NOpenPx //开盘价（每周第一天的开盘价）
-		if len(tmps) > 0 {
-			tmp.NPreCPx = tmps[len(tmps)-1].NLastPx //昨收价(上周的最新价)
-		} else {
-			tmp.NPreCPx = 0
-		}
+		tmp.NPreCPx = single.SigStock[week[0]].NPreCPx //本周一的昨收
 		tmp.NLastPx = single.SigStock[week[i]].NLastPx //最新价
 		tmp.NAvgPx = AvgPxTotal / uint32(i+1)          //平均价
 		tmps = append(tmps, tmp)
 		//logging.Debug("周线是:%v", tmps)
-
 		klist.List = append(klist.List, &tmp)
 
 	}
