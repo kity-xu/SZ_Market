@@ -65,10 +65,13 @@ func (this *Kline) PayLoadKLineData(redisKey string, request *protocol.RequestHi
 	logging.Info("Create new kline...")
 	switch redisKey {
 	case publish.REDISKEY_SECURITY_HDAY:
-		e = maybeAddKline(dlines, request.SID, e)
-		if e != nil {
-			logging.Error(e.Error())
-			return nil, e
+		// 判断是否停牌
+		if !kline.IsDelist(request.SID) { // 没停牌
+			e = maybeAddKline(dlines, request.SID, e)
+			if e != nil {
+				logging.Error(e.Error())
+				return nil, e
+			}
 		}
 		break
 	case publish.REDISKEY_SECURITY_HWEEK:
@@ -223,7 +226,8 @@ func maybeAddKline(reply *[]*protocol.KInfo, Sid int32, e error) error {
 			return e
 		}
 		kinfo := &protocol.KInfo{
-			NTime: models.GetCurrentTime(),
+			NTime:  models.GetCurrentTime(),
+			NAvgPx: 1,
 		}
 		*reply = append(*reply, kinfo)
 		return nil
@@ -239,13 +243,12 @@ func maybeAddKline(reply *[]*protocol.KInfo, Sid int32, e error) error {
 	lday := kinfo.NTime
 	today := models.GetCurrentTime()
 
-	// 判断是否停牌
-
 	if kinfo.NSID/1000000 == 100 {
 		if lday < Trade_100 { //如果K线最后一天的日期小于交易日  则新增
 			kinfo.NTime = today
 			kinfo.LlValue = 0
 			kinfo.LlVolume = 0
+			kinfo.NAvgPx = 1
 			*reply = append(*reply, &kinfo)
 		}
 	} else if kinfo.NSID/1000000 == 200 {
@@ -253,6 +256,7 @@ func maybeAddKline(reply *[]*protocol.KInfo, Sid int32, e error) error {
 			kinfo.NTime = today
 			kinfo.LlValue = 0
 			kinfo.LlVolume = 0
+			kinfo.NAvgPx = 1
 			*reply = append(*reply, &kinfo)
 		}
 	} else {

@@ -4,6 +4,7 @@ import (
 	"ProtocolBuffer/projects/hqpost/go/protocol"
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"strconv"
 	"time"
@@ -123,6 +124,10 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 			LlValue:  index.LlValue,
 			NAvgPx:   avgpx,
 		}
+
+		if ret.LlVolume < 1 {
+			return nil, fmt.Errorf("index sid:%v delist", ret.NSID)
+		}
 		return ret, nil
 	}
 
@@ -147,6 +152,10 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 		LlVolume: data.LlVolume,
 		LlValue:  data.LlValue,
 		NAvgPx:   avgpx,
+	}
+
+	if ret.LlVolume < 1 { // 个股停牌
+		return nil, fmt.Errorf("stock sid:%v delist", ret.NSID)
 	}
 	return ret, nil
 }

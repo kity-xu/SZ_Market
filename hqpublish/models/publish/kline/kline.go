@@ -262,3 +262,26 @@ func IsExistInRedis(key string) bool {
 	}
 	return false
 }
+
+// 判断某支股票是否停牌
+func IsDelist(sid int32) bool {
+	key := "hq:st:static:%d"
+	key_sc := fmt.Sprintf(key, sid)
+
+	static := &protocol.StockStatic{}
+	bs, err := RedisStore.GetBytes(key_sc)
+	if err != nil {
+		logging.Error("%v", err.Error())
+		return true //按停牌算
+	}
+
+	if err = proto.Unmarshal(bs, static); err != nil {
+		logging.Error("%v", err.Error())
+		return true //按停牌算
+	}
+
+	if static.SzStatus[0] == 'S' { //停牌
+		return true
+	}
+	return false
+}

@@ -8,7 +8,7 @@ import (
 //---------------------------------------------------------------------------------
 const (
 	APP_NAME    = "market_hqpublish"
-	APP_VERSION = "0.1.26.0"
+	APP_VERSION = "0.1.26.0-9/11"
 	APP_PID     = "market_hqpublish"
 )
 

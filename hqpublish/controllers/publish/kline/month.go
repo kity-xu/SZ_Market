@@ -56,13 +56,17 @@ func (this *Kline) MonthPB(c *gin.Context, request *protocol.RequestHisK) {
 }
 
 func maybeAddMonthLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
+	if kline.IsDelist(Sid) { // 停盘
+		return nil
+	}
 	if e == publish.INVALID_FILE_PATH { //可能是今天上市的新股
 		key := fmt.Sprintf(publish.REDISKEY_SECURITY_NAME_ID, Sid) //去股票代码表查是否有此ID
 		if !kline.IsExistInRedis(key) {
 			return e
 		}
 		kinfo := &protocol.KInfo{
-			NTime: models.GetCurrentTime(),
+			NTime:  models.GetCurrentTime(),
+			NAvgPx: 1,
 		}
 		*reply = append(*reply, kinfo)
 		return nil
@@ -83,6 +87,7 @@ func maybeAddMonthLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 				kinfo.NTime = today
 				kinfo.LlValue = 0
 				kinfo.LlVolume = 0
+				kinfo.NAvgPx = 1
 				*reply = append(*reply, &kinfo)
 			}
 		}
@@ -92,6 +97,7 @@ func maybeAddMonthLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 				kinfo.NTime = today
 				kinfo.LlValue = 0
 				kinfo.LlVolume = 0
+				kinfo.NAvgPx = 1
 				*reply = append(*reply, &kinfo)
 			}
 		}
