@@ -148,7 +148,7 @@ func TreatingData(secNm []*fcm.FcSecuNameTab) {
 
 		// 证券状态 处理停牌非停牌---------------------------------------------
 
-		var isasis = false // 判断是佛有停牌
+		var isasis = false // 判断是否有停牌
 		for _, nitel := range ntrdule {
 			// 有停牌
 			if item.SECODE.String == nitel.SECODE.String {
