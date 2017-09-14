@@ -334,7 +334,7 @@ func MaybeBelongAMonth(klist *protocol.KInfoTable, today *protocol.KInfo) {
 	}
 	var kinfo = *(klist.List)[len(klist.List)-1]
 
-	if kinfo.NTime/100 == today.NTime/100 { //同年
+	if kinfo.NTime/100 == today.NTime/100 { //同月
 		result := compareKInfo(&kinfo, today)
 		klist.List[len(klist.List)-1] = &result
 	} else {
