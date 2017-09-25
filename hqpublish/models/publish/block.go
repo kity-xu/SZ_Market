@@ -60,7 +60,9 @@ func NewBlock(redis_key string) *Block {
 }
 
 func (this *Block) GetBlockReplyByRequest(req *protocol.RequestBlock) (*protocol.PayloadBlock, error) {
-
+	if req.FieldID == 10017 {
+		req.FieldID = -4006
+	}
 	//按所传参数做数据解析
 	if req.Begin < 0 || req.Num < 0 {
 		return nil, INVALID_REQUEST_PARA

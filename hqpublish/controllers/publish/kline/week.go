@@ -55,6 +55,10 @@ func (this *Kline) WeekPB(c *gin.Context, request *protocol.RequestHisK) {
 	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_HISKLINE, reply)
 }
 
+func MaybeAddWeekLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
+	return maybeAddWeekLine(reply, Sid, e)
+}
+
 func maybeAddWeekLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 	is, err := kline.IsIndex(Sid)
 	if err != nil {
@@ -98,11 +102,11 @@ func maybeAddWeekLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 
 			if !b1.Equal(b2) { //是交易日但不同属一周（周一）新建
 				kinfo.NTime = today
-				kinfo.NPreCPx = kinfo.NPreCPx
-				kinfo.NOpenPx = kinfo.NPreCPx
-				kinfo.NHighPx = kinfo.NPreCPx
-				kinfo.NLowPx = kinfo.NPreCPx
-				kinfo.NLastPx = kinfo.NPreCPx
+				kinfo.NPreCPx = kinfo.NLastPx
+				kinfo.NOpenPx = kinfo.NLastPx
+				kinfo.NHighPx = kinfo.NLastPx
+				kinfo.NLowPx = kinfo.NLastPx
+				kinfo.NLastPx = kinfo.NLastPx
 				kinfo.LlValue = 0
 				kinfo.LlVolume = 0
 				kinfo.NAvgPx = 1
@@ -118,11 +122,11 @@ func maybeAddWeekLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 
 			if !b1.Equal(b2) { //是交易日但不同属一周（周一）新建
 				kinfo.NTime = today
-				kinfo.NPreCPx = kinfo.NPreCPx
-				kinfo.NOpenPx = kinfo.NPreCPx
-				kinfo.NHighPx = kinfo.NPreCPx
-				kinfo.NLowPx = kinfo.NPreCPx
-				kinfo.NLastPx = kinfo.NPreCPx
+				kinfo.NPreCPx = kinfo.NLastPx
+				kinfo.NOpenPx = kinfo.NLastPx
+				kinfo.NHighPx = kinfo.NLastPx
+				kinfo.NLowPx = kinfo.NLastPx
+				kinfo.NLastPx = kinfo.NLastPx
 				kinfo.LlValue = 0
 				kinfo.LlVolume = 0
 				kinfo.NAvgPx = 1

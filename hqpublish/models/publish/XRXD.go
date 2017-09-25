@@ -312,17 +312,18 @@ func (this XRXD) FactorGroupTotal(req *pro.RequestXRXD, fs []*pro.Factor, rows [
 // 将K线根据除权数据的日期进行分组, 一组K线属于一条除权数据
 func (this XRXD) FactorGroupOp(req *pro.RequestXRXD, fs []*pro.Factor, rows []*pro.KInfo) ([]*FactorGroup, error) {
 	var fg []*FactorGroup // *Factor([]*KInfo), 即每一个复权因子关联一组K线
-	var kg []*pro.KInfo   // 根据条件计算出来的需要参与除权除息计算的合法K线切片
+	//var kg []*pro.KInfo   // 根据条件计算出来的需要参与除权除息计算的合法K线切片
+	var err error
 	//var err error
 
-	kg, err := this.GetRangeKList(req, rows)
-	if err != nil {
-		logging.Error("%v", err)
-	}
+	//	kg, err := this.GetRangeKList(req, rows)
+	//	if err != nil {
+	//		logging.Error("%v", err)
+	//	}
 	// 从数据库取出来的除权因子数组是 下标小->大 时间小->大
 	// 从Redis取出来的K线数据数组是  下标小->大 时间大->小
 	// 这里反转一下K线数组, 使其符合：下标小->大 时间小->大
-	this.ReverseKList(kg)
+	this.ReverseKList(rows)
 
 	//  // debug show
 	//	for n, v := range kg {
@@ -330,13 +331,13 @@ func (this XRXD) FactorGroupOp(req *pro.RequestXRXD, fs []*pro.Factor, rows []*p
 	//	}
 
 	if req.Method == 1 {
-		if fg, err = this.GroupRightRecoverKList(fs, kg); err != nil {
+		if fg, err = this.GroupRightRecoverKList(fs, rows); err != nil {
 			logging.Error("%v", err)
 			return nil, err
 		}
 		this.CalcBeforeRightRecoverKList(fg)
 	} else if req.Method == 2 {
-		if fg, err = this.GroupRightRecoverKList(fs, kg); err != nil {
+		if fg, err = this.GroupRightRecoverKList(fs, rows); err != nil {
 			logging.Error("%v", err)
 			return nil, err
 		}
@@ -345,7 +346,7 @@ func (this XRXD) FactorGroupOp(req *pro.RequestXRXD, fs []*pro.Factor, rows []*p
 		g1 := &FactorGroup{
 			Ls: make([]*pro.KInfo, 0, 200),
 		}
-		g1.Ls = append(g1.Ls, kg...)
+		g1.Ls = append(g1.Ls, rows...)
 		fg = append(fg, g1)
 	}
 	if fg == nil {
@@ -355,7 +356,7 @@ func (this XRXD) FactorGroupOp(req *pro.RequestXRXD, fs []*pro.Factor, rows []*p
 	return fg, nil
 }
 
-func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
+func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*[]*pro.KInfo, error) {
 	key := fmt.Sprintf(this.CacheKey, req.SID)
 	var fgs []*FactorGroup
 
@@ -407,14 +408,15 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 	}
 
 	if fgs == nil {
-		return &pro.PayloadXRXD{
-			SID:   req.SID,
-			Type:  req.Type,
-			Total: int32(len(ls)),
-			Begin: req.TimeIndex,
-			Num:   0,
-			KList: nil,
-		}, nil
+		return nil, fmt.Errorf("fgs == nil")
+		//		return &pro.PayloadXRXD{
+		//			SID:   req.SID,
+		//			Type:  req.Type,
+		//			Total: int32(len(ls)),
+		//			Begin: req.TimeIndex,
+		//			Num:   0,
+		//			KList: nil,
+		//		}, nil
 	}
 
 	result_ls := make([]*pro.KInfo, 0, 1024)
@@ -429,7 +431,7 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 
 	switch req.Type {
 	case 1:
-		break
+		kline = &result_ls
 	case 2:
 		if kline, err = ToWeekLine(&result_ls); err != nil {
 			return nil, err
@@ -443,31 +445,32 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*pro.PayloadXRXD, error) {
 			return nil, err
 		}
 	}
+	return kline, nil
 
-	if req.Type == 1 {
-		return &pro.PayloadXRXD{
-			SID:   req.SID,
-			Type:  req.Type,
-			Total: int32(len(ls)),
-			Begin: result_ls[0].NTime,
-			Num:   int32(len(result_ls)),
-			KList: result_ls,
-		}, nil
-	} else {
-		res, err := this.getKlistByRequest(req, *kline)
-		if err != nil {
-			logging.Error("%v", err)
-		}
+	//	if req.Type == 1 {
+	//		return &pro.PayloadXRXD{
+	//			SID:   req.SID,
+	//			Type:  req.Type,
+	//			Total: int32(len(ls)),
+	//			Begin: result_ls[0].NTime,
+	//			Num:   int32(len(result_ls)),
+	//			KList: result_ls,
+	//		}, nil
+	//	} else {
+	//		res, err := this.getKlistByRequest(req, *kline)
+	//		if err != nil {
+	//			logging.Error("%v", err)
+	//		}
 
-		return &pro.PayloadXRXD{
-			SID:   req.SID,
-			Type:  req.Type,
-			Total: int32(len(*kline)),
-			Begin: res[0].NTime,
-			Num:   int32(len(res)),
-			KList: res,
-		}, nil
-	}
+	//		return &pro.PayloadXRXD{
+	//			SID:   req.SID,
+	//			Type:  req.Type,
+	//			Total: int32(len(*kline)),
+	//			Begin: res[0].NTime,
+	//			Num:   int32(len(res)),
+	//			KList: res,
+	//		}, nil
+	//	}
 }
 
 func (this XRXD) getKlistByRequest(req *pro.RequestXRXD, rows []*pro.KInfo) ([]*pro.KInfo, error) {

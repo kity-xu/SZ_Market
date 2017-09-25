@@ -30,6 +30,10 @@ func init() {
 	}()
 }
 
+func InitMarketTradeDate() {
+	initMarketTradeDate()
+}
+
 func initMarketTradeDate() {
 	if Trade_100 != 0 && Trade_200 != 0 {
 		return

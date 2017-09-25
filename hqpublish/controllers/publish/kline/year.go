@@ -56,6 +56,10 @@ func (this *Kline) YearPB(c *gin.Context, request *protocol.RequestHisK) {
 	WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_HISKLINE, reply)
 }
 
+func MaybeAddYearLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
+	return maybeAddYearLine(reply, Sid, e)
+}
+
 func maybeAddYearLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 	is, err := kline.IsIndex(Sid)
 	if err != nil {
@@ -93,11 +97,11 @@ func maybeAddYearLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 		if lday < Trade_100 { //是交易日
 			if kinfo.NTime/10000 != today/10000 { //不同年
 				kinfo.NTime = today
-				kinfo.NPreCPx = kinfo.NPreCPx
-				kinfo.NOpenPx = kinfo.NPreCPx
-				kinfo.NHighPx = kinfo.NPreCPx
-				kinfo.NLowPx = kinfo.NPreCPx
-				kinfo.NLastPx = kinfo.NPreCPx
+				kinfo.NPreCPx = kinfo.NLastPx
+				kinfo.NOpenPx = kinfo.NLastPx
+				kinfo.NHighPx = kinfo.NLastPx
+				kinfo.NLowPx = kinfo.NLastPx
+				kinfo.NLastPx = kinfo.NLastPx
 				kinfo.LlValue = 0
 				kinfo.LlVolume = 0
 				kinfo.NAvgPx = 1
@@ -108,11 +112,11 @@ func maybeAddYearLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 		if lday < Trade_200 {
 			if kinfo.NTime/10000 != today/10000 { //不同年
 				kinfo.NTime = today
-				kinfo.NPreCPx = kinfo.NPreCPx
-				kinfo.NOpenPx = kinfo.NPreCPx
-				kinfo.NHighPx = kinfo.NPreCPx
-				kinfo.NLowPx = kinfo.NPreCPx
-				kinfo.NLastPx = kinfo.NPreCPx
+				kinfo.NPreCPx = kinfo.NLastPx
+				kinfo.NOpenPx = kinfo.NLastPx
+				kinfo.NHighPx = kinfo.NLastPx
+				kinfo.NLowPx = kinfo.NLastPx
+				kinfo.NLastPx = kinfo.NLastPx
 				kinfo.LlValue = 0
 				kinfo.LlVolume = 0
 				kinfo.NAvgPx = 1

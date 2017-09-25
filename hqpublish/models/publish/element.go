@@ -30,6 +30,9 @@ func NewElement(redis_key string) *Element {
 }
 
 func (this *Element) GetBlockElementReply(req *protocol.RequestElement) (*protocol.PayloadElement, error) {
+	if req.FieldID == 10017 {
+		req.FieldID = -2008
+	}
 	if req.Begin < 0 || req.Num < 0 {
 		return nil, INVALID_REQUEST_PARA
 	}

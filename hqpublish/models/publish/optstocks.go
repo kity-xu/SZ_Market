@@ -91,6 +91,9 @@ func (this *OptionalStocks) GetSortByFieldID(req *protocol.RequestUserdef) (*pro
 }
 
 func (this *OptionalStocks) GetSecurityOptStocks(req *protocol.RequestUserdef) (*protocol.PayloadUserdef, error) {
+	if req.FieldID == 10017 {
+		req.FieldID = -4006
+	}
 	table, err := this.GetSortByFieldID(req)
 	if err != nil {
 		return nil, err

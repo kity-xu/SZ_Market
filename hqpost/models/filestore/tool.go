@@ -91,7 +91,7 @@ func compareKInfo(tmp *protocol.KInfo, today *protocol.KInfo) protocol.KInfo {
 	swap.NLastPx = today.NLastPx
 	swap.LlVolume = today.LlVolume + tmp.LlVolume
 	swap.LlValue = today.LlValue + tmp.LlValue
-	swap.NAvgPx = (today.NAvgPx + tmp.NAvgPx) / 2
+	swap.NAvgPx = uint32(swap.LlValue / swap.LlVolume)
 	return swap
 }
 

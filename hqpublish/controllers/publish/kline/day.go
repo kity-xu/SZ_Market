@@ -242,7 +242,7 @@ func maybeAddKline(reply *[]*protocol.KInfo, Sid int32, e error) error {
 	if len(*reply) < 1 {
 		return fmt.Errorf("PayloadHisK is null...")
 	}
-	//logging.Debug("Trade_100:%v------Trade_200:%v", Trade_100, Trade_200)
+	logging.Debug("Trade_100:%v------Trade_200:%v", Trade_100, Trade_200)
 	var kinfo = protocol.KInfo{}
 	kinfo = *(*reply)[len(*reply)-1]
 
@@ -252,11 +252,11 @@ func maybeAddKline(reply *[]*protocol.KInfo, Sid int32, e error) error {
 	if kinfo.NSID/1000000 == 100 {
 		if lday < Trade_100 { //如果K线最后一天的日期小于交易日  则新增
 			kinfo.NTime = today
-			kinfo.NPreCPx = kinfo.NPreCPx
-			kinfo.NOpenPx = kinfo.NPreCPx
-			kinfo.NHighPx = kinfo.NPreCPx
-			kinfo.NLowPx = kinfo.NPreCPx
-			kinfo.NLastPx = kinfo.NPreCPx
+			kinfo.NPreCPx = kinfo.NLastPx
+			kinfo.NOpenPx = kinfo.NLastPx
+			kinfo.NHighPx = kinfo.NLastPx
+			kinfo.NLowPx = kinfo.NLastPx
+			kinfo.NLastPx = kinfo.NLastPx
 			kinfo.LlValue = 0
 			kinfo.LlVolume = 0
 			kinfo.NAvgPx = 1
@@ -265,11 +265,11 @@ func maybeAddKline(reply *[]*protocol.KInfo, Sid int32, e error) error {
 	} else if kinfo.NSID/1000000 == 200 {
 		if lday < Trade_200 {
 			kinfo.NTime = today
-			kinfo.NPreCPx = kinfo.NPreCPx
-			kinfo.NOpenPx = kinfo.NPreCPx
-			kinfo.NHighPx = kinfo.NPreCPx
-			kinfo.NLowPx = kinfo.NPreCPx
-			kinfo.NLastPx = kinfo.NPreCPx
+			kinfo.NPreCPx = kinfo.NLastPx
+			kinfo.NOpenPx = kinfo.NLastPx
+			kinfo.NHighPx = kinfo.NLastPx
+			kinfo.NLowPx = kinfo.NLastPx
+			kinfo.NLastPx = kinfo.NLastPx
 			kinfo.LlValue = 0
 			kinfo.LlVolume = 0
 			kinfo.NAvgPx = 1
@@ -279,4 +279,8 @@ func maybeAddKline(reply *[]*protocol.KInfo, Sid int32, e error) error {
 		return fmt.Errorf("Invalid NSID...")
 	}
 	return nil
+}
+
+func MaybeAddKline(reply *[]*protocol.KInfo, Sid int32, e error) error {
+	return maybeAddKline(reply, Sid, e)
 }
