@@ -54,13 +54,6 @@
 	</dbMicroLink>
 	
     <redisStore>
-		<!--
-			47.93.102.171   ali_pro   # bj 生产 北京大兴
-			47.94.109.175   ali_test  # hz 测试 杭州
-			47.94.16.69     ali_dev   # hz 开发 杭州
-		-->
-<!--        <addr>47.93.102.171:61380</addr>-->
-<!--		<addr>47.94.109.175:61380</addr>-->
         <addr>47.94.16.69:61380</addr>
         <auth>8dc40c2c4598ae5a</auth>
         <db>0</db>
