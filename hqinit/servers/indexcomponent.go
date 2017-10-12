@@ -56,14 +56,29 @@ func (this *IndexComponentXML) CreateIndexComponentXML(cfg *config.AppConfig) {
 		}
 		var idf IndexInfo
 		// 遍历指数下成分股
+		if len(stkl) <= 0 {
+			continue
+		}
 		for _, stki := range stkl {
 			var sif StockInfo
-			if indlit.EXCHANGE.String == "001002" {
-				sif.NSID = "100" + stki.SAMPLECODE.String
+			//			if indlit.EXCHANGE.String == "001002" {
+			//				sif.NSID = "100" + stki.SAMPLECODE.String
+			//			}
+			//			if indlit.EXCHANGE.String == "001003" {
+			//				sif.NSID = "200" + stki.SAMPLECODE.String
+			//			}
+
+			if len(stki.SAMPLECODE.String) > 0 {
+				chara := stki.SAMPLECODE.String[:1]
+				if chara == "6" {
+					sif.NSID = "100" + stki.SAMPLECODE.String
+				} else if chara == "3" || chara == "0" {
+					sif.NSID = "200" + stki.SAMPLECODE.String
+				} else if chara == "9" {
+					continue
+				}
 			}
-			if indlit.EXCHANGE.String == "001003" {
-				sif.NSID = "200" + stki.SAMPLECODE.String
-			}
+
 			idf.StockInfos = append(idf.StockInfos, sif)
 		}
 		if indlit.EXCHANGE.String == "001002" {
