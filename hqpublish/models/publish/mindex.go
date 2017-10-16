@@ -69,7 +69,7 @@ func (this MIndex) GetMIndexObj() (*pro.PayloadMIndex, error) {
 
 	{ //HotBlockList // 板块排序 热点
 		req := pro.RequestBlock{
-			TypeID:  1, // 板块排序 热点取行业板块
+			TypeID:  1, // 板块排序 取行业板块
 			FieldID: -4006,
 			Begin:   0,
 			Num:     3,
@@ -80,6 +80,34 @@ func (this MIndex) GetMIndexObj() (*pro.PayloadMIndex, error) {
 			return nil, err
 		}
 		index.HotBlockList = append(index.HotBlockList, block.List[:]...)
+	}
+	{ //TerBlockList // 板块排序 热点
+		req := pro.RequestBlock{
+			TypeID:  2, // 板块排序 取地域板块
+			FieldID: -4006,
+			Begin:   0,
+			Num:     3,
+		}
+		block, err := NewBlock(REDIS_KEY_CACHE_BLOCK).GetBlockReplyByRequest(&req)
+		if err != nil {
+			logging.Error("%v", err)
+			return nil, err
+		}
+		index.TerBlockList = append(index.TerBlockList, block.List[:]...)
+	}
+	{ //ConBlockList // 板块排序
+		req := pro.RequestBlock{
+			TypeID:  3, // 板块排序 取概念板块
+			FieldID: -4006,
+			Begin:   0,
+			Num:     3,
+		}
+		block, err := NewBlock(REDIS_KEY_CACHE_BLOCK).GetBlockReplyByRequest(&req)
+		if err != nil {
+			logging.Error("%v", err)
+			return nil, err
+		}
+		index.ConBlockList = append(index.ConBlockList, block.List[:]...)
 	}
 
 	{ //IncrList   // 排序 涨幅
