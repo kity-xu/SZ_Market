@@ -55,6 +55,9 @@ func HisDayKline(sids *[]int32) {
 		}
 	}
 
+	// 生成周月年
+	//this.WeekDay
+
 }
 
 // GetIntradayKInfo ... 获取当天的KInfo
