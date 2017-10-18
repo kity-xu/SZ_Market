@@ -84,7 +84,7 @@ type REDIS_BIN_INDEX_SNAPSHOT struct {
 	NBandNum      int32
 }
 
-// 获取证券快照
+// GetStockSnapshotObj 获取证券快照
 func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 	bin, err := redis.Get(key)
 	if err != nil {

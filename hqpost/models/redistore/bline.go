@@ -94,6 +94,7 @@ func (this *MBlockIndex) getBlockIndexKLineTable(bid, path string) (*[]*protocol
 	return &table, nil
 }
 
+// mergeMinlineTODay 合并分钟线
 func (this *MBlockIndex) mergeMinlineTODay(table *[]*protocol.KInfo, bid string) *protocol.KInfo {
 	var (
 		i          int

@@ -52,6 +52,7 @@ func NewGlobalSid(key string) *GlobalSid {
 	}
 }
 
+// GetGlobalSidFromRedis 废弃
 func (this *GlobalSid) GetGlobalSidFromRedis() (*[]int32, error) {
 	keys, err := redis.Keys(this.CacheKey)
 	if err != nil {
@@ -70,6 +71,24 @@ func (this *GlobalSid) GetGlobalSidFromRedis() (*[]int32, error) {
 	return &NSids, nil
 }
 
+// GetSecurityBase 获取股票基本信息
+func GetSecurityBase(sid int32) (*protocol.SecurityName, error) {
+	key := fmt.Sprintf(models.REDISKEY_SECURITY_NAME_ID, sid)
+	data, err := models.RedisStore.GetBytes(key)
+	if err != nil {
+		logging.Error(err.Error())
+		return nil, err
+	}
+
+	stock := &protocol.SecurityName{}
+	if err = proto.Unmarshal(data, stock); err != nil {
+		logging.Error(err.Error())
+		return nil, err
+	}
+	return stock, nil
+}
+
+// GetSecurityStatus 获取证券类型(指数？股票)废弃
 func GetSecurityStatus(sid int32) int {
 	key := fmt.Sprintf(models.REDISKEY_SECURITY_NAME_ID, sid)
 	data, err := models.RedisStore.GetBytes(key)

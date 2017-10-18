@@ -64,11 +64,11 @@
 		<finday>dk.dat</finday>  		<!--finchina 日k线文件名-->
 		<findex>index.dat</findex>		<!--finchina 指数文件名-->
 		
-		<path>E:/opt/develop/store/kline</path>
-		<day>dk.dat</day>
-		<week>wk.dat</week>
-		<month>mnk.dat</month>
-		<year>yk.dat</year>
+		<path>/opt/develop/hgs/hgs_file</path>
+		<day>day</day>
+		<week>week</week>
+		<month>month</month>
+		<year>year</year>
 		<index>index.dat</index>
 		<other>other.dat</other>
 		<hmin>hmin.dat</hmin>

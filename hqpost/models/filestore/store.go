@@ -18,6 +18,7 @@ import (
 	"haina.com/share/logging"
 )
 
+// UpdateMonthLineToFile ...
 func UpdateMonthLineToFile(filename string, today *protocol.KInfo) error {
 	var tmp, result protocol.KInfo
 
@@ -73,6 +74,7 @@ func UpdateMonthLineToFile(filename string, today *protocol.KInfo) error {
 	return nil
 }
 
+// UpdateYearLineToFile ...
 func UpdateYearLineToFile(filename string, today *protocol.KInfo) error {
 	var tmp, result protocol.KInfo
 
@@ -129,7 +131,7 @@ func UpdateYearLineToFile(filename string, today *protocol.KInfo) error {
 	return nil
 }
 
-//更新周线
+// UpdateWeekLineToFile  更新周线
 func UpdateWeekLineToFile(filename string, today *protocol.KInfo) error {
 	var tmp, result protocol.KInfo
 
@@ -188,7 +190,7 @@ func UpdateWeekLineToFile(filename string, today *protocol.KInfo) error {
 	return nil
 }
 
-//读PB形式
+// ReadSrcFileStore ... 读第三方数据源生成的源文件（PB形式）
 func ReadSrcFileStore(filename string) (*protocol.KInfoTable, error) {
 	var klist protocol.KInfoTable
 
@@ -205,7 +207,7 @@ func ReadSrcFileStore(filename string) (*protocol.KInfoTable, error) {
 	return &klist, nil
 }
 
-//binary形式
+// ReadHainaFileStore  binary形式
 func ReadHainaFileStore(filename string) (*protocol.KInfoTable, error) {
 	if !lib.IsFileExist(filename) {
 		return nil, errors.New("file not exist..")
@@ -232,7 +234,7 @@ func ReadHainaFileStore(filename string) (*protocol.KInfoTable, error) {
 	return &ktable, nil
 }
 
-//binary 形式
+// WiteHainaFileStore ... binary 形式写入海纳文件系统(hgs_file)
 func WiteHainaFileStore(filepath string, ktable *protocol.KInfoTable) error {
 	if len(ktable.List) < 1 {
 		return errors.New("The history is nill..")
@@ -256,7 +258,7 @@ func WiteHainaFileStore(filepath string, ktable *protocol.KInfoTable) error {
 	return nil
 }
 
-//日K线数据追加相应文件的操作
+// AppendFile ... 文件追加数据
 func AppendFile(filepath string, today *protocol.KInfo) error {
 	buffer := new(bytes.Buffer)
 
@@ -276,7 +278,7 @@ func AppendFile(filepath string, today *protocol.KInfo) error {
 	return nil
 }
 
-//核实filestore路劲是否存在，不存在则创建
+// CheckFileSoteDir ... 核实filestore路劲是否存在，不存在则创建
 func CheckFileSoteDir(sid int32, hnpath, name string) (string, bool) {
 	var path string
 
@@ -305,7 +307,7 @@ func CheckFileSoteDir(sid int32, hnpath, name string) (string, bool) {
 	return filename, true
 }
 
-//判断今天与历史最新是否同属一周（wk 线做第一次生成时使用）
+//MaybeBelongAWeek ... 判断今天与历史最新是否同属一周（wk 线做第一次生成时使用）
 func MaybeBelongAWeek(klist *protocol.KInfoTable, today *protocol.KInfo) {
 	if len(klist.List) < 1 {
 		logging.Info("%v no historical week data...", today.NSID)
@@ -326,6 +328,7 @@ func MaybeBelongAWeek(klist *protocol.KInfoTable, today *protocol.KInfo) {
 	return
 }
 
+// MaybeBelongAMonth ...
 func MaybeBelongAMonth(klist *protocol.KInfoTable, today *protocol.KInfo) {
 	if len(klist.List) < 1 {
 		logging.Info("%v no historical month data...", today.NSID)
@@ -343,6 +346,7 @@ func MaybeBelongAMonth(klist *protocol.KInfoTable, today *protocol.KInfo) {
 	return
 }
 
+// MaybeBelongAYear ...
 func MaybeBelongAYear(klist *protocol.KInfoTable, today *protocol.KInfo) {
 	if len(klist.List) < 1 {
 		logging.Info("%v no historical year data...", today.NSID)
