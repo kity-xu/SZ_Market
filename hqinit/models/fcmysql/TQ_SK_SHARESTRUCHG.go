@@ -28,12 +28,20 @@ func NewTQ_SK_SHARESTRUCHG() *TQ_SK_SHARESTRUCHG {
 }
 
 // 查询证券信息
-func (this *TQ_SK_SHARESTRUCHG) GetSingleInfo(comc string) (TQ_SK_SHARESTRUCHG, error) {
-	var tss TQ_SK_SHARESTRUCHG
+func (this *TQ_SK_SHARESTRUCHG) GetSingleInfo(comc string) (*TQ_SK_SHARESTRUCHG, error) {
+	var tss *TQ_SK_SHARESTRUCHG
 	err := this.Db.Select("TOTALSHARE,CIRCAAMT,CIRCBAMT,CIRCHAMT,CIRCSKRTO,CIRCSKAMT").From("TQ_SK_SHARESTRUCHG").
+		Where("COMPCODE='" + comc + "' and  ISVALID=1 and ENDDATE='19000101'").
+		OrderBy("PUBLISHDATE  DESC").
+		Limit(1).
+		LoadStruct(&tss)
+	if tss != nil {
+		return tss, err
+	}
+	err1 := this.Db.Select("TOTALSHARE,CIRCAAMT,CIRCBAMT,CIRCHAMT,CIRCSKRTO,CIRCSKAMT").From("TQ_SK_SHARESTRUCHG").
 		Where("COMPCODE='" + comc + "' and  ISVALID=1").
 		OrderBy("PUBLISHDATE  DESC").
 		Limit(1).
 		LoadStruct(&tss)
-	return tss, err
+	return tss, err1
 }
