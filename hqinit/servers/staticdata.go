@@ -149,12 +149,22 @@ func StockTreatingData() []*TagStockStatic {
 		// 查询股本结构变化
 		sharch, err := stf.NewTQ_SK_SHARESTRUCHG().GetSingleInfo(item.COMPCODE.String)
 
-		if err != nil {
+		if err != nil && len(sharch) <= 0 {
 			logging.Info("查询股本结构 error")
 		} else {
+			var isfor = false
+			for _, itl := range sharch {
+				if itl.ENDDATE.String == "19000101" {
+					isfor = true
+					tss.LlTotalShare = int64(itl.TOTALSHARE.Float64 * 10000)
+					tss.LlCircuShare = int64(itl.CIRCSKAMT.Float64 * 10000)
+				}
+			}
+			if isfor != true {
+				tss.LlTotalShare = int64(sharch[0].TOTALSHARE.Float64 * 10000)
+				tss.LlCircuShare = int64(sharch[0].CIRCSKAMT.Float64 * 10000)
+			}
 
-			tss.LlTotalShare = int64(sharch.TOTALSHARE.Float64 * 10000)
-			tss.LlCircuShare = int64(sharch.CIRCSKAMT.Float64 * 10000)
 		}
 
 		// 根据公司内码获取股东信息
