@@ -16,6 +16,7 @@ type TQ_SK_SHARESTRUCHG struct {
 	CIRCHAMT   dbr.NullFloat64 `db:"CIRCHAMT"`   // 流通H股
 	CIRCSKRTO  dbr.NullFloat64 `db:"CIRCSKRTO"`  // 流通股合计占总股本比例
 	CIRCSKAMT  dbr.NullFloat64 `db:"CIRCSKAMT"`  // 流通股
+	ENDDATE    dbr.NullString  `db:"ENDDATE"`
 }
 
 func NewTQ_SK_SHARESTRUCHG() *TQ_SK_SHARESTRUCHG {
@@ -28,12 +29,13 @@ func NewTQ_SK_SHARESTRUCHG() *TQ_SK_SHARESTRUCHG {
 }
 
 // 查询证券信息
-func (this *TQ_SK_SHARESTRUCHG) GetSingleInfo(comc string) (TQ_SK_SHARESTRUCHG, error) {
-	var tss TQ_SK_SHARESTRUCHG
-	err := this.Db.Select("TOTALSHARE,CIRCAAMT,CIRCBAMT,CIRCHAMT,CIRCSKRTO,CIRCSKAMT").From("TQ_SK_SHARESTRUCHG").
+func (this *TQ_SK_SHARESTRUCHG) GetSingleInfo(comc string) ([]*TQ_SK_SHARESTRUCHG, error) {
+	var tss []*TQ_SK_SHARESTRUCHG
+	err := this.Db.Select("TOTALSHARE,CIRCAAMT,CIRCBAMT,CIRCHAMT,CIRCSKRTO,CIRCSKAMT,ENDDATE").From("TQ_SK_SHARESTRUCHG").
 		Where("COMPCODE='" + comc + "' and  ISVALID=1").
 		OrderBy("PUBLISHDATE  DESC").
-		Limit(1).
+		//Limit(1).
 		LoadStruct(&tss)
+
 	return tss, err
 }
