@@ -1,7 +1,7 @@
 package models
 
 import (
-	"haina.com/market/finance/config"
+	"haina.com/market/hqpost/config"
 	"haina.com/share/logging"
 	"haina.com/share/store/redis"
 )

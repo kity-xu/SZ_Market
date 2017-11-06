@@ -6,16 +6,21 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"strconv"
-	"time"
 
 	"haina.com/share/logging"
 	"haina.com/share/store/redis"
 )
 
+// TradeDate 交易日
+var TradeDate int32
+
 type QUOTE_RECORD struct {
 	NPx      uint32 ///< 委托价格(*10000)
 	LlVolume int64  ///< 委托数量
+}
+
+func init() {
+	TradeDate = TradeDateByMarketStatus()
 }
 
 /// 股票快照消息 (MSG_CALC_SNAPSHOT REDISKEY_SECURITY_SNAP )
@@ -109,12 +114,9 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 			avgpx = uint32(index.LlValue / index.LlVolume)
 		}
 
-		ft := time.Now().Format("20060102")
-		td, _ := strconv.Atoi(ft)
-
 		ret := &protocol.KInfo{
 			NSID:     index.NSID,
-			NTime:    int32(td),
+			NTime:    TradeDate,
 			NPreCPx:  int32(index.NPreClosePx),
 			NOpenPx:  int32(index.NOpenPx),
 			NHighPx:  int32(index.NHighPx),
@@ -138,12 +140,9 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 		avgpx = uint32(data.LlValue / data.LlVolume)
 	}
 
-	ft := time.Now().Format("20060102")
-	td, _ := strconv.Atoi(ft)
-
 	ret := &protocol.KInfo{
 		NSID:     data.NSID,
-		NTime:    int32(td),
+		NTime:    TradeDate,
 		NPreCPx:  int32(data.NPreClosePx),
 		NOpenPx:  int32(data.NOpenPx),
 		NHighPx:  int32(data.NHighPx),

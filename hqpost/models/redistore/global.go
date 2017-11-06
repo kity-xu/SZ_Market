@@ -1,7 +1,10 @@
 package redistore
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 
@@ -40,10 +43,12 @@ type TagSecurityName struct {
 	SzIndusCode [INDUSTRY_CODE_LEN]byte // 行业代码										len:INDUSTRY_CODE_LEN
 }
 
+// GlobalSid ...
 type GlobalSid struct {
 	Model `db:"-"`
 }
 
+// NewGlobalSid ...
 func NewGlobalSid(key string) *GlobalSid {
 	return &GlobalSid{
 		Model: Model{
@@ -52,8 +57,8 @@ func NewGlobalSid(key string) *GlobalSid {
 	}
 }
 
-// GetGlobalSidFromRedis 废弃
-func (this *GlobalSid) GetGlobalSidFromRedis() (*[]int32, error) {
+// GetGlobalSidFromRedis 股票代码表
+func (*GlobalSid) GetGlobalSidFromRedis() (*[]int32, error) {
 	keys, err := redis.Keys(this.CacheKey)
 	if err != nil {
 		return nil, err
@@ -88,26 +93,27 @@ func GetSecurityBase(sid int32) (*protocol.SecurityName, error) {
 	return stock, nil
 }
 
-// GetSecurityStatus 获取证券类型(指数？股票)废弃
-func GetSecurityStatus(sid int32) int {
-	key := fmt.Sprintf(models.REDISKEY_SECURITY_NAME_ID, sid)
-	data, err := models.RedisStore.GetBytes(key)
+// GetSecurityMarketStatus ... 取单个市场状态
+func GetSecurityMarketStatus(mid int32) (*protocol.MarketStatus, error) {
+	key := fmt.Sprintf("hq:market:%d", mid)
+	bin, err := models.RedisStore.GetBytes(key)
 	if err != nil {
-		logging.Error(err.Error())
-		return -1
+		return nil, err
 	}
-
-	stock := &protocol.SecurityName{}
-	if err = proto.Unmarshal(data, stock); err != nil {
-		logging.Error(err.Error())
-		return -1
+	var obj protocol.MarketStatus
+	buffer := bytes.NewBuffer([]byte(bin))
+	if err := binary.Read(buffer, binary.LittleEndian, &obj); err != nil && err != io.EOF {
+		return nil, err
 	}
+	return &obj, nil
+}
 
-	if stock.SzSType[1] == 'S' { //股票
-		return 'S'
-	} else if stock.SzSType[1] == 'I' { //指数
-		return 'I'
-	} else {
+// TradeDateByMarketStatus ... 交易日
+func TradeDateByMarketStatus(mid int32) int32 {
+	market, err := GetSecurityMarketStatus(mid)
+	if err != nil {
+		logging.Error("GetSecurityMarketStatus Err | %v", err)
 		return 0
 	}
+	return market.NTradeDate
 }

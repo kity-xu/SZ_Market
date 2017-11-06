@@ -2,6 +2,7 @@ package kline2
 
 import (
 	"ProtocolBuffer/projects/hqpost/go/protocol"
+	"flag"
 	"fmt"
 
 	"haina.com/share/lib"
@@ -57,9 +58,11 @@ func HisDayKline(sids *[]int32) {
 
 	// 生成周月年
 	//this.WeekDay
+	flag.Args()
 
 }
 
+// --------------------------------------------------------------------functhions----------------------------------------------------------------//
 // GetIntradayKInfo ... 获取当天的KInfo
 func GetIntradayKInfo(sid int32) (*protocol.KInfo, error) {
 	key := fmt.Sprintf(cl.REDISKEY_SECURITY_SNAP, sid)

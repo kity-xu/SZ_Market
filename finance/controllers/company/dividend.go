@@ -88,3 +88,38 @@ func (this *DividendInfo) GetRO(c *gin.Context) {
 
 	lib.WriteString(c, 200, ro)
 }
+
+// 给陈亮宇用的
+func (this *DividendInfo) GetDividend(c *gin.Context) {
+	var count uint64
+	scode := c.Query(models.CONTEXT_SCODE)
+	sets := c.Query(models.CONTEXT_COUNT)
+
+	scodePrefix, market, err := ParseSCode(scode)
+	if err != nil {
+		logging.Error("%v", err)
+		lib.WriteString(c, 40004, nil)
+		return
+	}
+
+	if sets != "" {
+		n, err := strconv.Atoi(sets)
+		if err != nil {
+			logging.Error("%v", err)
+			lib.WriteString(c, 40004, nil)
+			return
+		}
+		count = uint64(n)
+	} else {
+		count = models.CONTEXT_RETNUM
+	}
+
+	div, err := new(company.Dividend).GetDivList(count, scodePrefix, market)
+	if err != nil {
+		logging.Error("%v", err)
+		lib.WriteString(c, 40002, nil)
+		return
+	}
+	div.Scode = scode
+	lib.WriteString(c, 200, div)
+}

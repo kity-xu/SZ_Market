@@ -260,19 +260,52 @@ func WiteHainaFileStore(filepath string, ktable *protocol.KInfoTable) error {
 
 // AppendFile ... 文件追加数据
 func AppendFile(filepath string, today *protocol.KInfo) error {
-	buffer := new(bytes.Buffer)
+	var tmp protocol.KInfo
+	size := binary.Size(&tmp)
+	bs := make([]byte, size)
 
-	if err := binary.Write(buffer, binary.LittleEndian, today); err != nil {
-		return err
-	}
-
-	file, err := os.OpenFile(filepath, os.O_RDWR|os.O_APPEND, 0666)
+	file, err := os.OpenFile(filepath, os.O_RDWR, 0666)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	if _, err = file.Write(buffer.Bytes()); err != nil {
+	n, err := file.Seek(0, 2)
+	if n == 0 && err == nil { // 添加新股 文件大小为0字节
+		buf := new(bytes.Buffer)
+		binary.Write(buf, binary.LittleEndian, today)
+		if _, err = file.Write(buf.Bytes()); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	_, err = file.Seek(int64(-size), 2)
+	if err != nil {
+		return err
+	}
+	if _, err = file.Read(bs); err != nil && err != io.EOF {
+		return err
+	}
+
+	buffer := bytes.NewBuffer(bs)
+
+	if err = binary.Read(buffer, binary.LittleEndian, &tmp); err != nil && err != io.EOF {
+		return err
+	}
+
+	// 如果最后一根K线的日期与today的相等(表示一天内执行了多次); 如果是大于， 表示today回滚了。 此时都不执行追加操作
+	if tmp.NTime >= today.NTime {
+		return nil
+	}
+
+	tobuf := new(bytes.Buffer)
+	if err := binary.Write(tobuf, binary.LittleEndian, today); err != nil {
+		return err
+	}
+
+	// file.Read 后， 文件游标在文件末尾
+	if _, err = file.Write(tobuf.Bytes()); err != nil {
 		return err
 	}
 	return nil

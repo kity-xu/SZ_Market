@@ -18,6 +18,9 @@ func RegCompany(rg *gin.RouterGroup) {
 	rg.GET("/company/refinance", company.NewDividendInfo().GetSEO)
 	rg.GET("/company/ration", company.NewDividendInfo().GetRO)
 
+	// 给陈亮宇用的
+	rg.GET("/company/div", company.NewDividendInfo().GetDividend)
+
 	/////////////////////////股东权益
 
 	//股东人数

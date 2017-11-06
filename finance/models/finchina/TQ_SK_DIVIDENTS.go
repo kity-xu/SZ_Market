@@ -65,6 +65,31 @@ func (this *TQ_SK_DIVIDENTS) GetDivListFromFC(sets uint64, scode string, market 
 	return divs, err
 }
 
+//给陈亮宇用的
+func (this *TQ_SK_DIVIDENTS) GetDivListFromDB(sets uint64, scode string, market string) ([]TQ_SK_DIVIDENTS, error) {
+	var divs []TQ_SK_DIVIDENTS
+	div := this.newTQ_SK_DIVIDENTS()
+
+	//根据股票代码获取公司内码
+	sc := NewTQ_OA_STCODE()
+	if err := sc.getCompcode(scode, market); err != nil {
+		return divs, err
+	}
+
+	exps := map[string]interface{}{
+		"COMPCODE=?": sc.COMPCODE,
+		"ISVALID=?":  1,
+	}
+	builder := div.Db.Select("*").From(div.TableName)
+	num, err := div.SelectWhere(builder, exps).OrderBy("DIVIYEAR desc").Limit(sets).LoadStructs(&divs)
+	if err != nil {
+		logging.Error("%s", err.Error())
+		return divs, err
+	}
+	logging.Debug("dataSize %d:", num)
+	return divs, err
+}
+
 /***********************************以下是移动端f10页面******************************************/
 // 该处实现分红配股
 
