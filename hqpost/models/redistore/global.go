@@ -58,7 +58,7 @@ func NewGlobalSid(key string) *GlobalSid {
 }
 
 // GetGlobalSidFromRedis 股票代码表
-func (*GlobalSid) GetGlobalSidFromRedis() (*[]int32, error) {
+func (this*GlobalSid) GetGlobalSidFromRedis() (*[]int32, error) {
 	keys, err := redis.Keys(this.CacheKey)
 	if err != nil {
 		return nil, err

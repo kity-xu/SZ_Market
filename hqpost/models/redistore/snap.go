@@ -12,7 +12,10 @@ import (
 )
 
 // TradeDate 交易日
-var TradeDate int32
+var (
+	SH_TradeDate int32 //上海交易所
+	SZ_TradeDate int32 //深证交易所
+)
 
 type QUOTE_RECORD struct {
 	NPx      uint32 ///< 委托价格(*10000)
@@ -20,7 +23,8 @@ type QUOTE_RECORD struct {
 }
 
 func init() {
-	TradeDate = TradeDateByMarketStatus()
+	SH_TradeDate = TradeDateByMarketStatus(100000000)
+	SZ_TradeDate = TradeDateByMarketStatus(200000000)
 }
 
 /// 股票快照消息 (MSG_CALC_SNAPSHOT REDISKEY_SECURITY_SNAP )
