@@ -95,6 +95,7 @@ type REDIS_BIN_INDEX_SNAPSHOT struct {
 
 // GetStockSnapshotObj 获取证券快照
 func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
+	var ntime int32
 	bin, err := redis.Get(key)
 	if err != nil {
 		logging.Error("redis not found key: %v", key)
@@ -118,9 +119,14 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 			avgpx = uint32(index.LlValue / index.LlVolume)
 		}
 
+		if index.NSID/1000000 == 100{
+			ntime = SH_TradeDate
+		}else {
+			ntime = SZ_TradeDate
+		}
 		ret := &protocol.KInfo{
 			NSID:     index.NSID,
-			NTime:    TradeDate,
+			NTime:    ntime,
 			NPreCPx:  int32(index.NPreClosePx),
 			NOpenPx:  int32(index.NOpenPx),
 			NHighPx:  int32(index.NHighPx),
@@ -143,10 +149,14 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 	} else {
 		avgpx = uint32(data.LlValue / data.LlVolume)
 	}
-
+	if data.NSID/1000000 == 100{
+		ntime = SH_TradeDate
+	}else {
+		ntime = SZ_TradeDate
+	}
 	ret := &protocol.KInfo{
 		NSID:     data.NSID,
-		NTime:    TradeDate,
+		NTime:    ntime,
 		NPreCPx:  int32(data.NPreClosePx),
 		NOpenPx:  int32(data.NOpenPx),
 		NHighPx:  int32(data.NHighPx),
