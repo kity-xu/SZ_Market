@@ -11,6 +11,7 @@ import (
 )
 
 func (this *Security) WeekLine() {
+	4
 	this.GetAllSecurityDayList()
 	securitys := *this.list.Securitys
 

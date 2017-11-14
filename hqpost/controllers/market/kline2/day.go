@@ -2,7 +2,6 @@ package kline2
 
 import (
 	"ProtocolBuffer/projects/hqpost/go/protocol"
-	"flag"
 	"fmt"
 
 	"haina.com/share/lib"
@@ -19,7 +18,7 @@ func HisDayKline(sids *[]int32) {
 
 	for _, sid := range *sids {
 		// 获取当天快照
-		today, err := GetIntradayKInfo(sid)
+		today, err := GetIntradayKInfo(sid) // TODO 成交量和成交额
 		if err != nil || today == nil {
 			continue
 		}
@@ -86,7 +85,7 @@ func CreateSingleHgsFile(srcpath, despath string, sid int32) error {
 func ThirdFilepath(despath string) string {
 	var desfile string
 	desfile = fmt.Sprintf("%s/%s", despath, cfg.File.Finday)
-	if !lib.IsFileExist(desfile) {
+	if !lib.IsFileExist(desfile5) {
 		desfile = fmt.Sprintf("%s/%s", despath, cfg.File.Findex)
 	}
 	return desfile
