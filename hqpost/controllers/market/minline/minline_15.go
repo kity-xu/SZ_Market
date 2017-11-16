@@ -4,14 +4,12 @@ import (
 	"ProtocolBuffer/projects/hqpost/go/protocol"
 
 	. "haina.com/market/hqpost/controllers"
-	"haina.com/market/hqpost/models/redistore"
 
 	"haina.com/share/logging"
 )
 
 //生成历史15分钟线
 func (this *MinKline) HMinLine_15() {
-	rstore15 := redistore.NewHMinKLine(REDISKEY_SECURITY_HMIN15)
 	for _, dmin := range *(this.list.All) { //个股当天数据
 
 		var tmps []*protocol.KInfo
@@ -51,6 +49,6 @@ func (this *MinKline) HMinLine_15() {
 		}
 
 		//个股当天5分钟数据并入历史
-		this.mergeMin(dmin.Sid, rstore15, &tmps)
+		this.mergeMin(dmin.Sid, REDISKEY_SECURITY_HMIN15, &tmps)
 	}
 }

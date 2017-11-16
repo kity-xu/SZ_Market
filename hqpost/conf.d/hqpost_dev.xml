@@ -54,7 +54,7 @@
 	</mongoStore>-->
 	
     <redisStore>
-        <addr>192.168.18.200:6379</addr>
+        <addr>47.94.16.69:61380</addr>
         <auth>8dc40c2c4598ae5a</auth>
         <db>0</db>
         <timeout>3</timeout> 
@@ -64,18 +64,18 @@
 		<finday>dk.dat</finday>  		<!--finchina 日k线文件名-->
 		<findex>index.dat</findex>		<!--finchina 指数文件名-->
 		
-		<path>/opt/develop/hgs/hgs_file</path>
+		<path>E:/opt/develop/hgs/hgs_file</path>
 		<day>day</day>
 		<week>week</week>
 		<month>month</month>
 		<year>year</year>
 		<index>index.dat</index>
 		<other>other.dat</other>
-		<hmin>hmin.dat</hmin>
-		<hmin5>hmin5.dat</hmin5>
-		<hmin15>hmin15.dat</hmin15>
-		<hmin30>hmin30.dat</hmin30>
-		<hmin60>hmin60.dat</hmin60>
+		<hmin>hmin01</hmin>
+		<hmin5>hmin05</hmin5>
+		<hmin15>hmin15</hmin15>
+		<hmin30>hmin30</hmin30>
+		<hmin60>hmin60</hmin60>
 		
 		<blockindex>E:/opt/develop/hgs/filestore/blockindex/</blockindex>
 	</fileStore>

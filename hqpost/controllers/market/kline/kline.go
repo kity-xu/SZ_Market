@@ -1,4 +1,4 @@
-package kline2
+package kline
 
 import (
 	"ProtocolBuffer/projects/hqpost/go/protocol"
@@ -33,6 +33,10 @@ type BedayInterface interface {
 
 	// 生成历史K线
 	makeKlines()
+}
+
+type AllBaseKline struct {
+	All *[]*BaseDayKline
 }
 
 //单个股票
@@ -87,26 +91,3 @@ func (this *BaseDayKline) getSrcFromDB() {
 		return
 	}
 }
-
-//------------------------------------------------------------beyondDay线的后续追加-----------------------------------------------------//
-func NewBedaySubsequent(sid int32) *BedaySubsequent {
-	return &BedaySubsequent{
-		Sid: sid,
-	}
-}
-
-type BedaySubsequent struct {
-	Sid int32
-}
-
-// 获取当天的KInfo
-func (this *BedaySubsequent) GetIntradayKInfo() {
-
-}
-
-// 更新hgs_file(海纳行情文件系统)
-func (this *BedaySubsequent) UpdateFileStore() {
-
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------//

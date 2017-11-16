@@ -9,9 +9,9 @@ import (
 
 	"ProtocolBuffer/projects/hqpost/go/protocol"
 
-	"haina.com/market/hqpost/models/filestore"
-
 	"haina.com/market/hqpost/models"
+
+	"strconv"
 
 	"github.com/golang/protobuf/proto"
 	"haina.com/share/logging"
@@ -45,71 +45,71 @@ func (this *HKLine) LPushHisKLine(sid int32, line *protocol.KInfo) error {
 	return nil
 }
 
-func (this *HKLine) UpdateWeekKLineToRedis(sid int32, today *protocol.KInfo) error {
-	key := fmt.Sprintf(this.CacheKey, sid)
-
-	n, e := redis.Llen(key) //新股上市
-	if n == 0 && e == nil {
-		data, err := proto.Marshal(today)
-		if err != nil {
-			logging.Error("Marshal error...", err.Error())
-			return err
-		}
-
-		if err = redis.Lpush(key, data); err != nil {
-			logging.Error("Lpush error...", err.Error())
-			return err
-		}
-		return nil
-	}
-
-	ss, err := redis.LRange(key, 0, 0)
-	if err != nil {
-		return err
-	}
-	if len(ss) == 0 {
-		return models.ERROR_REDIS_LIST_NULL
-	}
-
-	var kinfo protocol.KInfo
-	if err := proto.Unmarshal([]byte(ss[0]), &kinfo); err != nil {
-		return err
-	}
-
-	b1, _ := filestore.DateAdd(kinfo.NTime) //找到该日期所在周日的那天
-	b2, _ := filestore.DateAdd(today.NTime)
-
-	if b1.Equal(b2) { //同属一周
-		result := compareKInfo(&kinfo, today)
-
-		data, err := proto.Marshal(result)
-		if err != nil {
-			logging.Error("Marshal error...", err.Error())
-			return err
-		}
-
-		if err = redis.LSet(key, 0, data); err != nil {
-			logging.Error("Lset error...", err.Error())
-			return err
-		}
-		return nil
-	} else { //不属于同周
-		result := *today
-		result.NPreCPx = kinfo.NLastPx //昨收价
-
-		data, err := proto.Marshal(&result)
-		if err != nil {
-			logging.Error("Marshal error...", err.Error())
-			return err
-		}
-
-		if err = redis.Lpush(key, data); err != nil {
-			logging.Error("Lpush error...", err.Error())
-			return err
-		}
-		return nil
-	}
-}
+//func (this *HKLine) UpdateWeekKLineToRedis(sid int32, today *protocol.KInfo) error {
+//	key := fmt.Sprintf(this.CacheKey, sid)
+//
+//	n, e := redis.Llen(key) //新股上市
+//	if n == 0 && e == nil {
+//		data, err := proto.Marshal(today)
+//		if err != nil {
+//			logging.Error("Marshal error...", err.Error())
+//			return err
+//		}
+//
+//		if err = redis.Lpush(key, data); err != nil {
+//			logging.Error("Lpush error...", err.Error())
+//			return err
+//		}
+//		return nil
+//	}
+//
+//	ss, err := redis.LRange(key, 0, 0)
+//	if err != nil {
+//		return err
+//	}
+//	if len(ss) == 0 {
+//		return models.ERROR_REDIS_LIST_NULL
+//	}
+//
+//	var kinfo protocol.KInfo
+//	if err := proto.Unmarshal([]byte(ss[0]), &kinfo); err != nil {
+//		return err
+//	}
+//
+//	b1, _ := filestore.DateAdd(kinfo.NTime) //找到该日期所在周日的那天
+//	b2, _ := filestore.DateAdd(today.NTime)
+//
+//	if b1.Equal(b2) { //同属一周
+//		result := compareKInfo(&kinfo, today)
+//
+//		data, err := proto.Marshal(result)
+//		if err != nil {
+//			logging.Error("Marshal error...", err.Error())
+//			return err
+//		}
+//
+//		if err = redis.LSet(key, 0, data); err != nil {
+//			logging.Error("Lset error...", err.Error())
+//			return err
+//		}
+//		return nil
+//	} else { //不属于同周
+//		result := *today
+//		result.NPreCPx = kinfo.NLastPx //昨收价
+//
+//		data, err := proto.Marshal(&result)
+//		if err != nil {
+//			logging.Error("Marshal error...", err.Error())
+//			return err
+//		}
+//
+//		if err = redis.Lpush(key, data); err != nil {
+//			logging.Error("Lpush error...", err.Error())
+//			return err
+//		}
+//		return nil
+//	}
+//}
 
 func (this *HKLine) UpdateMonthKLineToRedis(sid int32, today *protocol.KInfo) error {
 	key := fmt.Sprintf(this.CacheKey, sid)
@@ -282,5 +282,38 @@ func (this *HKLine) HQpostExecutedTime() {
 	ss := tm.Format("200601021504")
 	if err := redis.Set(this.CacheKey, []byte(ss)); err != nil {
 		logging.Error("%v", err.Error())
+	}
+}
+
+// KindINCR 用于判断周、月、年线是否需要追加更新
+// today 当天要追加的K线日期		kind K线类型(0:默认, 1:日, 2:周, 3:月, 4:年)
+func IsKindUpdate(key string, today int32, kind int32) bool {
+	isExist, err := redis.Exists(key)
+	if err != nil {
+		logging.Error("KindINCR: %v", err.Error())
+		return false
+	}
+
+	if !isExist {
+		Kind := map[string]interface{}{
+			"Kind":    kind,
+			"Trading": today,
+		}
+		if err = redis.Hmset(key, Kind); err != nil {
+			logging.Error("KindINCR: %v", err.Error())
+			return false
+		}
+		return true
+	} else {
+		Kind, err := redis.Hgetall(key)
+		if err != nil {
+			logging.Error("KindINCR: %v", err.Error())
+			return false
+		}
+		if Kind["Trading"] >= strconv.Itoa(int(today)) {
+			return false
+		} else {
+			return true
+		}
 	}
 }

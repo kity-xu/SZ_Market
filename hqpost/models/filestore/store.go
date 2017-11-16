@@ -15,11 +15,15 @@ import (
 
 	"haina.com/share/lib"
 
+	"haina.com/market/hqpost/models/redistore"
 	"haina.com/share/logging"
 )
 
 // UpdateMonthLineToFile ...
-func UpdateMonthLineToFile(filename string, today *protocol.KInfo) error {
+func UpdateMonthLineToFile(sid int32, filename string, today *protocol.KInfo) error {
+	if today == nil {
+		return nil
+	}
 	var tmp, result protocol.KInfo
 
 	size := binary.Size(&tmp)
@@ -60,7 +64,11 @@ func UpdateMonthLineToFile(filename string, today *protocol.KInfo) error {
 		if err != nil {
 			return err
 		}
-		result = compareKInfo(&tmp, today)
+		if redistore.IsKindUpdate(fmt.Sprintf("hq:post:tag:%d:month", sid), today.NTime, 3) {
+			result = compareKInfo(&tmp, today)
+		} else {
+			result = tmp
+		}
 	} else {
 		result = *today
 		result.NPreCPx = tmp.NLastPx //昨收价
@@ -75,7 +83,10 @@ func UpdateMonthLineToFile(filename string, today *protocol.KInfo) error {
 }
 
 // UpdateYearLineToFile ...
-func UpdateYearLineToFile(filename string, today *protocol.KInfo) error {
+func UpdateYearLineToFile(sid int32, filename string, today *protocol.KInfo) error {
+	if today == nil {
+		return nil
+	}
 	var tmp, result protocol.KInfo
 
 	size := binary.Size(&tmp)
@@ -117,7 +128,11 @@ func UpdateYearLineToFile(filename string, today *protocol.KInfo) error {
 			//	logging.Error("fist seek error ...%v", err.Error())
 			return err
 		}
-		result = compareKInfo(&tmp, today)
+		if redistore.IsKindUpdate(fmt.Sprintf("hq:post:tag:%d:year", sid), today.NTime, 4) {
+			result = compareKInfo(&tmp, today)
+		} else {
+			result = tmp
+		}
 	} else {
 		result = *today
 		result.NPreCPx = tmp.NLastPx //昨收价
@@ -132,7 +147,10 @@ func UpdateYearLineToFile(filename string, today *protocol.KInfo) error {
 }
 
 // UpdateWeekLineToFile  更新周线
-func UpdateWeekLineToFile(filename string, today *protocol.KInfo) error {
+func UpdateWeekLineToFile(sid int32, filename string, today *protocol.KInfo) error {
+	if today == nil {
+		return nil
+	}
 	var tmp, result protocol.KInfo
 
 	size := binary.Size(&tmp)
@@ -176,7 +194,12 @@ func UpdateWeekLineToFile(filename string, today *protocol.KInfo) error {
 		if err != nil {
 			return err
 		}
-		result = compareKInfo(&tmp, today)
+
+		if redistore.IsKindUpdate(fmt.Sprintf("hq:post:tag:%d:week", sid), today.NTime, 2) {
+			result = compareKInfo(&tmp, today)
+		} else {
+			result = tmp
+		}
 	} else { //不属于同周
 		result = *today
 		result.NPreCPx = tmp.NLastPx //昨收价
@@ -260,11 +283,14 @@ func WiteHainaFileStore(filepath string, ktable *protocol.KInfoTable) error {
 
 // AppendFile ... 文件追加数据
 func AppendFile(filepath string, today *protocol.KInfo) error {
+	if today == nil {
+		return nil
+	}
 	var tmp protocol.KInfo
 	size := binary.Size(&tmp)
 	bs := make([]byte, size)
 
-	file, err := os.OpenFile(filepath, os.O_RDWR, 0666)
+	file, err := os.OpenFile(filepath, os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
 		return err
 	}
@@ -342,6 +368,9 @@ func CheckFileSoteDir(sid int32, hnpath, name string) (string, bool) {
 
 //MaybeBelongAWeek ... 判断今天与历史最新是否同属一周（wk 线做第一次生成时使用）
 func MaybeBelongAWeek(klist *protocol.KInfoTable, today *protocol.KInfo) {
+	if today == nil {
+		return
+	}
 	if len(klist.List) < 1 {
 		logging.Info("%v no historical week data...", today.NSID)
 		klist.List = append(klist.List, today)
@@ -363,6 +392,9 @@ func MaybeBelongAWeek(klist *protocol.KInfoTable, today *protocol.KInfo) {
 
 // MaybeBelongAMonth ...
 func MaybeBelongAMonth(klist *protocol.KInfoTable, today *protocol.KInfo) {
+	if today == nil {
+		return
+	}
 	if len(klist.List) < 1 {
 		logging.Info("%v no historical month data...", today.NSID)
 		klist.List = append(klist.List, today)
@@ -381,6 +413,9 @@ func MaybeBelongAMonth(klist *protocol.KInfoTable, today *protocol.KInfo) {
 
 // MaybeBelongAYear ...
 func MaybeBelongAYear(klist *protocol.KInfoTable, today *protocol.KInfo) {
+	if today == nil {
+		return
+	}
 	if len(klist.List) < 1 {
 		logging.Info("%v no historical year data...", today.NSID)
 		klist.List = append(klist.List, today)

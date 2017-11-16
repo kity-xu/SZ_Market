@@ -4,7 +4,6 @@ import (
 	"ProtocolBuffer/projects/hqpost/go/protocol"
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"io"
 
 	"haina.com/share/logging"
@@ -99,7 +98,7 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 	bin, err := redis.Get(key)
 	if err != nil {
 		logging.Error("redis not found key: %v", key)
-		return nil, err
+		return nil, nil
 	}
 
 	data := REDIS_BIN_STOCK_SNAPSHOT{}
@@ -119,9 +118,9 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 			avgpx = uint32(index.LlValue / index.LlVolume)
 		}
 
-		if index.NSID/1000000 == 100{
+		if index.NSID/1000000 == 100 {
 			ntime = SH_TradeDate
-		}else {
+		} else {
 			ntime = SZ_TradeDate
 		}
 		ret := &protocol.KInfo{
@@ -138,7 +137,8 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 		}
 
 		if ret.LlVolume < 1 {
-			return nil, fmt.Errorf("index sid:%v delist", ret.NSID)
+			logging.Debug("index sid:%v delist", ret.NSID)
+			return nil, nil
 		}
 		return ret, nil
 	}
@@ -149,9 +149,9 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 	} else {
 		avgpx = uint32(data.LlValue / data.LlVolume)
 	}
-	if data.NSID/1000000 == 100{
+	if data.NSID/1000000 == 100 {
 		ntime = SH_TradeDate
-	}else {
+	} else {
 		ntime = SZ_TradeDate
 	}
 	ret := &protocol.KInfo{
@@ -168,7 +168,8 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 	}
 
 	if ret.LlVolume < 1 { // 个股停牌
-		return nil, fmt.Errorf("stock sid:%v delist", ret.NSID)
+		logging.Debug("stock sid:%v delist", ret.NSID)
+		return nil, nil
 	}
 	return ret, nil
 }

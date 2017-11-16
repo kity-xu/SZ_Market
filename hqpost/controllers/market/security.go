@@ -3,11 +3,11 @@ package market
 import (
 	"time"
 
+	"haina.com/market/hqpost/controllers/market/kline"
 	"haina.com/market/hqpost/controllers/market/sidcode"
 
 	. "haina.com/market/hqpost/controllers"
 	"haina.com/market/hqpost/controllers/market/bline"
-	"haina.com/market/hqpost/controllers/market/kline"
 	"haina.com/market/hqpost/controllers/market/minline"
 
 	"haina.com/market/hqpost/config"
@@ -25,18 +25,18 @@ func Update(cfg *config.AppConfig) {
 		return
 	}
 
-	security := kline.NewSecurityKLine(sids, cfg)
-
 	//---------------------日周月年线---------------------/
 	//K线
-	security.DayLine()
-	security.WeekLine()
-	security.MonthLine()
-	security.YearLine()
+	kline.InitPath(cfg)
+	kline.HisDayKline(sids)
+	kline.HisWeekKline(sids)
+	kline.HisMonthKline(sids)
+	kline.HisYearKline(sids)
 	//--------------------------------------------------/
 
 	//----------------------分钟线-----------------------/
 	min := minline.NewMinKline(sids, cfg)
+	min.InitMinLine()
 	// 分钟线
 	min.HMinLine_1()
 	min.HMinLine_5()

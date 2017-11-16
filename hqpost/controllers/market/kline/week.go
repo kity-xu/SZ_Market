@@ -1,4 +1,4 @@
-package kline2
+package kline
 
 import (
 	"ProtocolBuffer/projects/hqpost/go/protocol"
@@ -7,10 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"io"
-
 	"errors"
-	"fmt"
 
 	"haina.com/market/hqpost/config"
 	"haina.com/market/hqpost/models/filestore"
@@ -29,31 +26,38 @@ type BaseLine struct {
 // 生成周线
 //this.WeekDay
 func HisWeekKline(sids *[]int32) {
-	base := new(BaseLine)
 	for _, sid := range *sids {
-		base = nil
+		base := new(BaseLine)
+		// 获取当天快照
+		today, err := GetIntradayKInfo(sid)
+		if err != nil {
+			logging.Error("严重错误！！！，程序被迫停止执行")
+			return
+		}
+
 		weekName := filePath(cfg, cfg.File.Week, sid)
 		if !lib.IsFileExist(weekName) { // 不存在或其他做第一从生成 TODO
-			if err := base.CreateWeekLine(sid, weekName, today); err != nil {
+			if err = base.CreateWeekLine(sid, weekName, today); err != nil {
 				continue
 			}
 		} else { // 追加周线
-			filestore.UpdateWeekLineToFile(weekName, today)
+			if err = filestore.UpdateWeekLineToFile(sid, weekName, today); err != nil {
+				logging.Error("UpdateWeekLineToFile: %v", err)
+			}
 		}
 	}
 }
 
-// 读day文件生成week
-func (this *BaseLine) CreateWeekLine(sid int32, weekFile string, today *protocol.KInfo) error {
+// 读日线文件数据(用来生成其他线)
+func (this *BaseLine) ReadHGSDayLines(sid int32) error {
 	this.sid = sid
 	sigle := make(map[int32]*protocol.KInfo)
 
-	spath, is := kline.IsExistdirInHGSFileStore(cfg, cfg.File.Day, sid) // 目录是否存在
+	dayPath, is := kline.IsExistFileInHGSFileStore(cfg, cfg.File.Day, sid) // 文件是否存在
 	if !is {
 		logging.Error("Create WeekLine: DayLine no Exist in hgs_file")
 		return errors.New("error")
 	}
-	dayPath := fmt.Sprintf("%s/%d.dat", spath, sid)
 	bs, err := ioutil.ReadFile(dayPath)
 	if err != nil || len(bs) == 0 {
 		logging.Error("Create WeekLine: Read dayLine error|%v", err)
@@ -72,20 +76,27 @@ func (this *BaseLine) CreateWeekLine(sid int32, weekFile string, today *protocol
 		sigle[buffer.NTime] = buffer
 	}
 	this.sigStock = sigle
-	this.GetSecurityWeekDay()
-	wTable := this.produceWeeprotocol()
+	return nil
+}
+
+// 读day文件生成week
+func (this *BaseLine) CreateWeekLine(sid int32, weekFile string, today *protocol.KInfo) error {
+	if err := this.ReadHGSDayLines(sid); err != nil {
+		return err
+	}
+	this.getSecurityWeekDay()
+	wTable := this.ProduceWeekprotocol()
 	filestore.MaybeBelongAWeek(wTable, today) //第一次生成的时候 如果同属一周加入当天数据
-	err = filestore.WiteHainaFileStore(weekFile, wTable)
-	if err != nil {
+	if err := filestore.WiteHainaFileStore(weekFile, wTable); err != nil {
 		logging.Error("WiteHainaFileStore error | %v", err)
 	}
 	return nil
 }
 
 // 生成周线日期
-func (this *BaseLine) GetSecurityWeekDay() {
+func (this *BaseLine) getSecurityWeekDay() {
 	if len(this.date) < 1 {
-		logging.Error("Create WeekLine:%v---No historical data...", v.Sid)
+		logging.Error("Create WeekLine:%v---No historical data...", this.sid)
 		return
 	}
 	var wday [][]int32
@@ -110,11 +121,11 @@ func (this *BaseLine) GetSecurityWeekDay() {
 }
 
 // 生成周K线
-func (this *BaseLine) produceWeeprotocol() *protocol.KInfoTable {
+func (this *BaseLine) ProduceWeekprotocol() *protocol.KInfoTable {
 	var tmps []protocol.KInfo
 	var klist protocol.KInfoTable
 
-	for _, week := range this.kindDays { //每一周
+	for _, week := range *(this.kindDays) { //每一周
 		tmp := protocol.KInfo{}
 
 		var (
@@ -142,14 +153,13 @@ func (this *BaseLine) produceWeeprotocol() *protocol.KInfoTable {
 		tmp.NLastPx = this.sigStock[week[i]].NLastPx //最新价
 		tmp.NAvgPx = AvgPxTotal / uint32(i+1)        //平均价
 		tmps = append(tmps, tmp)
-		logging.Debug("周线是:%v", tmps)
+		//logging.Debug("周线是:%v", tmps)
 		klist.List = append(klist.List, &tmp)
 	}
 	return &klist
 }
 
 func filePath(cfg *config.AppConfig, kind string, sid int32) string {
-	dir, _ := kline.IsExistdirInHGSFileStore(cfg, kind, sid)
-	lib.CheckDir(dir)
-	return fmt.Sprintf("%s/%d.dat", dir, sid)
+	file, _ := kline.IsExistFileInHGSFileStore(cfg, kind, sid)
+	return kline.HGSFilepath(file)
 }

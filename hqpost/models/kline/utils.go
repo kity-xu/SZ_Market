@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"strings"
+
 	"haina.com/market/hqpost/config"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
@@ -31,13 +33,13 @@ func GetExchange(sid int32) (string, error) {
 }
 
 // IsExistdirInHGSFileStore ... 判断HGS_FILE是否存在该SID的源数据
-func IsExistdirInHGSFileStore(cfg *config.AppConfig, kind string, sid int32) (string, bool) {
+func IsExistFileInHGSFileStore(cfg *config.AppConfig, kind string, sid int32) (string, bool) {
 	exchange, err := GetExchange(sid)
 	if err != nil {
 		return "", false
 	}
-	dpath := fmt.Sprintf("%s%s%s", cfg.File.Path, exchange, kind)
-	if !lib.IsDirExists(dpath) {
+	dpath := fmt.Sprintf("%s%s%s/%d.dat", cfg.File.Path, exchange, kind, sid)
+	if !lib.IsFileExist(dpath) {
 		return dpath, false
 	}
 	return dpath, true
@@ -63,7 +65,20 @@ func CreateDir(path string) error {
 }
 
 // HGSFilepath ... 得到hgs_file文件路劲
-func HGSFilepath(dir string, sid int32) string {
-	lib.CheckDir(dir)
-	return fmt.Sprintf("%s/%d.dat", dir, sid)
+func HGSFilepath(file string) string {
+	if !lib.IsFileExist(file) {
+		ss := strings.Split(file, "/")
+		var dir string
+		for i, v := range ss {
+			if i == len(ss)-1 {
+				break
+			}
+			dir += v
+			dir += "/"
+		}
+		if err := os.MkdirAll(dir, 0777); err != nil {
+			logging.Error("Mkdir :%v", err)
+		}
+	}
+	return file
 }

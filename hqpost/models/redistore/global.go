@@ -14,7 +14,6 @@ import (
 
 	"ProtocolBuffer/projects/hqpost/go/protocol"
 
-	"github.com/golang/protobuf/proto"
 	. "haina.com/share/models"
 	"haina.com/share/store/redis"
 )
@@ -58,7 +57,7 @@ func NewGlobalSid(key string) *GlobalSid {
 }
 
 // GetGlobalSidFromRedis 股票代码表
-func (this*GlobalSid) GetGlobalSidFromRedis() (*[]int32, error) {
+func (this *GlobalSid) GetGlobalSidFromRedis() (*[]int32, error) {
 	keys, err := redis.Keys(this.CacheKey)
 	if err != nil {
 		return nil, err
@@ -77,7 +76,7 @@ func (this*GlobalSid) GetGlobalSidFromRedis() (*[]int32, error) {
 }
 
 // GetSecurityBase 获取股票基本信息
-func GetSecurityBase(sid int32) (*protocol.SecurityName, error) {
+func GetSecurityBase(sid int32) (*TagSecurityName, error) {
 	key := fmt.Sprintf(models.REDISKEY_SECURITY_NAME_ID, sid)
 	data, err := models.RedisStore.GetBytes(key)
 	if err != nil {
@@ -85,11 +84,16 @@ func GetSecurityBase(sid int32) (*protocol.SecurityName, error) {
 		return nil, err
 	}
 
-	stock := &protocol.SecurityName{}
-	if err = proto.Unmarshal(data, stock); err != nil {
+	stock := &TagSecurityName{}
+	if err = binary.Read(bytes.NewBuffer(data), binary.LittleEndian, stock); err != nil && err != io.EOF {
 		logging.Error(err.Error())
 		return nil, err
 	}
+	//stock := &protocol.SecurityName{}
+	//if err = proto.Unmarshal(data, stock); err != nil {
+	//	logging.Error(err.Error())
+	//	return nil, err
+	//}
 	return stock, nil
 }
 

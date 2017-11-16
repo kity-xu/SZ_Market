@@ -17,16 +17,15 @@ func NewMinKline(sids *[]int32, cg *config.AppConfig) *MinKline {
 	}
 }
 
-var (
-	rstore1 *redistore.HMinKLine
-	mstore  *redistore.MinKLine
-)
+func (this *MinKline) InitMinLine() {
+	this.initBasicMinData()
+}
 
 //所有股票当天的分钟线数据
 func (this *MinKline) HMinLine_1() {
-	rstore1 = redistore.NewHMinKLine(REDISKEY_SECURITY_HMIN1)
-	mstore = redistore.NewMinKLine(REDISKEY_SECURITY_MIN)
-	this.initBasicMinData()
+	for _, single := range *(this.list.All) {
+		this.mergeMin(single.Sid, REDISKEY_SECURITY_HMIN1, single.Min01)
+	}
 }
 
 //初始化分钟线基本数据
@@ -54,43 +53,32 @@ func (this *MinKline) getBasicMinDataToday(sid int32) (*SingleMin, error) {
 		Time: make([]int32, 0), //单个股票的历史日期
 		Min:  make(map[int32]protocol.KInfo),
 	}
-	dmin, err := mstore.GetMinKLineToday(sid)
+	store := redistore.NewMinKLine(REDISKEY_SECURITY_MIN)
+	dmin, err := store.GetMinKLineToday(sid)
 	if err != nil {
 		return nil, err
 	}
-
+	day.Min01 = dmin
 	for _, v := range *dmin {
 		day.Min[v.NTime] = *v
 		day.Time = append(day.Time, v.NTime)
 	}
 
-	/*********************1分钟线操作**************************************/
-
-	this.mergeMin(sid, rstore1, dmin)
-	/***********************1分钟历史线操作OVER*******************************/
-
 	day.Sid = sid
 
 	lib.GetASCIntArray(day.Time) //升序排序time
 	generateMinLineTimes(day)
-
 	return day, nil
 }
 
 //当天分钟线并入历史
-func (this *MinKline) mergeMin(sid int32, rs *redistore.HMinKLine, dmin *[]*protocol.KInfo) {
-	if rs.Ktype != REDISKEY_SECURITY_HMIN1 { //如果不是历史1分钟线的话，进行redis操作（也就是说minline_1不进redis）
-		//		kinfo := protocol.HMinLineDay{
-		//			Date: GetDateToday(),
-		//			List: *dmin,
-		//		}
-		if err := rs.LPushHMinKLine(sid, dmin); err != nil {
-			return
-		}
+func (this *MinKline) mergeMin(sid int32, kType string, dmin *[]*protocol.KInfo) {
+	if len(*dmin) == 0 {
+		logging.Error("The min line of today is null")
+		return
 	}
-
 	//文件
-	switch rs.Ktype {
+	switch kType {
 	case REDISKEY_SECURITY_HMIN1:
 		if e := AppendFile(sid, cfg.File.Min, dmin); e != nil {
 			logging.Error("%v", e.Error())
