@@ -98,8 +98,8 @@ func UpdateYearLineToFile(sid int32, filename string, today *protocol.KInfo) err
 	}
 	defer file.Close()
 
-	n, err := file.Seek(0, 2) //添加新股
-	if n == 0 && err == nil {
+	n, err := file.Seek(0, 2)
+	if n == 0 && err == nil { //添加新股
 		buf := new(bytes.Buffer)
 		binary.Write(buf, binary.LittleEndian, today)
 		if _, err = file.Write(buf.Bytes()); err != nil {
@@ -125,7 +125,6 @@ func UpdateYearLineToFile(sid int32, filename string, today *protocol.KInfo) err
 	if tmp.NTime/10000 == today.NTime/10000 { //同年
 		_, err = file.Seek(int64(-size), 2)
 		if err != nil {
-			//	logging.Error("fist seek error ...%v", err.Error())
 			return err
 		}
 		if redistore.IsKindUpdate(fmt.Sprintf("hq:post:tag:%d:year", sid), today.NTime, 4) {
@@ -298,6 +297,7 @@ func AppendFile(filepath string, today *protocol.KInfo) error {
 
 	n, err := file.Seek(0, 2)
 	if n == 0 && err == nil { // 添加新股 文件大小为0字节
+		logging.Info("添加新股 %d", today.NSID)
 		buf := new(bytes.Buffer)
 		binary.Write(buf, binary.LittleEndian, today)
 		if _, err = file.Write(buf.Bytes()); err != nil {

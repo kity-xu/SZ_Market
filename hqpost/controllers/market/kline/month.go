@@ -21,7 +21,7 @@ func HisMonthKline(sids *[]int32) {
 
 		monthName := filePath(cfg, cfg.File.Month, sid)
 		if !lib.IsFileExist(monthName) { // 不存在或其他做第一从生成 TODO
-			if err = base.CreateMonthLine(sid, monthName, today); err != nil {
+			if err = base.CreateMonthLine(sid, monthName); err != nil { // 在此之前day已更新
 				continue
 			}
 		} else { // 追加周线
@@ -33,15 +33,15 @@ func HisMonthKline(sids *[]int32) {
 }
 
 // 读day文件生成week
-func (this *BaseLine) CreateMonthLine(sid int32, monthFile string, today *protocol.KInfo) error {
-	if err := this.ReadHGSDayLines(sid); err != nil {
+func (this *BaseLine) CreateMonthLine(sid int32, monthFile string) error {
+	err := this.ReadHGSDayLines(sid)
+	if err != nil {
 		return err
 	}
 	this.getSecurityMonthDay()
 	wTable := this.ProduceMonthprotocol()
-	filestore.MaybeBelongAMonth(wTable, today) //第一次生成的时候 如果同属一周加入当天数据
 	if err := filestore.WiteHainaFileStore(monthFile, wTable); err != nil {
-		logging.Error("WiteHainaFileStore error | %v", err)
+		logging.Error("CreateMonthLine: WiteHainaFileStore error | %v", err)
 	}
 	return nil
 }

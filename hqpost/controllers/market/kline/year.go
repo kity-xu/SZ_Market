@@ -20,7 +20,7 @@ func HisYearKline(sids *[]int32) {
 
 		yearName := filePath(cfg, cfg.File.Year, sid)
 		if !lib.IsFileExist(yearName) { // 不存在或其他做第一从生成 TODO
-			if err = base.CreateYearLine(sid, yearName, today); err != nil {
+			if err = base.CreateYearLine(sid, yearName); err != nil { //第一次创建week时，其实日线已更新为最新
 				continue
 			}
 		} else { // 追加周线
@@ -30,15 +30,18 @@ func HisYearKline(sids *[]int32) {
 		}
 	}
 }
-func (this *BaseLine) CreateYearLine(sid int32, yearFile string, today *protocol.KInfo) error {
-	if err := this.ReadHGSDayLines(sid); err != nil {
+
+// 首次生成week时，从hgs_file 读day数据做数据源
+func (this *BaseLine) CreateYearLine(sid int32, yearFile string) error {
+	err := this.ReadHGSDayLines(sid)
+	if err != nil {
 		return err
 	}
+
 	this.getSecurityYearDay()
 	wTable := this.ProduceYearprotocol()
-	filestore.MaybeBelongAYear(wTable, today) //第一次生成的时候 如果同属一周加入当天数据
 	if err := filestore.WiteHainaFileStore(yearFile, wTable); err != nil {
-		logging.Error("WiteHainaFileStore error | %v", err)
+		logging.Error("CreateYearLine: WiteHainaFileStore error | %v", err)
 	}
 	return nil
 }

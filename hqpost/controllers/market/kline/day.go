@@ -36,7 +36,7 @@ func HisDayKline(sids *[]int32) {
 					logging.Error("Error: Invalid sid | %d", sid)
 					continue
 				}
-				logging.Info("这是一支新股？")
+				logging.Info("这是一支新股？ %d", sid)
 				// 新股 AddHgsFile()
 				if e := filestore.AppendFile(kline.HGSFilepath(spath), today); e != nil {
 					logging.Error("Error: Append File Err | %v", e)

@@ -1,5 +1,7 @@
 package kline
 
+import "errors"
+
 /*****************************************Const***************************************/
 //Exchange 交易所
 const (
@@ -14,6 +16,11 @@ const (
 	REDISKEY_SECURITY_HWEEK  = "hq:st:hweek:%d"  ///<证券周K线(参数：sid)
 	REDISKEY_SECURITY_HMONTH = "hq:st:hmonth:%d" ///<证券月K线(参数：sid)
 	REDISKEY_SECURITY_HYEAR  = "hq:st:hyear:%d"  ///<证券年K线(参数：sid)
+)
+
+///
+var (
+	NOTFOUND_DAYLINE_IN_HGSFILE = errors.New("not found dayline in hgs filestore")
 )
 
 //----------------------------------------------------------------funtions--------------------------------------------------------------------//

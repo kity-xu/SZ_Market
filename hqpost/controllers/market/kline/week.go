@@ -7,8 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 
-	"errors"
-
 	"haina.com/market/hqpost/config"
 	"haina.com/market/hqpost/models/filestore"
 	"haina.com/market/hqpost/models/kline"
@@ -37,7 +35,7 @@ func HisWeekKline(sids *[]int32) {
 
 		weekName := filePath(cfg, cfg.File.Week, sid)
 		if !lib.IsFileExist(weekName) { // 不存在或其他做第一从生成 TODO
-			if err = base.CreateWeekLine(sid, weekName, today); err != nil {
+			if err = base.CreateWeekLine(sid, weekName); err != nil { // 在此之前day已更新
 				continue
 			}
 		} else { // 追加周线
@@ -55,12 +53,12 @@ func (this *BaseLine) ReadHGSDayLines(sid int32) error {
 
 	dayPath, is := kline.IsExistFileInHGSFileStore(cfg, cfg.File.Day, sid) // 文件是否存在
 	if !is {
-		logging.Error("Create WeekLine: DayLine no Exist in hgs_file")
-		return errors.New("error")
+		logging.Error("%v:%d", NOTFOUND_DAYLINE_IN_HGSFILE, sid)
+		return NOTFOUND_DAYLINE_IN_HGSFILE
 	}
 	bs, err := ioutil.ReadFile(dayPath)
 	if err != nil || len(bs) == 0 {
-		logging.Error("Create WeekLine: Read dayLine error|%v", err)
+		logging.Error("Create WeekLine: Read dayLine null|%v", err)
 		return err
 	}
 
@@ -80,15 +78,15 @@ func (this *BaseLine) ReadHGSDayLines(sid int32) error {
 }
 
 // 读day文件生成week
-func (this *BaseLine) CreateWeekLine(sid int32, weekFile string, today *protocol.KInfo) error {
-	if err := this.ReadHGSDayLines(sid); err != nil {
+func (this *BaseLine) CreateWeekLine(sid int32, weekFile string) error {
+	err := this.ReadHGSDayLines(sid)
+	if err != nil {
 		return err
 	}
 	this.getSecurityWeekDay()
 	wTable := this.ProduceWeekprotocol()
-	filestore.MaybeBelongAWeek(wTable, today) //第一次生成的时候 如果同属一周加入当天数据
 	if err := filestore.WiteHainaFileStore(weekFile, wTable); err != nil {
-		logging.Error("WiteHainaFileStore error | %v", err)
+		logging.Error("CreateWeekLine: WiteHainaFileStore error | %v", err)
 	}
 	return nil
 }

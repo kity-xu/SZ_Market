@@ -76,7 +76,7 @@ func HGSFilepath(file string) string {
 			dir += v
 			dir += "/"
 		}
-		if err := os.MkdirAll(dir, 0777); err != nil {
+		if err := os.MkdirAll(dir, 0666); err != nil {
 			logging.Error("Mkdir :%v", err)
 		}
 	}
