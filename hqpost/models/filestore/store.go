@@ -15,7 +15,6 @@ import (
 
 	"haina.com/share/lib"
 
-	"haina.com/market/hqpost/models/redistore"
 	"haina.com/share/logging"
 )
 
@@ -59,16 +58,17 @@ func UpdateMonthLineToFile(sid int32, filename string, today *protocol.KInfo) er
 		return err
 	}
 
+	// 判断当天是否追加了多次
+	if today.NTime <= tmp.NTime {
+		return nil
+	}
+
 	if tmp.NTime/100 == today.NTime/100 { //同月
 		_, err = file.Seek(int64(-size), 2)
 		if err != nil {
 			return err
 		}
-		if redistore.IsKindUpdate(fmt.Sprintf("hq:post:tag:%d:month", sid), today.NTime, 3) {
-			result = compareKInfo(&tmp, today)
-		} else {
-			result = tmp
-		}
+		result = compareKInfo(&tmp, today)
 	} else {
 		result = *today
 		result.NPreCPx = tmp.NLastPx //昨收价
@@ -121,17 +121,17 @@ func UpdateYearLineToFile(sid int32, filename string, today *protocol.KInfo) err
 	if err = binary.Read(buffer, binary.LittleEndian, &tmp); err != nil && err != io.EOF {
 		return err
 	}
+	// 判断当天是否追加了多次
+	if today.NTime <= tmp.NTime {
+		return nil
+	}
 
 	if tmp.NTime/10000 == today.NTime/10000 { //同年
 		_, err = file.Seek(int64(-size), 2)
 		if err != nil {
 			return err
 		}
-		if redistore.IsKindUpdate(fmt.Sprintf("hq:post:tag:%d:year", sid), today.NTime, 4) {
-			result = compareKInfo(&tmp, today)
-		} else {
-			result = tmp
-		}
+		result = compareKInfo(&tmp, today)
 	} else {
 		result = *today
 		result.NPreCPx = tmp.NLastPx //昨收价
@@ -185,6 +185,10 @@ func UpdateWeekLineToFile(sid int32, filename string, today *protocol.KInfo) err
 		return err
 	}
 
+	// 判断当天是否追加了多次
+	if today.NTime <= tmp.NTime {
+		return nil
+	}
 	b1, _ := DateAdd(tmp.NTime) //找到该日期所在周日的那天
 	b2, _ := DateAdd(today.NTime)
 
@@ -193,12 +197,7 @@ func UpdateWeekLineToFile(sid int32, filename string, today *protocol.KInfo) err
 		if err != nil {
 			return err
 		}
-
-		if redistore.IsKindUpdate(fmt.Sprintf("hq:post:tag:%d:week", sid), today.NTime, 2) {
-			result = compareKInfo(&tmp, today)
-		} else {
-			result = tmp
-		}
+		result = compareKInfo(&tmp, today)
 	} else { //不属于同周
 		result = *today
 		result.NPreCPx = tmp.NLastPx //昨收价

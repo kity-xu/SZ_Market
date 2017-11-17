@@ -106,7 +106,7 @@ func (this *BaseLine) ProduceMonthprotocol() *protocol.KInfoTable {
 			AvgPxTotal += stockday.NAvgPx
 		}
 		tmp.NSID = this.sid
-		tmp.NTime = this.sigStock[month[0]].NTime     //时间
+		tmp.NTime = this.sigStock[month[i]].NTime     //时间
 		tmp.NOpenPx = this.sigStock[month[0]].NOpenPx //开盘价
 		tmp.NPreCPx = this.sigStock[month[0]].NPreCPx
 		tmp.NLastPx = this.sigStock[month[i]].NLastPx //最新价

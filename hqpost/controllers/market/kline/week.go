@@ -145,7 +145,7 @@ func (this *BaseLine) ProduceWeekprotocol() *protocol.KInfoTable {
 		}
 
 		tmp.NSID = this.sid
-		tmp.NTime = this.sigStock[week[0]].NTime     //时间（取每周第一天）
+		tmp.NTime = this.sigStock[week[i]].NTime     //时间（取每周最后一天）
 		tmp.NOpenPx = this.sigStock[week[0]].NOpenPx //开盘价（每周第一天的开盘价）
 		tmp.NPreCPx = this.sigStock[week[0]].NPreCPx //本周一的昨收
 		tmp.NLastPx = this.sigStock[week[i]].NLastPx //最新价

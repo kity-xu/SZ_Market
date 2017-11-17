@@ -1,17 +1,13 @@
 package market
 
 import (
-	"time"
-
-	. "haina.com/market/hqpost/controllers"
-
 	"os"
+	"time"
 
 	"haina.com/market/hqpost/config"
 	"haina.com/market/hqpost/controllers/market/kline"
 	"haina.com/market/hqpost/controllers/market/minline"
 	"haina.com/market/hqpost/controllers/market/sidcode"
-	"haina.com/market/hqpost/models/redistore"
 	"haina.com/share/logging"
 )
 
@@ -110,6 +106,6 @@ func Update(cfg *config.AppConfig) {
 	end := time.Now()
 	logging.Info("Update Kline historical data successed, and running time:%v", end.Sub(start))
 
-	redistore.NewHKLine(REDISKEY_HQPOST_EXECUTED_TIME).HQpostExecutedTime()
+	//redistore.NewHKLine(REDISKEY_HQPOST_EXECUTED_TIME).HQpostExecutedTime()
 	/*********************结束时间***********************/
 }

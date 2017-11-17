@@ -104,7 +104,7 @@ func (this *BaseLine) ProduceYearprotocol() *protocol.KInfoTable {
 			AvgPxTotal += stockday.NAvgPx
 		}
 		tmp.NSID = this.sid
-		tmp.NTime = this.sigStock[year[0]].NTime     //时间（取每周第一天）
+		tmp.NTime = this.sigStock[year[i]].NTime     //时间（取每年最后）
 		tmp.NOpenPx = this.sigStock[year[0]].NOpenPx //开盘价（每周第一天的开盘价）
 		tmp.NPreCPx = this.sigStock[year[0]].NPreCPx
 		tmp.NLastPx = this.sigStock[year[i]].NLastPx //最新价

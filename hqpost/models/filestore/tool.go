@@ -75,7 +75,7 @@ func compareKInfo(tmp *protocol.KInfo, today *protocol.KInfo) protocol.KInfo {
 	var swap protocol.KInfo
 
 	swap.NSID = tmp.NSID
-	swap.NTime = tmp.NTime
+	swap.NTime = today.NTime // 周(月、年)线以边界最后一根日线作为该周(月、年)线的日期
 	swap.NPreCPx = tmp.NPreCPx
 	swap.NOpenPx = tmp.NOpenPx
 	if tmp.NHighPx > today.NHighPx {

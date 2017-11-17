@@ -4,7 +4,7 @@ import (
 	"ProtocolBuffer/projects/hqpost/go/protocol"
 	"fmt"
 
-	"haina.com/share/lib"
+	"haina.com/market/hqpost/models/lib"
 
 	cl "haina.com/market/hqpost/controllers"
 	"haina.com/market/hqpost/models/filestore"
@@ -74,6 +74,9 @@ func CreateSingleHgsFile(srcpath, despath string, today *protocol.KInfo) error {
 		logging.Error("%s", err)
 		return err
 	}
+	// 从小到大排序
+	lib.GetASCStruct(klist)
+
 	if today != nil {
 		klist.List = append(klist.List, today)
 	}
