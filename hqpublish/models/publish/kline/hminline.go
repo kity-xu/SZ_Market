@@ -39,10 +39,7 @@ func (this *HMinKLine) GetHMinKLineAll(req *protocol.RequestHisK) (*[]*protocol.
 	var kinfolist *kline.KInfoTable
 
 	kinfolist, err := this.getHMinlineFromeRedisCache(key, req)
-	if err != nil {
-		if err != publish.ERROR_REDIS_LIST_NULL {
-			return nil, err
-		}
+	if kinfolist == nil {
 		kinfolist, err = this.getHMinlineFromeFileStore(key, req)
 		if err != nil {
 			return nil, err
@@ -73,26 +70,19 @@ func (this *HMinKLine) GetHMinKLineAll(req *protocol.RequestHisK) (*[]*protocol.
 }
 
 func (this *HMinKLine) getHMinlineFromeRedisCache(key string, req *protocol.RequestHisK) (*kline.KInfoTable, error) {
-	var table = kline.KInfoTable{}
+	var table = &kline.KInfoTable{}
 	bs, err := GetCache(key)
-	if err != nil { //错误或没找到
-		if err = getHMinlineFromeRedisStore(key, &table); err != nil {
+	if err == nil {
+		if len(bs) == 0 {
+			return nil, publish.ERROR_REDIS_LIST_NULL
+		}
+		if err = proto.Unmarshal(bs, table); err != nil {
 			return nil, err
-		}
-
-		if len(table.List) < 1 {
-			return nil, publish.READ_REDIS_STORE_NULL
-		}
-
-		if err = this.setPaylodToRedisCache(key, req.Type, &table); err != nil {
-			logging.Error("%v", err.Error())
 		}
 	} else {
-		if err = proto.Unmarshal(bs, &table); err != nil {
-			return nil, err
-		}
+		table = nil
 	}
-	return &table, nil
+	return table, nil
 }
 
 func getHMinlineFromeRedisStore(key string, table *kline.KInfoTable) error {
@@ -116,41 +106,37 @@ func getHMinlineFromeRedisStore(key string, table *kline.KInfoTable) error {
 }
 
 func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.RequestHisK) (*kline.KInfoTable, error) {
-	var dir, filename string
-
-	market := req.SID / 1000000
-	if market == 100 {
-		dir = fmt.Sprintf("%s/sh/%d/", FStore.Path, req.SID)
-	} else if market == 200 {
-		dir = fmt.Sprintf("%s/sz/%d/", FStore.Path, req.SID)
-	} else {
-		return nil, publish.INVALID_FILE_PATH
-	}
+	var kind, filename string
+	logging.Info("-------************filename----------")
 
 	switch protocol.HAINA_KLINE_TYPE(req.Type) {
 	case protocol.HAINA_KLINE_TYPE_KMIN1:
-		filename = dir + FStore.Min
-		break
+		kind = FStore.Min
 	case protocol.HAINA_KLINE_TYPE_KMIN5:
-		filename = dir + FStore.Min5
-		break
+		kind = FStore.Min5
 	case protocol.HAINA_KLINE_TYPE_KMIN15:
-		filename = dir + FStore.Min15
-		break
+		kind = FStore.Min15
 	case protocol.HAINA_KLINE_TYPE_KMIN30:
-		filename = dir + FStore.Min30
-		break
+		kind = FStore.Min30
 	case protocol.HAINA_KLINE_TYPE_KMIN60:
-		filename = dir + FStore.Min60
-		break
+		kind = FStore.Min60
 	default:
 		return nil, publish.INVALID_REQUEST_PARA
 	}
+	market := req.SID / 1000000
+	if market == 100 {
+		filename = fmt.Sprintf("%s/sh/%s/%d.dat", FStore.Path, kind, req.SID)
+	} else if market == 200 {
+		filename = fmt.Sprintf("%s/sz/%s/%d.dat", FStore.Path, kind, req.SID)
+	} else {
+		logging.Info("---filename----------")
+		return nil, publish.INVALID_FILE_PATH
+	}
+	logging.Info("---filename:%s", filename)
 
 	if !lib.IsFileExist(filename) {
 		return nil, publish.INVALID_FILE_PATH
 	}
-
 	///do something
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -161,11 +147,6 @@ func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.Reque
 	size := binary.Size(&line)
 
 	var table = &kline.KInfoTable{}
-	//var cache *kline.HMinLineDay //指针
-	//	var cacheTable = &kline.HMinTable{}
-
-	//var tmpTime int32
-
 	lengh := len(data)
 	if lengh == 0 {
 		return nil, publish.FILE_HMINDATA_NULL
@@ -179,29 +160,7 @@ func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.Reque
 			return nil, err
 		}
 		table.List = append(table.List, &kinfo)
-		//		if tmpTime == 0 {
-		//			cache = &kline.HMinLineDay{}
-		//			cache.List = append(cache.List, &kinfo)
-		//			tmpTime = kinfo.NTime / 10000
-		//			continue
-		//		}
-
-		//		if tmpTime == kinfo.NTime/10000 {
-		//			cache.List = append(cache.List, &kinfo)
-		//			if i == lengh-size { //防止最后一条数据丢失、
-		//				cache.Date = 20*1000000 + tmpTime
-		//				cacheTable.List = append(cacheTable.List, cache)
-		//			}
-		//		} else {
-		//			cache.Date = 20*1000000 + tmpTime
-		//			cacheTable.List = append(cacheTable.List, cache) //得到了一天的分钟线，cache加入cacheTable
-
-		//			cache = &kline.HMinLineDay{}            //重新创建HMinLineDay结构，cache指向它
-		//			cache.List = append(cache.List, &kinfo) //本次kinfo加入新cache
-		//			tmpTime = kinfo.NTime / 10000           //更新时间
-		//		}
 	}
-
 	if err = this.setPaylodToRedisCache(key, req.Type, table); err != nil { //这里文件存储结构转换为redis存储结构
 		logging.Error("%v", err.Error()) //此处不能因为该错误而返回，但又不能忽略错误，故打印
 	}

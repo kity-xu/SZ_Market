@@ -29,7 +29,7 @@ type KLine struct {
 
 func NewKLine(rediskey string) *KLine {
 	return &KLine{
-		sm.Model: sm.Model{
+		Model: sm.Model{
 			CacheKey: rediskey,
 		},
 	}
@@ -38,12 +38,9 @@ func NewKLine(rediskey string) *KLine {
 // 获取某一NSID的某类历史K线（全部）
 func (this *KLine) GetHisKLineAll(req *protocol.RequestHisK) (*[]*protocol.KInfo, error) {
 	key := fmt.Sprintf(this.CacheKey, req.SID)
-
+	logging.Info("-------------------------------")
 	list, err := this.getHisKlineFromeRedisCache(key, req)
-	if err != nil {
-		if err != publish.ERROR_REDIS_LIST_NULL {
-			return nil, err
-		}
+	if list == nil {
 		list, err = this.getHisKlineFromeFileStore(key, req)
 		if err != nil {
 			var table []*protocol.KInfo
@@ -97,35 +94,28 @@ func getHisKlineFromeRedisStore(key string) (*kline.KInfoTable, error) {
 
 //从文件获取数据
 func (this *KLine) getHisKlineFromeFileStore(key string, req *protocol.RequestHisK) (*kline.KInfoTable, error) {
-	var dir, filename string
-
-	market := req.SID / 1000000
-	if market == 100 {
-		dir = fmt.Sprintf("%s/sh/%d/", FStore.Path, req.SID)
-	} else if market == 200 {
-		dir = fmt.Sprintf("%s/sz/%d/", FStore.Path, req.SID)
-	} else {
-		return nil, publish.INVALID_FILE_PATH
-	}
+	var kind, filename string
 
 	switch protocol.HAINA_KLINE_TYPE(req.Type) {
 	case protocol.HAINA_KLINE_TYPE_KDAY:
-		filename = dir + FStore.Day
-		if !lib.IsFileExist(filename) {
-			filename = dir + FStore.Index
-		}
-		break
+		kind = FStore.Day
 	case protocol.HAINA_KLINE_TYPE_KWEEK:
-		filename = dir + FStore.Week
-		break
+		kind = FStore.Week
 	case protocol.HAINA_KLINE_TYPE_KMONTH:
-		filename = dir + FStore.Month
-		break
+		kind = FStore.Month
 	case protocol.HAINA_KLINE_TYPE_KYEAR:
-		filename = dir + FStore.Year
-		break
+		kind = FStore.Year
 	default:
 		return nil, publish.INVALID_REQUEST_PARA
+	}
+
+	market := req.SID / 1000000
+	if market == 100 {
+		filename = fmt.Sprintf("%s/sh/%s/%d", FStore.Path, kind, req.SID)
+	} else if market == 200 {
+		filename = fmt.Sprintf("%s/sz/%s/%d", FStore.Path, kind, req.SID)
+	} else {
+		return nil, publish.INVALID_FILE_PATH
 	}
 
 	if !lib.IsFileExist(filename) {
@@ -196,19 +186,15 @@ func (this *KLine) setPaylodToRedisCache(key string, stype int32, table *kline.K
 func (this *KLine) getHisKlineFromeRedisCache(key string, req *protocol.RequestHisK) (*kline.KInfoTable, error) {
 	var ktable = &kline.KInfoTable{}
 	bs, err := GetCache(key)
-	if err != nil { //错误或没找到
-		ktable, err = getHisKlineFromeRedisStore(key)
-		if err != nil {
-			return nil, err
+	if err == nil {
+		if len(bs) == 0 {
+			return nil, publish.ERROR_REDIS_LIST_NULL
 		}
-
-		if err = this.setPaylodToRedisCache(key, req.Type, ktable); err != nil {
-			logging.Error("%v", err.Error())
-		}
-	} else {
 		if err = proto.Unmarshal(bs, ktable); err != nil {
 			return nil, err
 		}
+	} else {
+		ktable = nil
 	}
 	return ktable, nil
 }
