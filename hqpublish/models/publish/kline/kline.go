@@ -14,6 +14,7 @@ import (
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
 
 	"haina.com/market/hqpublish/models/publish"
+	"haina.com/market/hqpublish/models/publish/security"
 	sm "haina.com/share/models"
 
 	. "haina.com/market/hqpublish/models"
@@ -38,7 +39,6 @@ func NewKLine(rediskey string) *KLine {
 // 获取某一NSID的某类历史K线（全部）
 func (this *KLine) GetHisKLineAll(req *protocol.RequestHisK) (*[]*protocol.KInfo, error) {
 	key := fmt.Sprintf(this.CacheKey, req.SID)
-	logging.Info("-------------------------------")
 	list, err := this.getHisKlineFromeRedisCache(key, req)
 	if list == nil {
 		list, err = this.getHisKlineFromeFileStore(key, req)
@@ -111,9 +111,9 @@ func (this *KLine) getHisKlineFromeFileStore(key string, req *protocol.RequestHi
 
 	market := req.SID / 1000000
 	if market == 100 {
-		filename = fmt.Sprintf("%s/sh/%s/%d", FStore.Path, kind, req.SID)
+		filename = fmt.Sprintf("%s/sh/%s/%d.dat", FStore.Path, kind, req.SID)
 	} else if market == 200 {
-		filename = fmt.Sprintf("%s/sz/%s/%d", FStore.Path, kind, req.SID)
+		filename = fmt.Sprintf("%s/sz/%s/%d.dat", FStore.Path, kind, req.SID)
 	} else {
 		return nil, publish.INVALID_FILE_PATH
 	}
@@ -254,18 +254,14 @@ func IsDelist(sid int32) bool {
 	key := "hq:st:static:%d"
 	key_sc := fmt.Sprintf(key, sid)
 
-	static := &protocol.StockStatic{}
+	static := &security.StockStatic{}
 	bs, err := RedisStore.GetBytes(key_sc)
 	if err != nil {
 		logging.Error("%v", err.Error())
 		return true //按停牌算
 	}
 
-	if err = proto.Unmarshal(bs, static); err != nil {
-		logging.Error("%v", err.Error())
-		return true //按停牌算
-	}
-
+	binary.Read(bytes.NewBuffer(bs), binary.LittleEndian, static)
 	if static.SzStatus[0] == 'S' { //停牌
 		return true
 	}
@@ -279,11 +275,9 @@ func IsIndex(sid int32) (bool, error) {
 		return false, err
 	}
 
-	var kinfo = &protocol.SecurityName{}
+	var kinfo = &security.TagSecurityName{}
 
-	if err = proto.Unmarshal(bs, kinfo); err != nil {
-		return false, err
-	}
+	binary.Read(bytes.NewBuffer(bs), binary.LittleEndian, kinfo)
 	if kinfo.SzSType[1] == 'I' {
 		return true, nil
 	}

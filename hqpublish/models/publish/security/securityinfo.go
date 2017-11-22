@@ -9,6 +9,10 @@ import (
 	"github.com/golang/protobuf/proto"
 	. "haina.com/market/hqpublish/models"
 
+	"bytes"
+	"encoding/binary"
+	"io"
+
 	"haina.com/share/logging"
 )
 
@@ -63,11 +67,26 @@ func getSecurityInfoFromeStore(key string, single *protocol.PayloadSingleSecurit
 	if err != nil {
 		return err
 	}
+	secName := &TagSecurityName{}
 
-	var kinfo = &protocol.SecurityName{}
-
-	if err = proto.Unmarshal(bs, kinfo); err != nil {
+	if err = binary.Read(bytes.NewBuffer(bs), binary.LittleEndian, secName); err != nil && err != io.EOF {
 		return err
+	}
+
+	var kinfo = &protocol.SecurityName{
+		NSID:        secName.NSID,
+		NMarket:     secName.NMarket,
+		SzSType:     ByteNToString(secName.SzSType),
+		SzStatus:    ByteNToString(secName.SzStatus),
+		SzSCode:     ByteNToString(secName.SzSCode),
+		SzSymbol:    ByteNToString(secName.SzSymbol),
+		SzISIN:      ByteNToString(secName.SzISIN),
+		SzSName:     ByteNToString(secName.SzSName),
+		SzSCName:    ByteNToString(secName.SzSCName),
+		SzDESC:      ByteNToString(secName.SzDESC),
+		SzPhonetic:  ByteNToString(secName.SzPhonetic),
+		SzCUR:       ByteNToString(secName.SzCUR),
+		SzIndusCode: ByteNToString(secName.SzIndusCode),
 	}
 	single.SID = kinfo.NSID
 	single.SNInfo = kinfo

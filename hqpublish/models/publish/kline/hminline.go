@@ -107,8 +107,6 @@ func getHMinlineFromeRedisStore(key string, table *kline.KInfoTable) error {
 
 func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.RequestHisK) (*kline.KInfoTable, error) {
 	var kind, filename string
-	logging.Info("-------************filename----------")
-
 	switch protocol.HAINA_KLINE_TYPE(req.Type) {
 	case protocol.HAINA_KLINE_TYPE_KMIN1:
 		kind = FStore.Min
@@ -129,10 +127,8 @@ func (this *HMinKLine) getHMinlineFromeFileStore(key string, req *protocol.Reque
 	} else if market == 200 {
 		filename = fmt.Sprintf("%s/sz/%s/%d.dat", FStore.Path, kind, req.SID)
 	} else {
-		logging.Info("---filename----------")
 		return nil, publish.INVALID_FILE_PATH
 	}
-	logging.Info("---filename:%s", filename)
 
 	if !lib.IsFileExist(filename) {
 		return nil, publish.INVALID_FILE_PATH

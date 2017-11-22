@@ -9,6 +9,10 @@ import (
 	"github.com/golang/protobuf/proto"
 	. "haina.com/market/hqpublish/models"
 
+	"bytes"
+	"encoding/binary"
+	"io"
+
 	"haina.com/share/logging"
 )
 
@@ -53,19 +57,47 @@ func (this *SecurityStatic) getSecurityStaticFromeCache(sid int32) (*protocol.Pa
 }
 
 func getSecurityStaticFromeStore(key string, single *protocol.PayloadSecurityStatic) error {
-	static := &protocol.StockStatic{}
+	static := &StockStatic{}
 
 	bs, err := RedisStore.GetBytes(key)
 	if err != nil {
 		return err
 	}
 
-	if err = proto.Unmarshal(bs, static); err != nil {
-		logging.Error("-----getSecurityStaticFromeStore--error..%v", err.Error())
+	if err = binary.Read(bytes.NewBuffer(bs), binary.LittleEndian, static); err != nil && err != io.EOF {
 		return err
 	}
+	pStatic := &protocol.StockStatic{
+		NSID:               static.NSID,
+		SzSType:            ByteNToString(static.SzSType),
+		SzStatus:           ByteNToString(static.SzStatus),
+		NListDate:          static.NListDate,
+		NLastTradeDate:     static.NLastTradeDate,
+		NDelistDate:        static.NDelistDate,
+		LlCircuShare:       static.LlCircuShare,
+		LlTotalShare:       static.LlTotalShare,
+		LlLast5Volume:      static.LlLast5Volume,
+		NEPS:               static.NEPS,
+		LlTotalProperty:    static.LlTotalProperty,
+		LlFlowProperty:     static.LlFlowProperty,
+		NAVPS:              static.NAVPS,
+		LlMainIncoming:     static.LlMainIncoming,
+		LlMainProfit:       static.LlMainProfit,
+		LlTotalProfit:      static.LlTotalProfit,
+		LlNetProfit:        static.LlNetProfit,
+		NHolders:           static.NHolders,
+		NReportDate:        static.NReportDate,
+		NQuickMovingRatio:  static.NQuickMovingRatio,
+		NCurrentRatio:      static.NCurrentRatio,
+		NEUndisProfit:      static.NEUndisProfit,
+		NFlowLiab:          static.NFlowLiab,
+		NTotalLiabilities:  static.NTotalLiabilities,
+		NTotalHolderEquity: static.NTotalHolderEquity,
+		NCapitalReserve:    static.NCapitalReserve,
+		NIncomeInvestments: static.NIncomeInvestments,
+	}
 
-	single.SSInfo = static
+	single.SSInfo = pStatic
 
 	return nil
 }

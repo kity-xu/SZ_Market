@@ -39,7 +39,7 @@ func DateAdd(date int32) (time.Time, error) {
 	} else if strings.EqualFold(weekday, "Tuesday") {
 		basedate = fmt.Sprintf("%d%s", 24*5, "h")
 
-	} else if strings.EqualFold(weekday, "Wednesday") {
+ /	} else if strings.EqualFold(weekday, "Wednesday") {
 		basedate = fmt.Sprintf("%d%s", 24*4, "h")
 
 	} else if strings.EqualFold(weekday, "Thursday") {
