@@ -70,7 +70,7 @@ func (this *XRXD) PostJson(c *gin.Context) {
 	}
 
 	if req.Type < 10 {
-		klines, err := publish.NewXRXD().GetXRXDObj(&req)
+		klines, err := publish.NewXRXD().GetXRDAllKlines(&req)
 		if err != nil {
 			logging.Error("%v", err)
 			WriteJson(c, 40002, nil)
@@ -134,7 +134,7 @@ func (this *XRXD) PostPB(c *gin.Context) {
 	}
 
 	if req.Type < 10 {
-		klines, err := publish.NewXRXD().GetXRXDObj(&req)
+		klines, err := publish.NewXRXD().GetXRDAllKlines(&req)
 		if err != nil {
 			logging.Error("%v", err)
 			WriteDataErrCode(c, 40002)
@@ -185,7 +185,7 @@ func CreateTypeKline(dlines *[]*protocol.KInfo, request *protocol.RequestXRXD) (
 	kline.InitMarketTradeDate()
 	var e error
 	var ret *protocol.PayloadXRXD
-	models.GetASCStruct(dlines) //升序排序
+	//models.GetASCStruct(dlines) //升序排序
 
 	switch request.Type {
 	case 1:

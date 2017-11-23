@@ -11,6 +11,7 @@ import (
 
 	ctrl "haina.com/market/hqpublish/controllers"
 	. "haina.com/market/hqpublish/models"
+	"haina.com/share/lib"
 	. "haina.com/share/models"
 
 	pro "ProtocolBuffer/projects/hqpublish/go/protocol"
@@ -47,6 +48,19 @@ func NewXRXD() *XRXD {
 	}
 }
 
+type KInfo struct {
+	NSID     int32
+	NTime    int32
+	NPreCPx  int32
+	NOpenPx  int32
+	NHighPx  int32
+	NLowPx   int32
+	NLastPx  int32
+	LlVolume int64
+	LlValue  int64
+	NAvgPx   uint32
+}
+
 // redis list 中单根日K线存储格式为protobuf(徐晓东存入)
 // 日K线每一根都进行了PB编码，这里需要对所有K线进行解码
 func (this XRXD) SingleDecode(bin []byte) (*pro.KInfo, error) {
@@ -59,15 +73,29 @@ func (this XRXD) SingleDecode(bin []byte) (*pro.KInfo, error) {
 }
 
 // 从 redis 取出后进行解码
-func (this XRXD) Decode(lsbin []string) ([]*pro.KInfo, error) {
-	ls := make([]*pro.KInfo, 0, len(lsbin))
-	for _, v := range lsbin {
-		if obj, err := this.SingleDecode([]byte(v)); err != nil {
-			logging.Error("%v", err)
+func (this XRXD) Decode(lsbin []byte) ([]*pro.KInfo, error) {
+	kinfo := &KInfo{}
+	size := binary.Size(kinfo)
+	var ls []*pro.KInfo
+
+	for i := 0; i < len(lsbin); i += size {
+		k := &KInfo{}
+		if err := binary.Read(bytes.NewBuffer(lsbin[i:size+i]), binary.LittleEndian, k); err != nil && err != io.EOF {
 			return nil, err
-		} else {
-			ls = append(ls, obj)
 		}
+		pk := &pro.KInfo{
+			NSID:     k.NSID,
+			NTime:    k.NTime,
+			NPreCPx:  k.NPreCPx,
+			NOpenPx:  k.NOpenPx,
+			NHighPx:  k.NHighPx,
+			NLowPx:   k.NLowPx,
+			NLastPx:  k.NLastPx,
+			LlVolume: k.LlVolume,
+			LlValue:  k.LlValue,
+			NAvgPx:   k.NAvgPx,
+		}
+		ls = append(ls, pk)
 	}
 	return ls, nil
 }
@@ -281,7 +309,7 @@ func (this XRXD) FactorGroupTotal(req *pro.RequestXRXD, fs []*pro.Factor, rows [
 	var fg []*FactorGroup // *Factor([]*KInfo), 即每一个复权因子关联一组K线
 	var err error
 
-	this.ReverseKList(rows)
+	//this.ReverseKList(rows)
 
 	if req.Method == 1 {
 		if fg, err = this.GroupRightRecoverKList(fs, rows); err != nil {
@@ -323,7 +351,7 @@ func (this XRXD) FactorGroupOp(req *pro.RequestXRXD, fs []*pro.Factor, rows []*p
 	// 从数据库取出来的除权因子数组是 下标小->大 时间小->大
 	// 从Redis取出来的K线数据数组是  下标小->大 时间大->小
 	// 这里反转一下K线数组, 使其符合：下标小->大 时间小->大
-	this.ReverseKList(rows)
+	//this.ReverseKList(rows)
 
 	//  // debug show
 	//	for n, v := range kg {
@@ -356,11 +384,39 @@ func (this XRXD) FactorGroupOp(req *pro.RequestXRXD, fs []*pro.Factor, rows []*p
 	return fg, nil
 }
 
-func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*[]*pro.KInfo, error) {
-	key := fmt.Sprintf(this.CacheKey, req.SID)
-	var fgs []*FactorGroup
+// GetXRDAllKlines ...
+func (this XRXD) GetXRDAllKlines(req *pro.RequestXRXD)(*[]*pro.KInfo, error){
+	var kind string
+	switch req.Type {
+	case 1:
+		kind=FStore.Day
+	case 2:
+		kind=FStore.Week
+	case 3:
+		kind = FStore.Month
+	case 4:
+		kind = FStore.Year
+	default:
+		return nil, ERROR_REQUEST_PARAM
+	}
+	key := fmt.Sprintf("hq:st:xrd:%s:%d", kind,req.SID)
+	bs, err := RedisCache.GetBytes(key)
+	if err != nil || len(bs)==0{
+		return this.GetXRXDObj(key,req)
+	}
 
-	lsbin, err := RedisStore.LRange(key, 0, -1)
+	table := &pro.KInfoTable{}
+	if err = proto.Unmarshal(bs, table); err != nil {
+		return nil, err
+	}
+	return &(table.List),nil
+}
+
+// GetXRXDObj...
+func (this XRXD) GetXRXDObj(key string, req *pro.RequestXRXD) (*[]*pro.KInfo, error) {
+	filepath := fmt.Sprintf("%s/%s/day/%d.dat", FStore.Path, lib.GetExchangeBySID(req.SID), req.SID)
+	var fgs []*FactorGroup
+	lsbin, err := lib.ReadFileBinary(filepath)
 	if err != nil {
 		logging.Error("%v", err)
 		return nil, err
@@ -409,14 +465,6 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*[]*pro.KInfo, error) {
 
 	if fgs == nil {
 		return nil, fmt.Errorf("fgs == nil")
-		//		return &pro.PayloadXRXD{
-		//			SID:   req.SID,
-		//			Type:  req.Type,
-		//			Total: int32(len(ls)),
-		//			Begin: req.TimeIndex,
-		//			Num:   0,
-		//			KList: nil,
-		//		}, nil
 	}
 
 	result_ls := make([]*pro.KInfo, 0, 1024)
@@ -429,48 +477,39 @@ func (this XRXD) GetXRXDObj(req *pro.RequestXRXD) (*[]*pro.KInfo, error) {
 		return nil, fmt.Errorf("The klineData of xrxd is null")
 	}
 
+	var ttl int
 	switch req.Type {
 	case 1:
 		kline = &result_ls
+		ttl = TTL.Day
 	case 2:
 		if kline, err = ToWeekLine(&result_ls); err != nil {
 			return nil, err
 		}
+		ttl = TTL.Week
 	case 3:
 		if kline, err = ToMonthLine(&result_ls); err != nil {
 			return nil, err
 		}
+		ttl = TTL.Month
 	case 4:
 		if kline, err = ToYearLine(&result_ls); err != nil {
 			return nil, err
 		}
+		ttl = TTL.Year
+	}
+
+	table := &pro.KInfoTable{
+		List:*kline,
+	}
+	data, err := proto.Marshal(table)
+	if err != nil {
+		logging.Error("Marshal: SetCache XRXD err |%v", err)
+	}
+	if err = RedisCache.Setex(key, ttl,data); err != nil {
+		logging.Error("Set: SetCache XRXD err |%v", err)
 	}
 	return kline, nil
-
-	//	if req.Type == 1 {
-	//		return &pro.PayloadXRXD{
-	//			SID:   req.SID,
-	//			Type:  req.Type,
-	//			Total: int32(len(ls)),
-	//			Begin: result_ls[0].NTime,
-	//			Num:   int32(len(result_ls)),
-	//			KList: result_ls,
-	//		}, nil
-	//	} else {
-	//		res, err := this.getKlistByRequest(req, *kline)
-	//		if err != nil {
-	//			logging.Error("%v", err)
-	//		}
-
-	//		return &pro.PayloadXRXD{
-	//			SID:   req.SID,
-	//			Type:  req.Type,
-	//			Total: int32(len(*kline)),
-	//			Begin: res[0].NTime,
-	//			Num:   int32(len(res)),
-	//			KList: res,
-	//		}, nil
-	//	}
 }
 
 func (this XRXD) getKlistByRequest(req *pro.RequestXRXD, rows []*pro.KInfo) ([]*pro.KInfo, error) {
@@ -641,9 +680,9 @@ func daysToAKline(days []*pro.KInfo) *pro.KInfo {
 	}
 
 	tmp.NSID = days[0].NSID
-	tmp.NTime = days[0].NTime               //时间（取每周第一天）
-	tmp.NOpenPx = days[0].NOpenPx           //开盘价（每周第一天的开盘价）
-	tmp.NPreCPx = days[len(days)-1].NPreCPx //取每星期最后一天（之后再替换，防止第一周的昨收为零）
+	tmp.NTime = days[len(days)-1].NTime     //时间（第一天）
+	tmp.NOpenPx = days[0].NOpenPx           //开盘价（第一天的开盘价）
+	tmp.NPreCPx = days[len(days)-1].NPreCPx //取最后一天（之后再替换，防止第一周(月、年)的昨收为零）
 	tmp.NLastPx = days[i].NLastPx           //最新价
 	tmp.NAvgPx = AvgPxTotal / uint32(i+1)   //平均价
 	return &tmp
