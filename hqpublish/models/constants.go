@@ -38,3 +38,23 @@ var (
 	REDIS_MEMBERID_NOT_FIND = errors.New("The member id is not found")
 	MYSQL_NOT_FIND          = errors.New("Mysql not found")
 )
+
+// 20171212 zxw add ----------------------------begin
+const (
+	CONTEXT_SCODE = "scode" // 证券代码
+)
+
+// F10财务分析接口URL请求相关参数
+const (
+	CONTEXT_TYPE    = "type"    // 报表类型
+	CONTEXT_PERPAGE = "perpage" // 每页条数
+	CONTEXT_PAGE    = "page"    // 当前页码
+)
+
+// Redis 键值
+const (
+	REDIS_F10_HOMEPAGE = "hq:f10:homepage:%v" // F10首页数据
+	REDIS_F10_COMINFO  = "hq:f10:cominfo:%v"  // 公司详细信息
+)
+
+// 20171212 zxw add ----------------------------end
