@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"haina.im/share/lib"
+	"haina.com/share/lib"
 
 	"github.com/gin-gonic/gin"
 	. "haina.com/market/hqpublish/models"
