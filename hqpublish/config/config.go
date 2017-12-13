@@ -84,6 +84,7 @@ type AppConfig struct {
 	Cors           CorsSetting    `xml:"cors"`
 	Db             Database       `xml:"database"`
 	DbMicroLink    Database       `xml:"dbMicroLink"` //米领后台
+	DbSZ           Database       `xml:"dbSZ"`
 	Email          EmailSetting   `xml:"emailSetting"`
 	Mns            MnsSetting     `xml:"mns"`
 	Mongo          MongoStore     `xml:"mongoStore"`

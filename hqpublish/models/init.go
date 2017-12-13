@@ -30,6 +30,13 @@ func init() {
 		return
 	}
 
+	//初始化 首证 MySQL 配置
+	err = models.InitSZ(cfg.DbSZ.DriverName, cfg.DbSZ.DataSource)
+	if err != nil {
+		logging.Fatal(err)
+		return
+	}
+
 	FStore = &cfg.File
 	TTL = &cfg.TTL
 	FCat = &cfg.Catalog

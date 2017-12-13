@@ -53,6 +53,11 @@ const ( // 关键指标
 	TABLE_TQ_FIN_PROCFSTTMSUBJECT = "TQ_FIN_PROCFSTTMSUBJECT" //TTM现金科目产品表
 )
 
+const ( // 融资融券
+	TABLE_TQ_SK_FINMRGNTRADE     = "TQ_SK_FINMRGNTRADE"
+	TABLE_SZ_HQ_SECURITYFUNDFLOW = "SZ_HQ_SECURITYFUNDFLOW"
+)
+
 //--------------------------------------------------------------------------------
 const (
 	REDIS_TTL = 60 * 60 * 24
