@@ -1,16 +1,18 @@
 package finchina
 
 const (
-	TABLE_TQ_COMP_INDUSTRY    = "TQ_COMP_INDUSTRY"    //行业分类表
-	TABLE_TQ_COMP_INFO        = "TQ_COMP_INFO"        //机构资料表（公司信息）
-	TABLE_TQ_COMP_MANAGER     = "TQ_COMP_MANAGER"     //公司高管表
-	TABLE_TQ_COMP_SKHOLDERCHG = "TQ_COMP_SKHOLDERCHG" //高管和关联人持股变动情况表
-	TABLE_TQ_OA_STCODE        = "TQ_OA_STCODE"        //证券内码表
-	TABLE_TQ_SK_DIVIDENTS     = "TQ_SK_DIVIDENTS"     //分红情况表
-	TABLE_TQ_SK_PROADDISS     = "TQ_SK_PROADDISS"     //上市公司增发情况表
-	TABLE_TQ_SK_PROPLACING    = "TQ_SK_PROPLACING"    //上市公司配股情况表
-	TABLE_TQ_SK_SHAREHDCHG    = "TQ_SK_SHAREHDCHG"
-	TABLE_TQ_SK_BASICINFO     = "TQ_SK_BASICINFO" //股票基本信息表
+	TABLE_TQ_COMP_INDUSTRY     = "TQ_COMP_INDUSTRY"     //行业分类表
+	TABLE_TQ_COMP_INFO         = "TQ_COMP_INFO"         //机构资料表（公司信息）
+	TABLE_TQ_COMP_MANAGER      = "TQ_COMP_MANAGER"      //公司高管表
+	TABLE_TQ_COMP_SKHOLDERCHG  = "TQ_COMP_SKHOLDERCHG"  //高管和关联人持股变动情况表
+	TABLE_TQ_COMP_PERSONRECORD = "TQ_COMP_PERSONRECORD" // 个人档案
+	TABLE_TQ_OA_STCODE         = "TQ_OA_STCODE"         //证券内码表
+	TABLE_TQ_SK_DIVIDENTS      = "TQ_SK_DIVIDENTS"      //分红情况表
+	TABLE_TQ_SK_PROADDISS      = "TQ_SK_PROADDISS"      //上市公司增发情况表
+	TABLE_TQ_SK_PROPLACING     = "TQ_SK_PROPLACING"     //上市公司配股情况表
+	TABLE_TQ_SK_SHAREHDCHG     = "TQ_SK_SHAREHDCHG"
+	TABLE_TQ_SK_BASICINFO      = "TQ_SK_BASICINFO" //股票基本信息表
+	TABLE_TQ_SK_BUSIINFO       = "TQ_SK_BUSIINFO"  //公司经营情况表
 )
 
 // market SCHEMA

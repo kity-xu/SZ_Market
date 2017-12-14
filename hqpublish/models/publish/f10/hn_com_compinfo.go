@@ -1,8 +1,8 @@
-package company
+package f10
 
 import (
-	"haina.com/market/finance/models/finchina"
-	"haina.com/share/logging"
+"haina.com/market/finance/models/finchina"
+"haina.com/share/logging"
 )
 
 var Province map[string]string
@@ -32,7 +32,7 @@ type CompInfo struct {
 	ListDate string  `json:"ListDate"` //上市日期
 }
 
-func (this *CompInfo) GetCompInfo(scode string) (*CompInfo, error) {
+func (this *CompInfo) GetCompInfo(scode string, market string) (*CompInfo, error) {
 	var js CompInfo
 	v, err := new(finchina.TQ_COMP_INFO).GetCompInfoFromFC(scode, market)
 	if err != nil {
