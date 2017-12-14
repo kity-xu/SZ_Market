@@ -9,6 +9,7 @@ import (
 	"haina.com/market/hqpublish/models/publish/f10"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
+	"strconv"
 )
 
 type Company struct {
@@ -28,7 +29,7 @@ type Share struct {
 func (this *Company) GetF10_ComInfo(c *gin.Context) {
 
 	var _param struct {
-		Scode string `json:"sid" binding:"required"`
+		Scode int `json:"sid" binding:"required"`
 	}
 
 	if err := c.BindJSON(&_param); err != nil {
@@ -36,6 +37,7 @@ func (this *Company) GetF10_ComInfo(c *gin.Context) {
 		lib.WriteString(c, 40004, nil)
 		return
 	}
+	scode := strconv.Itoa(_param.Scode)
 
 	// 查询redis
 
@@ -52,7 +54,7 @@ func (this *Company) GetF10_ComInfo(c *gin.Context) {
 	}
 
 	// 公司信息
-	date, err := f10.GetF10Company(_param.Scode)
+	date, err := f10.GetF10Company(scode)
 	if err != nil {
 		logging.Error("%v", err)
 	}

@@ -136,11 +136,17 @@ func GetF10Company(scode string) (*Compinfo, error) {
 		}
 		ld = append(ld, &l)
 	}
+	// 查询发行价格和数量
+	ail, err := finchina.NewTQ_SK_ALLISSUE().GetAllissueL(scode)
+	if err != nil {
+		logging.Debug("%v", err.Error())
+		return nil, err
+	}
 	t1 := Compinfo{
 		Name:       cinfo.COMPNAME.String,
 		ListTime:   int32(listdate),
-		IssueVue:   0, // 没有找到
-		IssueVol:   0, // 没有找到
+		IssueVue:   float32(ail.ISSPRICE.Float64),
+		IssueVol:   float32(ail.ACTISSQTY.Float64),
 		RegCap:     float32(cinfo.REGCAPITAL.Float64),
 		Indus:      industry,
 		Prov:       getProvince(cinfo.REGION.String),

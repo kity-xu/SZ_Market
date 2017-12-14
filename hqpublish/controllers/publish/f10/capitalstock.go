@@ -7,8 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	. "haina.com/market/hqpublish/models"
 	"haina.com/market/hqpublish/models/publish/f10"
-	"haina.im/share/lib"
-	"haina.im/share/logging"
+	"haina.com/share/lib"
+	"haina.com/share/logging"
+	"strconv"
 )
 
 type CapitalStock struct {
@@ -22,8 +23,8 @@ func NewCapitalStock() *CapitalStock {
 func (this *CapitalStock) GetF10_CapitalStock(c *gin.Context) {
 
 	var _param struct {
-		Scode string `json:"sid" binding:"required"`
-		Count int    `json:"count"`
+		Scode int `json:"sid" binding:"required"`
+		Count int `json:"count"`
 	}
 
 	if err := c.BindJSON(&_param); err != nil {
@@ -31,7 +32,7 @@ func (this *CapitalStock) GetF10_CapitalStock(c *gin.Context) {
 		lib.WriteString(c, 40004, nil)
 		return
 	}
-
+	scode := strconv.Itoa(_param.Scode)
 	// 查询redis
 	red_data, _ := RedisCache.Get(fmt.Sprintf(REDIS_F10_CAPITALSTOCK, _param.Scode))
 	if len(red_data) > 0 { // 如果redis有数据取redis数据
@@ -49,7 +50,7 @@ func (this *CapitalStock) GetF10_CapitalStock(c *gin.Context) {
 	if limit != 10 {
 		limit = 10
 	}
-	csdate, err := f10.GetF10CapitalStock(_param.Scode, limit)
+	csdate, err := f10.GetF10CapitalStock(scode, limit)
 	if err != nil {
 		logging.Error("%v", err)
 		lib.WriteString(c, 40002, nil)

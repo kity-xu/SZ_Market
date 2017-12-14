@@ -16,5 +16,5 @@ func RegF10(rg *gin.RouterGroup) {
 	rg.POST("/f10/capstock/change", f10.NewCapitalStock().GetF10_CapitalStock)
 
 	// 十大股东+十大流通股东
-	rg.POST("/f10/holder/top10", f10.NewShareholdersTop10().GetShareholdersTop10)
+	rg.POST("/f10/holder/top10", f10.NewShareholderslTop10().GetShareholdersTop10)
 }

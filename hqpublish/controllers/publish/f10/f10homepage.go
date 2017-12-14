@@ -11,6 +11,7 @@ import (
 	"haina.com/market/hqpublish/models/publish/f10"
 
 	"haina.com/share/logging"
+	"strconv"
 )
 
 type HN_F10_Mobile struct {
@@ -21,7 +22,7 @@ func NewHN_F10_Mobile() *HN_F10_Mobile {
 }
 
 type F10 struct {
-	Scode  string      `json:"scode"`
+	Scode  int32       `json:"scode"`
 	Name   *string     `json:"name"`
 	Mobile interface{} `json:"f10"`
 }
@@ -30,7 +31,7 @@ type F10 struct {
 func (this *HN_F10_Mobile) GetF10_Mobile(c *gin.Context) {
 
 	var _param struct {
-		Scode string `json:"sid" binding:"required"`
+		Scode int `json:"sid" binding:"required"`
 	}
 
 	if err := c.BindJSON(&_param); err != nil {
@@ -39,9 +40,10 @@ func (this *HN_F10_Mobile) GetF10_Mobile(c *gin.Context) {
 		return
 	}
 
+	scode := strconv.Itoa(_param.Scode)
 	// 查询redis
 
-	red_data, _ := RedisCache.Get(fmt.Sprintf(REDIS_F10_HOMEPAGE, _param.Scode))
+	red_data, _ := RedisCache.Get(fmt.Sprintf(REDIS_F10_HOMEPAGE, scode))
 	if len(red_data) > 0 { // 如果redis有数据取redis数据
 		var fdate F10
 		e := json.Unmarshal([]byte(red_data), &fdate)
@@ -53,7 +55,7 @@ func (this *HN_F10_Mobile) GetF10_Mobile(c *gin.Context) {
 		return
 	}
 
-	f10, name, err := f10.F10Mobile(_param.Scode)
+	f10, name, err := f10.F10Mobile(scode)
 	if err != nil {
 		logging.Error("%v", err)
 		lib.WriteString(c, 40002, nil)
@@ -61,7 +63,7 @@ func (this *HN_F10_Mobile) GetF10_Mobile(c *gin.Context) {
 	}
 
 	result := &F10{
-		Scode:  _param.Scode,
+		Scode:  int32(_param.Scode),
 		Name:   name,
 		Mobile: f10,
 	}
