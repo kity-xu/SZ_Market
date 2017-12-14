@@ -26,9 +26,11 @@ type MarketsStatistics struct {
 	Fall8_6Num   int32 ///<下跌-8--6家数
 	Fall_8Num    int32 ///<下跌-8-跌停家数
 	FallLimitNum int32 ///<跌停家数
+	RQ           int32 //人气值
 }
 
 type StatisticsJson struct {
+	RQ           int32 `json:"rq"`
 	MarketID     int32 `json:"marketId"`
 	FallLimitNum int32 `json:"fallStop"`
 	Fall_8Num    int32 `json:"fall8"`
@@ -81,6 +83,7 @@ func (MarketsStatistics) GetMarketsStatistics() (*StatisticsJson, error) {
 		Rise6_8Num:   data.Rise6_8Num,
 		Rise8_Num:    data.Rise8_Num,
 		RiseLimitNum: data.RiseLimitNum,
+		RQ:           data.RQ,
 	}
 	return result, nil
 }

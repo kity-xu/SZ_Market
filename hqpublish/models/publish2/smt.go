@@ -2,6 +2,11 @@
 package publish2
 
 import (
+	"fmt"
+	"liveshow/share/logging"
+
+	. "haina.com/market/hqpublish/models"
+
 	"haina.com/market/hqpublish/models/finchina"
 )
 
@@ -39,4 +44,13 @@ func GetSMTbyMarket(ntype string) *resSmt {
 		Smts: Smts,
 	}
 	return res
+}
+
+func GetSmtsFromeCache(which int32, mapping interface{}) error {
+	key := fmt.Sprintf(REDIS_CACHE_CAPITAL_SMT, which)
+	if err := RedisCache.Hmset(key, mapping); err != nil {
+		logging.Error("%v", err)
+		return err
+	}
+	return nil
 }

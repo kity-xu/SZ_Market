@@ -17,7 +17,7 @@ func NewCapTendency() *CapTendency {
 func (*CapTendency) POST(c *gin.Context) {
 	var _param struct {
 		Sid       int32 `json:"sid"`
-		Ntype     int32 `json:"type"`
+		NType     int32 `json:"type"`
 		TimeIndex int32 `json:"timeIndex"`
 		Num       int32 `json:"num"`
 		Direct    int32 `json:"direct"`

@@ -122,7 +122,7 @@ func (this *DividendRO) GetDividendRO(compCode string) (*[]DividendRO, error) {
 		"ISVALID=?":     1,
 	}
 	builder := this.Db.Select("DIVIYEAR,PRETAXCASHMAXDVCNY,PROBONUSRT,TRANADDRT,BONUSRT,EQURECORDDATE").From(this.TableName)
-	_, err := this.SelectWhere(builder, exps).OrderBy("DIVIYEAR desc").Limit(10).LoadStructs(&divs)
+	_, err := this.SelectWhere(builder, exps).OrderBy("DIVIYEAR desc").LoadStructs(&divs)
 	if err != nil {
 		return nil, err
 	}
