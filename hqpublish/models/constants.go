@@ -59,3 +59,8 @@ const (
 )
 
 // 20171212 zxw add ----------------------------end
+
+// 资金数据的缓冲
+const (
+	REDIS_CACHE_CAPITAL_SMT = "cache:cap:smt:%d" //融资融券
+)

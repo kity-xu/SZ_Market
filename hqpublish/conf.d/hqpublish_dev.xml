@@ -52,6 +52,11 @@
 		<driverName>mysql</driverName>  <!-- 米领database -->
         <dataSource>web:!!!Passw0rd@tcp(123.56.30.141:3306)/haina_major?charset=utf8</dataSource>
 	</dbMicroLink>
+
+    <dbSZ>
+        <driverName>mysql</driverName>  <!-- 首证database -->
+        <dataSource>financedb:123qweasdZXC!@#123@tcp(103.235.250.86:3306)/financedb?charset=utf8</dataSource>
+    </dbSZ>
 	
     <redisStore>
         <addr>47.94.16.69:61380</addr>
