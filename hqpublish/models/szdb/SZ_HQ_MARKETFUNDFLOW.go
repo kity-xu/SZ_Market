@@ -2,7 +2,7 @@
 package szdb
 
 import (
-	"liveshow/share/logging"
+	"haina.com/share/logging"
 
 	"haina.com/share/gocraft/dbr"
 	"haina.com/share/models"

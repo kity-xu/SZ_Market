@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	. "haina.com/share/models"
 	. "haina.com/market/hqpublish/models"
 	redigo "haina.com/share/garyburd/redigo/redis"
 	"haina.com/share/gocraft/dbr"
 	"haina.com/share/logging"
+	. "haina.com/share/models"
 )
 
 // TQ_OA_STCODE    证券内码表
@@ -54,10 +54,10 @@ func (this *TQ_OA_STCODE) getCompcode(symbol string) error {
 		//case "SZ": // 001003 深圳证券交易所
 		//	cond = "EXCHANGE='001003'"
 		//}
-		cond ="EXCHANGE in ('001003','001002')"
-		symstr:="0"
-		if len(symbol)>6{
-			symstr=symbol[3:]
+		cond = "EXCHANGE in ('001003','001002')"
+		symstr := "0"
+		if len(symbol) > 6 {
+			symstr = symbol[3:]
 		}
 		cond += " and SETYPE='101' and SYMBOL=" + symstr
 
@@ -87,6 +87,7 @@ func (this *TQ_OA_STCODE) getCompcode(symbol string) error {
 
 	return nil
 }
+
 //func (this *TQ_OA_STCODE) GetCompcode(symbol string, market string) error {
 //	return this.getCompcode(symbol, market)
 //}
