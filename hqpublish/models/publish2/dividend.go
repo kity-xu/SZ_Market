@@ -1,7 +1,7 @@
 package publish2
 
 import (
-	"liveshow/share/logging"
+	"haina.com/share/logging"
 	"strconv"
 
 	"haina.com/market/hqpublish/models/finchina"

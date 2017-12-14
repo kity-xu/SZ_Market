@@ -2,7 +2,7 @@
 package publish2
 
 import (
-	"liveshow/share/lib"
+	"haina.com/share/lib"
 
 	"github.com/gin-gonic/gin"
 )

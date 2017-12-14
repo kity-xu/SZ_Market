@@ -3,7 +3,7 @@ package publish2
 
 import (
 	"fmt"
-	"liveshow/share/logging"
+	"haina.com/share/logging"
 
 	. "haina.com/market/hqpublish/models"
 
