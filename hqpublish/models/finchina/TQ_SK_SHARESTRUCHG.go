@@ -3,6 +3,8 @@ package finchina
 import (
 	"haina.com/share/logging"
 
+	"fmt"
+
 	"haina.com/share/gocraft/dbr"
 	. "haina.com/share/models"
 )
@@ -57,6 +59,7 @@ type TQ_SK_SHARESTRUCHG struct {
 	RECIRCAAMTV float64 // 限售A股数及变动比例对应值
 	TOTALSHAREV float64 // 总股本及变化比例对应值
 	ASK         float64 // A股股本
+
 }
 
 func NewTQ_SK_SHARESTRUCHG() *TQ_SK_SHARESTRUCHG {
@@ -161,6 +164,9 @@ type Equity struct {
 	ASK        dbr.NullFloat64 //A股(万股)
 	TOTALSHARE dbr.NullFloat64 //总股本(万股)
 	CIRCSKAMT  dbr.NullFloat64 //流通股本(万股)
+	// ----------------zxw 20171213
+	BEGINDATE dbr.NullString // 变动日期
+	SHCHGRSN  dbr.NullString // 变动原因
 }
 
 func NewEquity() *Equity {
@@ -185,4 +191,23 @@ func (this *Equity) GetEquity(compCode string) (*Equity, error) {
 	}
 	logging.Debug("get compinfo success...")
 	return this, nil
+}
+
+func (this *Equity) GetShareStruchg(comcode string, limit int) ([]*Equity, error) {
+	var eq []*Equity
+	builder := this.Db.Select("BEGINDATE,TOTALSHARE,CIRCSKAMT,SHCHGRSN").
+		From(this.TableName).
+		Where("SHCHGRSN !='IPO'").
+		Where("ISVALID=1").
+		Where(fmt.Sprintf("COMPCODE ='%v'", comcode)).
+		OrderBy("BEGINDATE desc") //变动起始日
+	err := this.SelectWhere(builder, nil).
+		Limit(uint64(limit)).
+		LoadStruct(&eq)
+	if err != nil {
+		logging.Error("%s", err.Error())
+		return nil, err
+	}
+	logging.Debug("get ShareStruchg success...")
+	return eq, nil
 }

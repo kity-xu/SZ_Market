@@ -196,7 +196,7 @@ func F10Mobile(scode string) (*F10MobileTerminal, *string, error) {
 	if securdate.TOTALSHARE.Float64 > 0 {
 		jzc = proba.RIGHAGGR.Float64 / (securdate.TOTALSHARE.Float64 * 10000)
 	}
-	logging.Error("================RIGHAGGR:%f=============TOTALSHARE:%f", proba.RIGHAGGR, securdate.TOTALSHARE)
+
 	// 计算市净率
 	// 市净率（动）=收盘价/每股净资产；
 	var lpb float64

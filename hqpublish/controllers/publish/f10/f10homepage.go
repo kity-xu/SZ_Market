@@ -30,7 +30,7 @@ type F10 struct {
 func (this *HN_F10_Mobile) GetF10_Mobile(c *gin.Context) {
 
 	var _param struct {
-		Scode string `json:"scode" binding:"required"`
+		Scode string `json:"sid" binding:"required"`
 	}
 
 	if err := c.BindJSON(&_param); err != nil {
@@ -70,7 +70,7 @@ func (this *HN_F10_Mobile) GetF10_Mobile(c *gin.Context) {
 	byte, err := json.Marshal(result)
 	errr := RedisCache.Set(fmt.Sprintf(REDIS_F10_HOMEPAGE, _param.Scode), byte)
 	if errr != nil {
-		logging.Error("Redis Set PlayBack Error | %v", errr)
+		logging.Error("Redis Set HomePage Error | %v", errr)
 	}
 
 	// 设置过期时间

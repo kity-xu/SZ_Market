@@ -28,7 +28,7 @@ type Share struct {
 func (this *Company) GetF10_ComInfo(c *gin.Context) {
 
 	var _param struct {
-		Scode string `json:"scode" binding:"required"`
+		Scode string `json:"sid" binding:"required"`
 	}
 
 	if err := c.BindJSON(&_param); err != nil {
@@ -60,7 +60,7 @@ func (this *Company) GetF10_ComInfo(c *gin.Context) {
 	byte, err := json.Marshal(date)
 	errr := RedisCache.Set(fmt.Sprintf(REDIS_F10_COMINFO, _param.Scode), byte)
 	if errr != nil {
-		logging.Error("Redis Set PlayBack Error | %v", errr)
+		logging.Error("Redis Set F10Company Error | %v", errr)
 	}
 
 	// 设置过期时间
