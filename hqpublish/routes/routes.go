@@ -16,4 +16,7 @@ func Register(engine *gin.Engine) {
 	RegPublish(rg)
 
 	RegPublish2(rg)
+
+	// 财务相关
+	RegFinance(engine)
 }
