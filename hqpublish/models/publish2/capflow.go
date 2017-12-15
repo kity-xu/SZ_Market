@@ -44,7 +44,7 @@ type PayloadFundflow struct {
 	SID     int32                       `json:"sid"`
 	Num     int32                       `json:"num"`
 	Last    *protocol.TagTradeScaleStat `json:"last"`
-	Funds   []*protocol.Fund            `json:"funds"`
+	Funds   []*protocol.Fund            `json:"flows"`
 	CapDays []*protocol.Fund            `json:"capDays"`
 }
 

@@ -225,8 +225,10 @@ func F10Mobile(scode string) (*F10MobileTerminal, error) {
 	// 计算净利润增长率
 	// =（本季度的净利润-上一年的该季度的净利润）/上一年的该季度的净利润；
 	var nprate float64
-	if f1[4].PARENETP.Float64 > 0 {
+	if f1[4].PARENETP.Float64 != 0 {
 		nprate = (f1[0].PARENETP.Float64 - f1[4].PARENETP.Float64) / f1[4].PARENETP.Float64
+	} else {
+		nprate = 1
 	}
 
 	t4 := F10_Finance{

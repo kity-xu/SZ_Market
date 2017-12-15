@@ -42,7 +42,7 @@ func (this *Capitalflow) CapFlowSecuritySingle(c *gin.Context) {
 // 市场分类的资金流向
 func (this *Capitalflow) CapFlowMarket(c *gin.Context) {
 	var _param struct {
-		MarketID int32 `json:"marketID"`
+		MarketID int32 `json:"marketId"`
 		count    int32 `json:"count"`
 	}
 	if err := c.BindJSON(&_param); err != nil {

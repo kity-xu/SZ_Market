@@ -3,6 +3,7 @@ package publish2
 
 import (
 	"fmt"
+
 	"haina.com/share/logging"
 
 	. "haina.com/market/hqpublish/models"
@@ -19,10 +20,11 @@ type SMTModel struct {
 
 type resSmt struct {
 	Num  int        `json:"num"`
-	Smts []SMTModel `json:"smts"`
+	MId  int32      `json:"marketId"`
+	Smts []SMTModel `json:"slist"`
 }
 
-func GetSMTbyMarket(ntype string) *resSmt {
+func GetSMTbyMarket(mid int32, ntype string) *resSmt {
 	smts, err := finchina.NewTQ_SK_FINMRGNTRADE().GetSMTFromFC(60, ntype)
 	if err != nil {
 		return nil
@@ -40,6 +42,7 @@ func GetSMTbyMarket(ntype string) *resSmt {
 	}
 
 	res := &resSmt{
+		MId:  mid,
 		Num:  len(Smts),
 		Smts: Smts,
 	}

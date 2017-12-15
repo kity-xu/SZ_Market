@@ -23,7 +23,7 @@ type ResPeriodCapFlow struct {
 	Total int32            `json:"total"`
 	Begin int32            `json:"begin"`
 	Num   int32            `json:"num"`
-	CList []*PeriodCapFlow `json:"cList"`
+	CList []*PeriodCapFlow `json:"clist"`
 }
 
 // 周期性资金流向(分时、日、周、月、年)

@@ -16,7 +16,7 @@ func NewSmt() *SMT {
 
 func (SMT) POST(c *gin.Context) {
 	var _param struct {
-		Which int32 `json:"which" binding:"required"`
+		Which int32 `json:"marketId" binding:"required"`
 		Count int32 `json:"count"`
 	}
 
@@ -25,7 +25,7 @@ func (SMT) POST(c *gin.Context) {
 		return
 	}
 
-	result := publish2.GetSMTbyMarket(getExchageByReq(_param.Which))
+	result := publish2.GetSMTbyMarket(_param.Which, getExchageByReq(_param.Which))
 	if result == nil {
 		lib.WriteString(c, 40002, nil)
 		return

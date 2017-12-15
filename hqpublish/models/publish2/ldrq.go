@@ -25,11 +25,16 @@ type GJLDRQJson struct {
 	NGjrq int32 `json:"nGjrq"`
 }
 
+type ResGJLDRQJson struct {
+	Num   int           `json:"num"`
+	Glist []*GJLDRQJson `json:"glist"`
+}
+
 func NewGJLDRQ() *GJLDRQ {
 	return &GJLDRQ{}
 }
 
-func (GJLDRQ) GetGJLDRQ(sid int32) (*[]GJLDRQJson, error) {
+func (GJLDRQ) GetGJLDRQ(sid int32) (*ResGJLDRQJson, error) {
 	key := fmt.Sprintf("hq:gjrq:min:%d", sid)
 	list, err := RedisStore.LRange(key, 0, -1)
 	if len(list) == 0 && err != nil {
@@ -37,14 +42,14 @@ func (GJLDRQ) GetGJLDRQ(sid int32) (*[]GJLDRQJson, error) {
 		return nil, err
 	}
 
-	var ldrqs []GJLDRQJson
+	var ldrqs []*GJLDRQJson
 	for _, v := range list {
 		ld := &GJLDRQ{}
 		if err = binary.Read(bytes.NewBuffer([]byte(v)), binary.LittleEndian, ld); err != nil && err != io.EOF {
 			logging.Error("%v", err)
 			return nil, err
 		}
-		lj := GJLDRQJson{
+		lj := &GJLDRQJson{
 			NSID:  ld.NSID,
 			Ntime: ld.Ntime,
 			NGjld: ld.NGjld,
@@ -52,26 +57,11 @@ func (GJLDRQ) GetGJLDRQ(sid int32) (*[]GJLDRQJson, error) {
 		}
 		ldrqs = append(ldrqs, lj)
 	}
-	return &ldrqs, nil
-	//
-	//l := len(arr)
-	//ldrq := &GJLDRQ{}
-	//size := binary.Size(ldrq)
-	//
-	//var ldrqs []GJLDRQJson
-	//for i := 0; i < l; i += size {
-	//	ld := &GJLDRQ{}
-	//	if err = binary.Read(bytes.NewBuffer(data[i:i+size]), binary.LittleEndian, ld); err != nil || err != io.EOF {
-	//		logging.Error("%v", err)
-	//		return nil, err
-	//	}
-	//	lj := GJLDRQJson{
-	//		NSID:  ld.NSID,
-	//		Ntime: ld.Ntime,
-	//		NGjld: ld.NGjld,
-	//		NGjrq: ld.NGjrq,
-	//	}
-	//	ldrqs = append(ldrqs, lj)
-	//}
-	//return &ldrqs, nil
+
+	res := &ResGJLDRQJson{
+		Num:   len(ldrqs),
+		Glist: ldrqs,
+	}
+
+	return res, nil
 }

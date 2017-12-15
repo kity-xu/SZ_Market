@@ -26,11 +26,11 @@ type MarketFundFlowJson struct {
 
 type FundDays struct {
 	Num   int32                  `json:"num"`
-	Funds *[]*MarketFundFlowJson `json:"funds"`
+	Funds *[]*MarketFundFlowJson `json:"flows"`
 }
 
 func (*MkCapflow) GetMkCapflow(marketID int32) (*FundDays, error) {
-	flows, err := szdb.NewSZ_HQ_MARKETFUNDFLOW().GetMarketFundFlow(60, criterionMarketID(marketID))
+	flows, err := szdb.NewSZ_HQ_MARKETFUNDFLOW().GetMarketFundFlow(30, criterionMarketID(marketID))
 	if len(flows) == 0 || err != nil {
 		return nil, err
 	}
