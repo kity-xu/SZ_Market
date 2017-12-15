@@ -13,6 +13,7 @@ const (
 	TABLE_TQ_SK_SHAREHDCHG     = "TQ_SK_SHAREHDCHG"
 	TABLE_TQ_SK_BASICINFO      = "TQ_SK_BASICINFO" //股票基本信息表
 	TABLE_TQ_SK_BUSIINFO       = "TQ_SK_BUSIINFO"  //公司经营情况表
+	TABLE_TQ_SK_ALLISSUE       = "TQ_SK_ALLISSUE"  // 公司股份融资全局表
 )
 
 // market SCHEMA
@@ -58,6 +59,11 @@ const ( // 关键指标
 const ( // 融资融券
 	TABLE_TQ_SK_FINMRGNTRADE     = "TQ_SK_FINMRGNTRADE"
 	TABLE_SZ_HQ_SECURITYFUNDFLOW = "SZ_HQ_SECURITYFUNDFLOW"
+)
+
+const ( // 业绩预测
+	TABLE_TQ_EXPT_SKSTATRT = "TQ_EXPT_SKSTATRT" // 个股一致预期_评级汇总表
+	TABLE_TQ_EXPT_SKSTATN  = "TQ_EXPT_SKSTATN"  // 个股一致预期_一致预期表(新)
 )
 
 //--------------------------------------------------------------------------------

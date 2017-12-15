@@ -35,8 +35,3 @@ func PackAtoi(s string) int {
 	}
 	return i
 }
-
-type RedisCacheOperator interface {
-	ReadCacheJson(sid int) error
-	SaveCacheJson(sid int) error
-}

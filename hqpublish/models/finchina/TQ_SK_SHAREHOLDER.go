@@ -1,6 +1,8 @@
 package finchina
 
 import (
+	"fmt"
+
 	"haina.com/share/gocraft/dbr"
 	. "haina.com/share/models"
 )
@@ -13,15 +15,16 @@ import (
 
 type TQ_SK_SHAREHOLDER struct {
 	Model          `db:"-" `
-	ID             int64   // ID
-	COMPCODE       string  // 公司内码
-	ENDDATE        string  // 截止日期
-	HOLDERAMT      float64 // 持股数量
-	HOLDERRTO      float64 // 持股数量占总股本比例
-	SHHOLDERNAME   string  // 股东名称
-	SHHOLDERTYPE   int64   // 股东机构类型
-	SHARESTYPE     string  // 股份类型
-	UNLIMHOLDERAMT float64 // 其中:无限售股份数量
+	ID             int64           // ID
+	COMPCODE       string          // 公司内码
+	ENDDATE        string          // 截止日期
+	HOLDERAMT      float64         // 持股数量
+	HOLDERRTO      float64         // 持股数量占总股本比例
+	SHHOLDERNAME   string          // 股东名称
+	SHHOLDERTYPE   int64           // 股东机构类型
+	SHARESTYPE     string          // 股份类型
+	UNLIMHOLDERAMT float64         // 其中:无限售股份数量
+	CURCHG         dbr.NullFloat64 // 增减持
 }
 
 func NewTQ_SK_SHAREHOLDER() *TQ_SK_SHAREHOLDER {
@@ -107,4 +110,54 @@ func (this *ShareHoldersTop10) GetShareHoldersTop10(compCode, diviTime string) (
 		return nil, err
 	}
 	return &top10, nil
+}
+
+// 十大股东发布日期
+func (this *TQ_SK_SHAREHOLDER) GetSharEndDate(comcode string) ([]*TQ_SK_SHAREHOLDER, error) {
+	var shar []*TQ_SK_SHAREHOLDER
+
+	Bulid := this.Db.Select("ENDDATE").
+		From(this.TableName).
+		Where(fmt.Sprintf("COMPCODE ='%v'", comcode)).
+		Where("ISVALID=1").
+		GroupBy("ENDDATE").
+		OrderBy("ENDDATE desc ").
+		Limit(5)
+
+	_, err := this.SelectWhere(Bulid, nil).
+		LoadStructs(&shar)
+
+	return shar, err
+}
+
+// 查询十大股东信息
+func (this *TQ_SK_SHAREHOLDER) GetSharBaseL(comcode string, limit int32, enddate string) ([]*TQ_SK_SHAREHOLDER, error) {
+	var shar []*TQ_SK_SHAREHOLDER
+
+	if len(enddate) < 1 {
+		Bulid := this.Db.Select("SHHOLDERNAME, HOLDERAMT, HOLDERRTO, CURCHG ,ENDDATE").
+			From(this.TableName).
+			Where(fmt.Sprintf("COMPCODE ='%v'", comcode)).
+			Where("ISVALID=1").
+			OrderBy("ENDDATE desc ").
+			Limit(uint64(limit))
+
+		_, err := this.SelectWhere(Bulid, nil).
+			LoadStructs(&shar)
+
+		return shar, err
+	}
+	Bulid := this.Db.Select("SHHOLDERNAME, HOLDERAMT, HOLDERRTO, CURCHG ,ENDDATE").
+		From(this.TableName).
+		Where(fmt.Sprintf("COMPCODE ='%v'", comcode)).
+		Where(fmt.Sprintf("ENDDATE='%v'", enddate)).
+		Where("ISVALID=1").
+		OrderBy("HOLDERAMT DESC,ENDDATE DESC ").
+		Limit(uint64(limit))
+
+	_, err := this.SelectWhere(Bulid, nil).
+		LoadStructs(&shar)
+
+	return shar, err
+
 }

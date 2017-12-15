@@ -83,3 +83,16 @@ func (this *TQ_OA_STCODE) getCompcode(symbol string, market string) error {
 func (this *TQ_OA_STCODE) GetCompcode(symbol string, market string) error {
 	return this.getCompcode(symbol, market)
 }
+
+func (this *TQ_OA_STCODE) getExchange(market string) (string, error) {
+	exchange := ""
+	switch market {
+	case "100":
+		exchange = "001002" //  上海证券交易所
+	case "200":
+		exchange = "001003" //  深圳证券交易所
+	default:
+		return "", finchina.ErrMarket
+	}
+	return exchange, nil
+}

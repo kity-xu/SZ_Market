@@ -118,6 +118,12 @@
 		<block>930</block>			    <!-- 板块； 9:30 -->
 		<mindex>5</mindex>              <!-- 移动端首页 -->
         <f10HomePage>3600</f10HomePage><!--   60*60*1   zxw -->
+
+        <financeChart>3600</financeChart>                           <!--财务 图表-->
+        <financeReport>3600</financeReport>                         <!--财务 报表-->
+        <financeReportStatistics>3600</financeReportStatistics>     <!--财务 研报 统计-->
+        <financeReportForecast>3600</financeReportForecast>         <!--财务 研报 预测-->
+
     </cacheTTL>
 
 

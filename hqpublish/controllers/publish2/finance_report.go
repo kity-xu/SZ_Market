@@ -86,6 +86,9 @@ func (this *FinanceReport) PostJson(c *gin.Context) {
 		lib.WriteString(c, 40004, nil)
 		return
 	}
+
+	logging.Debug("params %+v", req)
+
 	// 默认5条
 	if req.Count == 0 {
 		req.Count = 5
@@ -101,14 +104,13 @@ func (this *FinanceReport) jsonProcess(c *gin.Context, sid *Sid, count int) {
 
 	finish := false
 	if count == 5 {
-		var op RedisCacheOperator = this
-		if err := op.ReadCacheJson(sid.Sid); err == nil {
+		if err := this.readCacheJson(sid.Sid); err == nil {
 			lib.WriteString(c, 200, this)
 			return
 		}
 		defer func() {
 			if finish {
-				op.SaveCacheJson(sid.Sid)
+				this.saveCacheJson(sid.Sid)
 			}
 		}()
 	}
@@ -222,7 +224,7 @@ func (this *FinanceReport) rigger(ls []io_finchina.Profits, ls_debt []io_finchin
 
 const FinanceReportKey = "finance:report:%v"
 
-func (this *FinanceReport) ReadCacheJson(sid int) error {
+func (this *FinanceReport) readCacheJson(sid int) error {
 	key := fmt.Sprintf(FinanceReportKey, sid)
 	cache, err := models.GetCache(key)
 	if err != nil {
@@ -233,6 +235,7 @@ func (this *FinanceReport) ReadCacheJson(sid int) error {
 		logging.Debug("Redis GetCache Err | %v", err)
 		return err
 	}
+	logging.Debug("hit redis cache %v", key)
 	err = json.Unmarshal(cache, this)
 	if err != nil {
 		logging.Debug("Json Unmarshal Err | %v", err)
@@ -240,14 +243,14 @@ func (this *FinanceReport) ReadCacheJson(sid int) error {
 	}
 	return nil
 }
-func (this *FinanceReport) SaveCacheJson(sid int) error {
+func (this *FinanceReport) saveCacheJson(sid int) error {
 	key := fmt.Sprintf(FinanceReportKey, sid)
 	cache, err := json.Marshal(this)
 	if err != nil {
 		logging.Debug("Json Marshal Err | %v", err)
 		return err
 	}
-	err = models.SetCache(key, 3600, cache)
+	err = models.SetCache(key, models.TTL.FinanceReport, cache)
 	if err != nil {
 		logging.Debug("Redis SetCache Err | %v", err)
 		return err
