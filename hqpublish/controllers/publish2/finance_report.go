@@ -101,14 +101,13 @@ func (this *FinanceReport) jsonProcess(c *gin.Context, sid *Sid, count int) {
 
 	finish := false
 	if count == 5 {
-		var op RedisCacheOperator = this
-		if err := op.ReadCacheJson(sid.Sid); err == nil {
+		if err := this.readCacheJson(sid.Sid); err == nil {
 			lib.WriteString(c, 200, this)
 			return
 		}
 		defer func() {
 			if finish {
-				op.SaveCacheJson(sid.Sid)
+				this.saveCacheJson(sid.Sid)
 			}
 		}()
 	}
@@ -222,7 +221,7 @@ func (this *FinanceReport) rigger(ls []io_finchina.Profits, ls_debt []io_finchin
 
 const FinanceReportKey = "finance:report:%v"
 
-func (this *FinanceReport) ReadCacheJson(sid int) error {
+func (this *FinanceReport) readCacheJson(sid int) error {
 	key := fmt.Sprintf(FinanceReportKey, sid)
 	cache, err := models.GetCache(key)
 	if err != nil {
@@ -240,7 +239,7 @@ func (this *FinanceReport) ReadCacheJson(sid int) error {
 	}
 	return nil
 }
-func (this *FinanceReport) SaveCacheJson(sid int) error {
+func (this *FinanceReport) saveCacheJson(sid int) error {
 	key := fmt.Sprintf(FinanceReportKey, sid)
 	cache, err := json.Marshal(this)
 	if err != nil {

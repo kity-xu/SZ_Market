@@ -60,6 +60,11 @@ const ( // 融资融券
 	TABLE_SZ_HQ_SECURITYFUNDFLOW = "SZ_HQ_SECURITYFUNDFLOW"
 )
 
+const ( // 业绩预测
+	TABLE_TQ_EXPT_SKSTATRT = "TQ_EXPT_SKSTATRT" // 个股一致预期_评级汇总表
+	TABLE_TQ_EXPT_SKSTATN  = "TQ_EXPT_SKSTATN"  // 个股一致预期_一致预期表(新)
+)
+
 //--------------------------------------------------------------------------------
 const (
 	REDIS_TTL = 60 * 60 * 24

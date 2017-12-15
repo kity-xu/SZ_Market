@@ -4,6 +4,7 @@ package io_finchina
 import (
 	. "haina.com/share/models"
 
+	"haina.com/market/hqpublish/models/finchina"
 	"haina.com/share/gocraft/dbr"
 	"haina.com/share/logging"
 )
@@ -77,7 +78,7 @@ func (this *TQ_FIN_PROCFSTATEMENTNEW) Write() error {
 func NewTQ_FIN_PROCFSTATEMENTNEW() *TQ_FIN_PROCFSTATEMENTNEW {
 	return &TQ_FIN_PROCFSTATEMENTNEW{
 		Model: Model{
-			TableName: "TQ_FIN_PROCFSTATEMENTNEW",
+			TableName: finchina.TABLE_TQ_FIN_PROCFSTATEMENTNEW,
 			Db:        MyCat,
 		},
 	}
