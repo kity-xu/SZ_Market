@@ -22,6 +22,7 @@ type NEndDate struct {
 
 // 十大股东信息
 type Holders struct {
+	Date     string  `json:"date"`     // 日期
 	Name     string  `json:"name"`     // 股东名称
 	Holdings float64 `json:"holdings"` // 持股数量
 	Rate     float64 `json:"rate"`     // 占比
@@ -67,6 +68,7 @@ func GetHN_F10_ShareholdersTop10(scode string, limit int32, htype int32, enddate
 		var hd []*Holders
 		for _, v := range ldate {
 			var h Holders
+			h.Date = v.ENDDATE
 			h.Name = v.SHHOLDERNAME
 			h.Holdings = v.HOLDERAMT
 			h.Rate = v.HOLDERRTO
@@ -99,6 +101,7 @@ func GetHN_F10_ShareholdersTop10(scode string, limit int32, htype int32, enddate
 	var hd []*Holders
 	for _, v := range ldate {
 		var h Holders
+		h.Date = v.ENDDATE
 		h.Name = v.SHHOLDERNAME
 		h.Holdings = v.HOLDERAMT
 		h.Rate = v.PCTOFFLOTSHARES.Float64

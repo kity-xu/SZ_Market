@@ -62,7 +62,8 @@ func (this *HN_F10_Mobile) GetF10_Mobile(c *gin.Context) {
 	}
 
 	// 设置过期时间
-	RedisCache.Do("EXPIRE", REDIS_F10_HOMEPAGE, TTL.F10HomePage)
+	key := fmt.Sprintf(REDIS_F10_HOMEPAGE, _param.Scode)
+	RedisCache.Do("EXPIRE", key, TTL.F10HomePage)
 
 	lib.WriteString(c, 200, f10)
 }

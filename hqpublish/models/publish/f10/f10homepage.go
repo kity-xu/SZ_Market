@@ -197,7 +197,7 @@ func F10Mobile(scode string) (*F10MobileTerminal, error) {
 	if securdate.TOTALSHARE.Float64 > 0 {
 		jzc = proba.PARESHARRIGH.Float64 / (securdate.TOTALSHARE.Float64 * 10000)
 	}
-
+	logging.Debug("===============pare:%f===============tots:%f", proba.PARESHARRIGH, securdate.TOTALSHARE.Float64*10000)
 	// 计算市净率
 	// 市净率（动）=收盘价/每股净资产；
 	var lpb float64

@@ -37,7 +37,7 @@ func (this *ShareholderslTop10) GetShareholdersTop10(c *gin.Context) {
 
 	// 查询redis
 	//if _param.HType == 1 {
-	red_data, _ := RedisCache.Get(fmt.Sprintf(REDIS_F10_SHAREHOLDERSTOP10, _param.HType, _param.Scode))
+	red_data, _ := RedisCache.Get(fmt.Sprintf(REDIS_F10_SHAREHOLDERSTOP10, _param.HType, _param.Scode, _param.EndDate))
 	if len(red_data) > 0 { // 如果redis有数据取redis数据
 		var fdate f10.Date
 		e := json.Unmarshal([]byte(red_data), &fdate)
@@ -59,13 +59,14 @@ func (this *ShareholderslTop10) GetShareholdersTop10(c *gin.Context) {
 
 	// 存储redis
 	byte, err := json.Marshal(date)
-	errr := RedisCache.Set(fmt.Sprintf(REDIS_F10_SHAREHOLDERSTOP10, _param.HType, _param.Scode), byte)
+	errr := RedisCache.Set(fmt.Sprintf(REDIS_F10_SHAREHOLDERSTOP10, _param.HType, _param.Scode, _param.EndDate), byte)
 	if errr != nil {
 		logging.Error("Redis Set Shareholderstop10 Error | %v", errr)
 	}
 
 	// 设置过期时间
-	RedisCache.Do("EXPIRE", REDIS_F10_SHAREHOLDERSTOP10, TTL.F10HomePage)
+	key := fmt.Sprintf(REDIS_F10_SHAREHOLDERSTOP10, _param.HType, _param.Scode, _param.EndDate)
+	RedisCache.Do("EXPIRE", key, TTL.F10HomePage)
 
 	lib.WriteString(c, 200, date)
 }

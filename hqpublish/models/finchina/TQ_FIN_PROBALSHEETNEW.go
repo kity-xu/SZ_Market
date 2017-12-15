@@ -156,8 +156,8 @@ func (this *TQ_FIN_PROBALSHEETNEW) GetBaseInfo(compcode string) (*TQ_FIN_PROBALS
 		Where("ISVALID=1").
 		Where("REPORTTYPE=?", 3).
 		Where("INTEGRITY=?", 1).
-		Where("ISAUDIT=?", 1).
-		OrderBy("ENDDATE DESC").
+		//Where("ISAUDIT=?", 1).
+		OrderBy("ENDDATE DESC,ISAUDIT DESC").
 		Limit(1).
 		LoadStruct(&sli)
 	if err != nil && err != dbr.ErrNotFound {
