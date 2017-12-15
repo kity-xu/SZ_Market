@@ -86,6 +86,9 @@ func (this *FinanceReport) PostJson(c *gin.Context) {
 		lib.WriteString(c, 40004, nil)
 		return
 	}
+
+	logging.Debug("params %+v", req)
+
 	// 默认5条
 	if req.Count == 0 {
 		req.Count = 5
@@ -232,6 +235,7 @@ func (this *FinanceReport) readCacheJson(sid int) error {
 		logging.Debug("Redis GetCache Err | %v", err)
 		return err
 	}
+	logging.Debug("hit redis cache %v", key)
 	err = json.Unmarshal(cache, this)
 	if err != nil {
 		logging.Debug("Json Unmarshal Err | %v", err)

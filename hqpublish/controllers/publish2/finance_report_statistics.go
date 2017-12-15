@@ -61,6 +61,8 @@ func (this *ReportStatistics) PostJson(c *gin.Context) {
 		return
 	}
 
+	logging.Debug("params %+v", req)
+
 	if req.Period < 0 || req.Period > 5 {
 		logging.Error("Params Err")
 		lib.WriteString(c, 40004, nil)
@@ -133,6 +135,7 @@ func (this *ReportStatistics) ReadCacheJson(sid int, period int) error {
 		logging.Debug("Redis GetCache Err | %v", err)
 		return err
 	}
+	logging.Debug("hit redis cache %v", key)
 	err = json.Unmarshal(cache, this)
 	if err != nil {
 		logging.Debug("Json Unmarshal Err | %v", err)

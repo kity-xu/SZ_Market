@@ -64,6 +64,8 @@ func (this *ReportForecast) PostJson(c *gin.Context) {
 		return
 	}
 
+	logging.Debug("params %+v", req)
+
 	s := NewSid(req.Sid)
 
 	this.jsonProcess(c, s)
@@ -132,6 +134,7 @@ func (this *ReportForecast) readCacheJson(sid int) error {
 		logging.Debug("Redis GetCache Err | %v", err)
 		return err
 	}
+	logging.Debug("hit redis cache %v", key)
 	err = json.Unmarshal(cache, this)
 	if err != nil {
 		logging.Debug("Json Unmarshal Err | %v", err)
