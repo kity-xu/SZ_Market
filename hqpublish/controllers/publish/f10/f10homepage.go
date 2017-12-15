@@ -21,12 +21,6 @@ func NewHN_F10_Mobile() *HN_F10_Mobile {
 	return &HN_F10_Mobile{}
 }
 
-type F10 struct {
-	Scode  int32       `json:"scode"`
-	Name   *string     `json:"name"`
-	Mobile interface{} `json:"f10"`
-}
-
 // F10 首页
 func (this *HN_F10_Mobile) GetF10_Mobile(c *gin.Context) {
 
@@ -42,10 +36,9 @@ func (this *HN_F10_Mobile) GetF10_Mobile(c *gin.Context) {
 
 	scode := strconv.Itoa(_param.Scode)
 	// 查询redis
-
 	red_data, _ := RedisCache.Get(fmt.Sprintf(REDIS_F10_HOMEPAGE, scode))
 	if len(red_data) > 0 { // 如果redis有数据取redis数据
-		var fdate F10
+		var fdate f10.F10MobileTerminal
 		e := json.Unmarshal([]byte(red_data), &fdate)
 		if e != nil {
 			logging.Error("Json Unmarshal Error | %v", e)
@@ -54,22 +47,15 @@ func (this *HN_F10_Mobile) GetF10_Mobile(c *gin.Context) {
 		lib.WriteString(c, 200, fdate)
 		return
 	}
-
-	f10, name, err := f10.F10Mobile(scode)
+	f10, err := f10.F10Mobile(scode)
 	if err != nil {
 		logging.Error("%v", err)
 		lib.WriteString(c, 40002, nil)
 		return
 	}
 
-	result := &F10{
-		Scode:  int32(_param.Scode),
-		Name:   name,
-		Mobile: f10,
-	}
-
 	// 存储redis
-	byte, err := json.Marshal(result)
+	byte, err := json.Marshal(f10)
 	errr := RedisCache.Set(fmt.Sprintf(REDIS_F10_HOMEPAGE, _param.Scode), byte)
 	if errr != nil {
 		logging.Error("Redis Set HomePage Error | %v", errr)
@@ -78,5 +64,5 @@ func (this *HN_F10_Mobile) GetF10_Mobile(c *gin.Context) {
 	// 设置过期时间
 	RedisCache.Do("EXPIRE", REDIS_F10_HOMEPAGE, TTL.F10HomePage)
 
-	lib.WriteString(c, 200, result)
+	lib.WriteString(c, 200, f10)
 }

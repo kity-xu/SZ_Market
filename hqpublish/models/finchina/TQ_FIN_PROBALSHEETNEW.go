@@ -150,7 +150,7 @@ func (this *TQ_FIN_PROBALSHEETNEW) GetList(scode string, market string, report_t
 func (this *TQ_FIN_PROBALSHEETNEW) GetBaseInfo(compcode string) (*TQ_FIN_PROBALSHEETNEW, error) {
 	var sli TQ_FIN_PROBALSHEETNEW
 
-	builder := this.Db.Select("RIGHAGGR,ENDDATE").From(this.TableName)
+	builder := this.Db.Select("RIGHAGGR,ENDDATE,PARESHARRIGH").From(this.TableName)
 
 	err := builder.Where("COMPCODE=?", compcode).
 		Where("ISVALID=1").
