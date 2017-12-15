@@ -37,6 +37,9 @@ const (
 var (
 	REDIS_MEMBERID_NOT_FIND = errors.New("The member id is not found")
 	MYSQL_NOT_FIND          = errors.New("Mysql not found")
+
+	ERROR_REQ_PARAM = errors.New("invalid request parameter")
+	DATA_ISNULL     = errors.New("The Data is null")
 )
 
 // 20171212 zxw add ----------------------------begin
@@ -61,5 +64,8 @@ const (
 
 // 资金数据的缓冲
 const (
-	REDIS_CACHE_CAPITAL_SMT = "cache:cap:smt:%d" //融资融券
+	REDIS_CAP_FLOW_MIN = "hq:trade:min:%d"
+
+	REDIS_CACHE_CAPITAL_SMT  = "cap:smt:%d"     //融资融券
+	REDIS_CACHE_CAPITAL_FLOW = "cap:flow:%d:%d" //资金趋势
 )

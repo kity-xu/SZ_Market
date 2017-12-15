@@ -2,6 +2,7 @@
 package publish2
 
 import (
+	"haina.com/market/hqpublish/models/publish2"
 	"haina.com/share/lib"
 
 	"github.com/gin-gonic/gin"
@@ -26,4 +27,11 @@ func (*CapTendency) POST(c *gin.Context) {
 		lib.WriteString(c, 44001, nil)
 		return
 	}
+
+	ld, err := publish2.NewPeriodCapFlow().GetPeriodCapFlowList(_param.Sid, _param.NType, _param.TimeIndex, _param.Num, _param.Direct)
+	if err != nil {
+		lib.WriteString(c, 40002, nil)
+		return
+	}
+	lib.WriteString(c, 200, ld)
 }
