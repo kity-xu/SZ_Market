@@ -150,14 +150,14 @@ func (this *TQ_FIN_PROBALSHEETNEW) GetList(scode string, market string, report_t
 func (this *TQ_FIN_PROBALSHEETNEW) GetBaseInfo(compcode string) (*TQ_FIN_PROBALSHEETNEW, error) {
 	var sli TQ_FIN_PROBALSHEETNEW
 
-	builder := this.Db.Select("RIGHAGGR,ENDDATE").From(this.TableName)
+	builder := this.Db.Select("RIGHAGGR,ENDDATE,PARESHARRIGH").From(this.TableName)
 
 	err := builder.Where("COMPCODE=?", compcode).
 		Where("ISVALID=1").
 		Where("REPORTTYPE=?", 3).
 		Where("INTEGRITY=?", 1).
-		Where("ISAUDIT=?", 1).
-		OrderBy("ENDDATE DESC").
+		//Where("ISAUDIT=?", 1).
+		OrderBy("ENDDATE DESC,ISAUDIT DESC").
 		Limit(1).
 		LoadStruct(&sli)
 	if err != nil && err != dbr.ErrNotFound {

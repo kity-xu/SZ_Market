@@ -16,10 +16,12 @@ import (
 )
 
 type F10MobileTerminal struct {
-	CompInfo F10_Compinfo           `json:"compinfo"`
-	Equity   F10_Equity_Shareholder `json:"equity"`
+	Scode    int32                  `json:"sid"`   // sid
+	Hname    string                 `json:"hname"` // 公司名称
+	CompInfo F10_Compinfo           `json:"comProfile"`
+	Equity   F10_Equity_Shareholder `json:"shareholder"`
 	Dividend F10_Dividend_Ro        `json:"dividend"`
-	Finance  F10_Finance            `json:"finance"`
+	Finance  F10_Finance            `json:"mainTag"`
 }
 
 //1.公司资料
@@ -85,14 +87,13 @@ const (
 	REDISKEY_SECURITY_SNAP = "hq:st:snap:%d" ///<证券快照数据(参数：sid) (calc写入)
 )
 
-func F10Mobile(scode string) (*F10MobileTerminal, *string, error) {
-
-	//
+func F10Mobile(scode string) (*F10MobileTerminal, error) {
 
 	sc := finchina.NewTQ_OA_STCODE()
 	if err := sc.GetCompcode(scode); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
+
 	/*-------------------------------------------------------------------*/
 	/*----------------------------公司信息--------------------------------*/
 	comp := finchina.NewCompInfo()
@@ -100,26 +101,26 @@ func F10Mobile(scode string) (*F10MobileTerminal, *string, error) {
 	industry, err := comp.GetCompTrade(sc.COMPCODE.String) // 查询行业
 	if err != nil {
 		logging.Debug("%v", err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 	// 查询上市日期 总股本
 	sercui := finchina.NewSecurityInfo()
 	securdate, err := sercui.GetSecurityBasicInfo(sc.COMPCODE.String)
 	if err != nil {
 		logging.Debug("%v", err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 	listdate, err := strconv.Atoi(securdate.LISTDATE.String) // 上市日期转int
 	if err != nil {
 		logging.Debug("%v", err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 	// 主营收入构成
 	busiinfo := finchina.NewTQ_SK_BUSIINFO()
 	busilist, err := busiinfo.GetBusiInfo(sc.COMPCODE.String)
 	if err != nil {
 		logging.Debug("%v", err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 	fbdata := ""
 	var busil []*BusiinfoKeyValue
@@ -148,7 +149,7 @@ func F10Mobile(scode string) (*F10MobileTerminal, *string, error) {
 	divs, err := finchina.NewDividendRO().GetDividendRO(sc.COMPCODE.String)
 	if err != nil {
 		logging.Debug("%v", err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 
 	t3 := F10_Dividend_Ro{}
@@ -170,13 +171,13 @@ func F10Mobile(scode string) (*F10MobileTerminal, *string, error) {
 	snapdate, err := getStockSnapshot(scode)
 	if err != nil {
 		logging.Debug("%v", err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 	// 查询TQ_FIN_PROTTMINDIC       财务数据_TTM指标（产品表）
 	prottmdate, err := finchina.NewTQ_FIN_PROTTMINDIC().GetBaseByComCode(sc.COMPCODE.String)
 	if err != nil {
 		logging.Debug("%v", err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 	// 计算市盈率
 	// 市盈率（动）=收盘价/EPSDILUTEDNEWP
@@ -188,15 +189,15 @@ func F10Mobile(scode string) (*F10MobileTerminal, *string, error) {
 	proba, err := finchina.NewTQ_FIN_PROBALSHEETNEW().GetBaseInfo(sc.COMPCODE.String)
 	if err != nil {
 		logging.Debug("%v", err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 	// 计算每股净资产
 	// 每股净资产=RIGHAGGR/总股本
 	var jzc float64
 	if securdate.TOTALSHARE.Float64 > 0 {
-		jzc = proba.RIGHAGGR.Float64 / (securdate.TOTALSHARE.Float64 * 10000)
+		jzc = proba.PARESHARRIGH.Float64 / (securdate.TOTALSHARE.Float64 * 10000)
 	}
-	logging.Error("================RIGHAGGR:%f=============TOTALSHARE:%f", proba.RIGHAGGR, securdate.TOTALSHARE)
+	logging.Debug("===============pare:%f===============tots:%f", proba.PARESHARRIGH, securdate.TOTALSHARE.Float64*10000)
 	// 计算市净率
 	// 市净率（动）=收盘价/每股净资产；
 	var lpb float64
@@ -207,7 +208,7 @@ func F10Mobile(scode string) (*F10MobileTerminal, *string, error) {
 	f1, err := finchina.NewF10_MB_PROINCSTATEMENTNEW().GetF10_MB_PROINCSTATEMENTNEW(sc.COMPCODE.String)
 	if err != nil || len(f1) == 0 {
 		logging.Debug("%v", err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 	var bizRate float64 //营业收入同比增长 （本季度的营业收入-上一年的该季度的营业收入）/上一年的该季度的营业收入；
 	if len(f1) < 5 || f1[4].BIZINCO.Float64 == float64(0.0) {
@@ -219,7 +220,7 @@ func F10Mobile(scode string) (*F10MobileTerminal, *string, error) {
 	f2, err := finchina.NewF10_MB_PROINDICDATA().GetF10_MB_PROINDICDATA(sc.COMPCODE.String)
 	if err != nil {
 		logging.Debug("%v", err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 	// 计算净利润增长率
 	// =（本季度的净利润-上一年的该季度的净利润）/上一年的该季度的净利润；
@@ -247,19 +248,19 @@ func F10Mobile(scode string) (*F10MobileTerminal, *string, error) {
 	equity, err := finchina.NewEquity().GetEquity(sc.COMPCODE.String)
 	if err != nil {
 		logging.Debug("%v", err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 
 	shnum, err := finchina.NewShareHolders().GetShareHolders(sc.COMPCODE.String)
 	if err != nil {
 		logging.Debug("%v", err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 
 	top10, err := finchina.NewShareHoldersTop10().GetShareHoldersTop10(sc.COMPCODE.String, t4.EndDate)
 	if err != nil {
 		logging.Debug("%v", err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 
 	var top10rate float64 = 0.0
@@ -283,14 +284,17 @@ func F10Mobile(scode string) (*F10MobileTerminal, *string, error) {
 		Top10Rate:        top10rate,
 		LegalPersonsRate: num / (equity.ASK.Float64 * 10000),
 	}
-
+	cde, _ := strconv.Atoi(scode)
 	f10 := &F10MobileTerminal{
+		Scode:    int32(cde),
+		Hname:    cinfo.COMPNAME.String,
 		CompInfo: t1,
 		Equity:   t2,
 		Dividend: t3,
 		Finance:  t4,
 	}
-	return f10, &cinfo.COMPNAME.String, nil
+
+	return f10, nil
 }
 
 // 获取个股快照

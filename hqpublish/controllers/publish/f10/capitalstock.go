@@ -12,24 +12,19 @@ import (
 	"strconv"
 )
 
-type Company struct {
+type CapitalStock struct {
 }
 
-func NewCompany() *Company {
-	return &Company{}
+func NewCapitalStock() *CapitalStock {
+	return &CapitalStock{}
 }
 
-type Share struct {
-	Scode     string      `json:"sid"`
-	ComDetail interface{} `json:"comDetail"`
-	Leader    interface{} `json:"leader"`
-}
-
-// 获取公司详细信息
-func (this *Company) GetF10_ComInfo(c *gin.Context) {
+// 历史股本变动
+func (this *CapitalStock) GetF10_CapitalStock(c *gin.Context) {
 
 	var _param struct {
 		Scode int `json:"sid" binding:"required"`
+		Count int `json:"count"`
 	}
 
 	if err := c.BindJSON(&_param); err != nil {
@@ -38,12 +33,10 @@ func (this *Company) GetF10_ComInfo(c *gin.Context) {
 		return
 	}
 	scode := strconv.Itoa(_param.Scode)
-
 	// 查询redis
-
-	red_data, _ := RedisCache.Get(fmt.Sprintf(REDIS_F10_COMINFO, _param.Scode))
+	red_data, _ := RedisCache.Get(fmt.Sprintf(REDIS_F10_CAPITALSTOCK, _param.Scode))
 	if len(red_data) > 0 { // 如果redis有数据取redis数据
-		var fdate f10.Compinfo
+		var fdate f10.CSDate
 		e := json.Unmarshal([]byte(red_data), &fdate)
 		if e != nil {
 			logging.Error("Json Unmarshal Error | %v", e)
@@ -53,21 +46,27 @@ func (this *Company) GetF10_ComInfo(c *gin.Context) {
 		return
 	}
 
-	// 公司信息
-	date, err := f10.GetF10Company(scode)
+	limit := _param.Count
+	if limit != 10 {
+		limit = 10
+	}
+	csdate, err := f10.GetF10CapitalStock(scode, limit)
 	if err != nil {
 		logging.Error("%v", err)
+		lib.WriteString(c, 40002, nil)
+		return
 	}
+
 	// 存储redis
-	byte, err := json.Marshal(date)
-	errr := RedisCache.Set(fmt.Sprintf(REDIS_F10_COMINFO, _param.Scode), byte)
+	byte, err := json.Marshal(csdate)
+	errr := RedisCache.Set(fmt.Sprintf(REDIS_F10_CAPITALSTOCK, _param.Scode), byte)
 	if errr != nil {
-		logging.Error("Redis Set F10Company Error | %v", errr)
+		logging.Error("Redis Set F10CapitalStock Error | %v", errr)
 	}
 
 	// 设置过期时间
-	key := fmt.Sprintf(REDIS_F10_COMINFO, _param.Scode)
+	key := fmt.Sprintf(REDIS_F10_CAPITALSTOCK, _param.Scode)
 	RedisCache.Do("EXPIRE", key, TTL.F10HomePage)
 
-	lib.WriteString(c, 200, date)
+	lib.WriteString(c, 200, csdate)
 }

@@ -13,6 +13,7 @@ const (
 	TABLE_TQ_SK_SHAREHDCHG     = "TQ_SK_SHAREHDCHG"
 	TABLE_TQ_SK_BASICINFO      = "TQ_SK_BASICINFO" //股票基本信息表
 	TABLE_TQ_SK_BUSIINFO       = "TQ_SK_BUSIINFO"  //公司经营情况表
+	TABLE_TQ_SK_ALLISSUE       = "TQ_SK_ALLISSUE"  // 公司股份融资全局表
 )
 
 // market SCHEMA

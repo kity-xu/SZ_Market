@@ -53,8 +53,10 @@ const (
 
 // Redis 键值
 const (
-	REDIS_F10_HOMEPAGE = "hq:f10:homepage:%v" // F10首页数据
-	REDIS_F10_COMINFO  = "hq:f10:cominfo:%v"  // 公司详细信息
+	REDIS_F10_HOMEPAGE          = "hq:f10:homepage:%v"           // F10首页数据
+	REDIS_F10_COMINFO           = "hq:f10:cominfo:%v"            // 公司详细信息
+	REDIS_F10_CAPITALSTOCK      = "hq:f10:capitalstock:%v"       // 历史股本变动
+	REDIS_F10_SHAREHOLDERSTOP10 = "hq:f10:shareholders:%v:%v:%v" // 十大股东
 )
 
 // 20171212 zxw add ----------------------------end
