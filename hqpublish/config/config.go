@@ -139,6 +139,11 @@ type CacheTTL struct {
 	MarketStatus int `xml:"marketStatus"`
 	MIndex       int `xml:"mindex"`
 	F10HomePage  int `xml:"f10HomePage"`
+
+	FinanceChart            int `xml:"financeChart"`
+	FinanceReport           int `xml:"financeReport"`
+	FinanceReportStatistics int `xml:"financeReportStatistics"`
+	FinanceReportForecast   int `xml:"financeReportForecast"`
 }
 
 type CorsSetting struct {

@@ -146,7 +146,7 @@ func (this *ReportForecast) saveCacheJson(sid int) error {
 		logging.Debug("Json Marshal Err | %v", err)
 		return err
 	}
-	err = models.SetCache(key, 3600, cache)
+	err = models.SetCache(key, models.TTL.FinanceReportForecast, cache)
 	if err != nil {
 		logging.Debug("Redis SetCache Err | %v", err)
 		return err
