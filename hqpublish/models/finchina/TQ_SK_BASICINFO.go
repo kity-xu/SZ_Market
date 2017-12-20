@@ -36,6 +36,6 @@ func (this *SecurityInfo) GetSecurityBasicInfo(scode string) (*SecurityInfo, err
 		logging.Error("%s", err.Error())
 		return info, err
 	}
-	logging.Debug("get company info success...")
+	//logging.Debug("get company info success...")
 	return info, err
 }

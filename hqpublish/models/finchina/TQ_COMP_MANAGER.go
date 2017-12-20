@@ -52,24 +52,18 @@ func NewTQ_COMP_MANAGER() *TQ_COMP_MANAGER {
 func (this *TQ_COMP_MANAGER) GetManagersFromFC(scode string) ([]TQ_COMP_MANAGER, error) {
 	var primal []TQ_COMP_MANAGER
 
-	//根据股票代码获取公司内码
-	//sc := NewTQ_OA_STCODE()
-	//if err := sc.getCompcode(scode); err != nil {
-	//	return primal, err
-	//}
-
 	exps := map[string]interface{}{
 		"COMPCODE=?":  scode,
 		"NOWSTATUS=?": 2,
 		"ISVALID=?":   1,
 	}
 	builder := this.Db.Select("*").From(this.TableName).Where("DUTYCODE in ('0200299','0200101','0100101') ")
-	num, err := this.SelectWhere(builder, exps).OrderBy("DUTYCODE desc").LoadStructs(&primal)
+	_, err := this.SelectWhere(builder, exps).OrderBy("DUTYCODE desc").LoadStructs(&primal)
 	if err != nil {
 		logging.Error("%s", err.Error())
 		return primal, err
 	}
-	logging.Debug("dataSize %d:", num)
+	//logging.Debug("dataSize %d:", num)
 	return primal, err
 }
 
@@ -78,13 +72,13 @@ func (this *TQ_COMP_MANAGER) GetPersonRecordInfo(percode string) ([]*TQ_COM_PERS
 	builder := this.Db.Select("CNAME,BIRTHDAY,DEGREE,PERSONALCODE,MEMO").
 		From(TABLE_TQ_COMP_PERSONRECORD).
 		Where(fmt.Sprintf("PERSONALCODE in (%v) ", percode))
-	num, err := this.SelectWhere(builder, nil).
+	_, err := this.SelectWhere(builder, nil).
 		//OrderBy("PERSONALCODE").
 		LoadStructs(&cper)
 	if err != nil {
 		logging.Error("%s", err.Error())
 		return nil, err
 	}
-	logging.Debug("dataSize %d:", num)
+	//logging.Debug("dataSize %d:", num)
 	return cper, err
 }

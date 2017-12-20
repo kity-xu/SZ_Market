@@ -51,9 +51,9 @@ type FinanceReportRecord struct {
 }
 
 type FinanceReport struct {
-	Count int `json:"count"`
-	//Dates string                 `json:"dates"`
-	Rows []*FinanceReportRecord `json:"rows"`
+	Count int                  `json:"count"`
+	Dates []int                `json:"dates"`
+	Rows  *FinanceReportRecord `json:"rows"`
 }
 
 func NewFinanceReport() *FinanceReport {
@@ -100,7 +100,7 @@ func (this *FinanceReport) PostJson(c *gin.Context) {
 func (this *FinanceReport) PostPB(c *gin.Context) {
 }
 
-func (this *FinanceReport) jsonProcess(c *gin.Context, sid *Sid, count int) {
+func (this *FinanceReport) jsonProcess(c *gin.Context, sid *Sid, count int, ptime int) {
 
 	finish := false
 	if count == 5 {
@@ -163,10 +163,15 @@ func (this *FinanceReport) jsonProcess(c *gin.Context, sid *Sid, count int) {
 	lib.WriteString(c, 200, this)
 }
 
-func (this *FinanceReport) rigger(ls []io_finchina.Profits, ls_debt []io_finchina.Liabilities, ls_flow []io_finchina.Cashflow, count int) *FinanceReport {
+func (this *FinanceReport) rigger(ls []io_finchina.Profits, ls_debt *io_finchina.Liabilities, ls_flow *io_finchina.Cashflow, count int) *FinanceReport {
 	logging.Debug("rigger len %v, count %v", len(ls), count)
 
 	this.Rows = make([]*FinanceReportRecord, 0, count)
+
+	dates := make([]string, count, count)
+	for i := 0; i < count; i++ {
+		dates[i] = ls[i].ENDDATE.String
+	}
 
 	for i := 0; i < count; i++ {
 		//logging.Debug("i %v", i)

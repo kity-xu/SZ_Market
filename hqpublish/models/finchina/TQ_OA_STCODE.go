@@ -28,36 +28,28 @@ func NewTQ_OA_STCODE() *TQ_OA_STCODE {
 	}
 }
 
-func (this *TQ_OA_STCODE) getCompcode(symbol string) error {
-	//func (this *TQ_OA_STCODE) getCompcode(symbol string, market string) error {
-	//m := strings.ToUpper(market)
-	//switch m {
-	//case "SH", "SZ":
-	//default:
-	//	return ErrMarket
-	//}
-	//seg := fmt.Sprintf("%s.%s", symbol, m)
-	seg := fmt.Sprintf("%s", symbol)
+func (this *TQ_OA_STCODE) getCompcode(symbol interface{}) error {
+	var seg string
+	switch symbol.(type) {
+	case int, int32, int64:
+		seg = fmt.Sprintf("%d", symbol)
+	case string:
+		seg = fmt.Sprintf("%s", symbol)
+	default:
+		return fmt.Errorf("Invalid symbol type")
+	}
 	key := fmt.Sprintf(REDIS_SYMBOL_COMPCODE, seg)
-
 	v, err := RedisCache.Get(key)
-
 	if err != nil {
 		if err != redigo.ErrNil {
 			logging.Error("Redis get %s: %s", key, err)
 		}
 
 		var cond string
-		//switch m {
-		//case "SH": // 001002 上海证券交易所
-		//	cond = "EXCHANGE='001002'"
-		//case "SZ": // 001003 深圳证券交易所
-		//	cond = "EXCHANGE='001003'"
-		//}
 		cond = "EXCHANGE in ('001003','001002')"
 		symstr := "0"
-		if len(symbol) > 6 {
-			symstr = symbol[3:]
+		if len(seg) > 6 {
+			symstr = seg[3:]
 		}
 		cond += " and SETYPE='101' and SYMBOL=" + symstr
 
@@ -88,9 +80,6 @@ func (this *TQ_OA_STCODE) getCompcode(symbol string) error {
 	return nil
 }
 
-//func (this *TQ_OA_STCODE) GetCompcode(symbol string, market string) error {
-//	return this.getCompcode(symbol, market)
-//}
-func (this *TQ_OA_STCODE) GetCompcode(symbol string) error {
+func (this *TQ_OA_STCODE) GetCompcode(symbol interface{}) error {
 	return this.getCompcode(symbol)
 }

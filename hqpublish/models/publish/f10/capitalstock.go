@@ -1,15 +1,18 @@
 package f10
 
 import (
-	"strconv"
+	"encoding/json"
+	"fmt"
+
+	. "haina.com/market/hqpublish/models"
 
 	"haina.com/market/hqpublish/models/finchina"
 	"haina.com/share/logging"
 )
 
 type CSDate struct {
-	Sid      int32           `json:"sid"`      // 证券ID
-	Num      int32           `json:"num"`      // 请求条数(默认10条)
+	Sid      int             `json:"sid"`      // 证券ID
+	Num      int             `json:"num"`      // 请求条数(默认10条)
 	Capstock []*CapitalStock `json:"capstock"` //
 }
 type CapitalStock struct {
@@ -19,15 +22,18 @@ type CapitalStock struct {
 	Cause      string  `json:"cause"`      // 变动原因
 }
 
-type HN_F10_CapitalStock struct {
-}
-
-func NewHN_F10_CapitalStock() *HN_F10_CapitalStock {
-	return &HN_F10_CapitalStock{}
-}
-
 // 获取股本变动信息
-func GetF10CapitalStock(scode string, limit int) (*CSDate, error) {
+func GetF10CapitalStock(scode int, limit int) (*CSDate, error) {
+	var cs CSDate
+
+	key := fmt.Sprintf(REDIS_F10_CAPITALSTOCK, scode)
+	data, err := RedisCache.GetBytes(key)
+	if err == nil {
+		if err = json.Unmarshal(data, &cs); err == nil {
+			return &cs, nil
+		}
+		logging.Debug("股本变动: GetCache error |%v", err)
+	}
 
 	sc := finchina.NewTQ_OA_STCODE()
 	if err := sc.GetCompcode(scode); err != nil {
@@ -49,13 +55,17 @@ func GetF10CapitalStock(scode string, limit int) (*CSDate, error) {
 		cs.Cause = v.SHCHGRSN.String
 		csk = append(csk, &cs)
 	}
-	sd, err := strconv.Atoi(scode)
-	if err != nil {
-		logging.Error("%v", err)
-	}
-	var cs CSDate
-	cs.Sid = int32(sd)
-	cs.Num = int32(len(csk))
+
+	cs.Sid = scode
+	cs.Num = len(csk)
 	cs.Capstock = csk
-	return &cs, err
+
+	bys, err := json.Marshal(&cs)
+	if err != nil {
+		logging.Debug("股本变动: SetCache error")
+		return &cs, nil
+	}
+	RedisCache.Setex(key, TTL.F10HomePage, bys)
+
+	return &cs, nil
 }

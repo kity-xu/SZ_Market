@@ -41,6 +41,6 @@ func (this *TQ_SK_ALLISSUE) GetAllissueL(scode string) (*TQ_SK_ALLISSUE, error) 
 		logging.Error("%s", err.Error())
 		return info, err
 	}
-	logging.Debug("get AllissueL success...")
+	//logging.Debug("get AllissueL success...")
 	return info, err
 }

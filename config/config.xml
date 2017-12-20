@@ -46,8 +46,9 @@
         <port>25</port>
     </emailSetting>
     <cors>
-        <allowOrigin>http://127.0.0.1</allowOrigin>        
-        <allowOrigin>http://localhost</allowOrigin>        
+        <allowOrigin>http://127.0.0.1</allowOrigin>
+        <allowOrigin>http://localhost</allowOrigin>
+        <allowOrigin>http://localhost:8899</allowOrigin>
         <allowOrigin>chrome-extension://fhbjgbiflinjbdggehcddcbncdddomop</allowOrigin>
     </cors>
     <logServer>

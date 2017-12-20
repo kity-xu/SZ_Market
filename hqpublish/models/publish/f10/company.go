@@ -1,9 +1,13 @@
 package f10
 
 import (
+	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"time"
+
+	. "haina.com/market/hqpublish/models"
 
 	"haina.com/market/hqpublish/models/finchina"
 	"haina.com/share/logging"
@@ -45,26 +49,35 @@ type Leader struct {
 }
 
 // 获取公司详细信息
-func GetF10Company(scode string) (*Compinfo, error) {
+func GetF10Company(scode int) (*Compinfo, error) {
+	var com Compinfo
+	key := fmt.Sprintf(REDIS_F10_COMINFO, scode)
+	data, err := RedisCache.GetBytes(key)
+	if err == nil {
+		if err = json.Unmarshal(data, &com); err == nil {
+			return &com, nil
+		}
+		logging.Debug("高管信息: GetCache error |%v", err)
+	}
 
 	sc := finchina.NewTQ_OA_STCODE()
 	if err := sc.GetCompcode(scode); err != nil {
 		return nil, err
 	}
-	scode = sc.COMPCODE.String
+	compcode := sc.COMPCODE.String
 
 	comp := finchina.NewCompInfo()
-	cinfo, err := comp.GetCompInfo(scode)     // 查询公司资料
-	industry, err := comp.GetCompTrade(scode) // 查询行业
+	cinfo, err := comp.GetCompInfo(compcode) // 查询公司资料
 	if err != nil {
-		logging.Debug("%v", err.Error())
+		return nil, err
+	}
+	industry, err := comp.GetCompTrade(compcode) // 查询行业
+	if err != nil {
 		return nil, err
 	}
 	// 查询上市日期 总股本
-	sercui := finchina.NewSecurityInfo()
-	securdate, err := sercui.GetSecurityBasicInfo(scode)
+	securdate, err := finchina.NewSecurityInfo().GetSecurityBasicInfo(compcode)
 	if err != nil {
-		logging.Debug("%v", err.Error())
 		return nil, err
 	}
 	listdate, err := strconv.Atoi(securdate.LISTDATE.String) // 上市日期转int
@@ -73,10 +86,8 @@ func GetF10Company(scode string) (*Compinfo, error) {
 		return nil, err
 	}
 	// 主营收入构成
-	busiinfo := finchina.NewTQ_SK_BUSIINFO()
-	busilist, err := busiinfo.GetBusiInfo(scode)
+	busilist, err := finchina.NewTQ_SK_BUSIINFO().GetBusiInfo(compcode)
 	if err != nil {
-		logging.Debug("%v", err.Error())
 		return nil, err
 	}
 	fbdata := ""
@@ -92,9 +103,10 @@ func GetF10Company(scode string) (*Compinfo, error) {
 		busil = append(busil, &kv)
 	}
 	// 查询高管信息
-	mangdate, err := finchina.NewTQ_COMP_MANAGER().GetManagersFromFC(scode)
+
+	manage := finchina.NewTQ_COMP_MANAGER()
+	mangdate, err := manage.GetManagersFromFC(compcode)
 	if err != nil {
-		logging.Debug("%v", err.Error())
 		return nil, err
 	}
 
@@ -108,9 +120,8 @@ func GetF10Company(scode string) (*Compinfo, error) {
 		}
 	}
 	// 查询高管详细信息
-	person, err := finchina.NewTQ_COMP_MANAGER().GetPersonRecordInfo(str)
+	person, err := manage.GetPersonRecordInfo(str)
 	if err != nil {
-		logging.Debug("%v", err.Error())
 		return nil, err
 	}
 	// 获取当前年
@@ -137,29 +148,35 @@ func GetF10Company(scode string) (*Compinfo, error) {
 		ld = append(ld, &l)
 	}
 	// 查询发行价格和数量
-	ail, err := finchina.NewTQ_SK_ALLISSUE().GetAllissueL(scode)
+	ail, err := finchina.NewTQ_SK_ALLISSUE().GetAllissueL(compcode)
 	if err != nil {
 		logging.Debug("%v", err.Error())
 		return nil, err
 	}
-	t1 := Compinfo{
-		Name:       cinfo.COMPNAME.String,
-		ListTime:   int32(listdate),
-		IssueVue:   float32(ail.ISSPRICE.Float64),
-		IssueVol:   float32(ail.ACTISSQTY.Float64),
-		RegCap:     float32(cinfo.REGCAPITAL.Float64),
-		Indus:      industry,
-		Prov:       getProvince(cinfo.REGION.String),
-		Secretary:  cinfo.BSECRETARY.String,
-		Director:   cinfo.CHAIRMAN.String,
-		RegAddress: cinfo.REGADDR.String,
-		MainBus:    cinfo.MAJORBIZ.String,
-		PTime:      fbdata,
-		Constitute: busil,
-		GgLeader:   ld,
-	}
 
-	return &t1, nil
+	com.Name = cinfo.COMPNAME.String
+	com.ListTime = int32(listdate)
+	com.IssueVue = float32(ail.ISSPRICE.Float64)
+	com.IssueVol = float32(ail.ACTISSQTY.Float64)
+	com.RegCap = float32(cinfo.REGCAPITAL.Float64)
+	com.Indus = industry
+	com.Prov = getProvince(cinfo.REGION.String)
+	com.Secretary = cinfo.BSECRETARY.String
+	com.Director = cinfo.CHAIRMAN.String
+	com.RegAddress = cinfo.REGADDR.String
+	com.MainBus = cinfo.MAJORBIZ.String
+	com.PTime = fbdata
+	com.Constitute = busil
+	com.GgLeader = ld
+
+	bys, err := json.Marshal(&com)
+	if err != nil {
+		logging.Debug("高管详情: SetCache error")
+		return &com, nil
+	}
+	RedisCache.Setex(key, TTL.F10HomePage, bys)
+
+	return &com, nil
 }
 
 //高管信息表数据去重，取UPDATEDATE最新

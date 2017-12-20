@@ -11,8 +11,8 @@ import (
 type TQ_SK_BUSIINFO struct {
 	models.Model   `db:"-" `
 	CLASSNAME      dbr.NullString  // 分类值
-	TCOREBIZINCOME dbr.NullFloat64 // 本期主营业务收入
-	COREBIZINCRTO  dbr.NullFloat64 // 占主营业务收入比例
+	TCOREBIZINCOME dbr.NullFloat64 // 本期主营业务收入(万元)
+	COREBIZINCRTO  dbr.NullFloat64 // 占主营业务收入比例(%)
 	ENTRYDATE      dbr.NullString  // 日期
 }
 
@@ -42,6 +42,6 @@ func (this *TQ_SK_BUSIINFO) GetBusiInfo(scode string) ([]*TQ_SK_BUSIINFO, error)
 		logging.Error("%s", err.Error())
 		return info, err
 	}
-	logging.Debug("get Busi info success...")
+	//logging.Debug("get Busi info success...")
 	return info, err
 }

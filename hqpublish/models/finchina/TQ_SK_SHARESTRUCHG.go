@@ -164,9 +164,8 @@ type Equity struct {
 	ASK        dbr.NullFloat64 //A股(万股)
 	TOTALSHARE dbr.NullFloat64 //总股本(万股)
 	CIRCSKAMT  dbr.NullFloat64 //流通股本(万股)
-	// ----------------zxw 20171213
-	BEGINDATE dbr.NullString // 变动日期
-	SHCHGRSN  dbr.NullString // 变动原因
+	BEGINDATE  dbr.NullString  // 变动日期
+	SHCHGRSN   dbr.NullString  // 变动原因
 }
 
 func NewEquity() *Equity {
@@ -208,6 +207,5 @@ func (this *Equity) GetShareStruchg(comcode string, limit int) ([]*Equity, error
 		logging.Error("%s", err.Error())
 		return nil, err
 	}
-	logging.Debug("get ShareStruchg success...")
 	return eq, nil
 }

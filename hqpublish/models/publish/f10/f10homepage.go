@@ -1,6 +1,7 @@
 package f10
 
 import (
+	"encoding/json"
 	"strconv"
 
 	"bytes"
@@ -16,7 +17,7 @@ import (
 )
 
 type F10MobileTerminal struct {
-	Scode    int32                  `json:"sid"`   // sid
+	Scode    int                    `json:"sid"`   // sid
 	Hname    string                 `json:"hname"` // 公司名称
 	CompInfo F10_Compinfo           `json:"comProfile"`
 	Equity   F10_Equity_Shareholder `json:"shareholder"`
@@ -37,13 +38,13 @@ type F10_Compinfo struct {
 
 //2.股本股东
 type F10_Equity_Shareholder struct {
-	Totalshare float64 `json:"totalShare"` //总股本(万股)          ///TQ_SK_SHARESTRUCHG
-	Circskamt  float64 `json:"circskamt"`  //流通股本
-	Totalshamt float64 `json:"totalshamt"` //股东总户数            ///TQ_SK_SHAREHOLDERNUM
-	//Totalshrto       float64 `json:"Totalshrto"`       //股东总户数较上期增减
+	Totalshare       float64 `json:"totalShare"`       //总股本(万股)          ///TQ_SK_SHARESTRUCHG
+	Circskamt        float64 `json:"circskamt"`        //流通股本
+	Totalshamt       float64 `json:"totalshamt"`       //股东总户数            ///TQ_SK_SHAREHOLDERNUM
 	Top1sha          string  `json:"no1share"`         //第一大股东           ///TQ_SK_SHAREHOLDER
 	Top10Rate        float64 `json:"top10rate"`        //前十大股东占比
 	LegalPersonsRate float64 `json:"legalPersonsRate"` //法人所占比例         ///TQ_SK_SHAREHOLDERNUM
+	//Totalshrto     float64 `json:"Totalshrto"`       //股东总户数较上期增减
 }
 
 //3.分红配股
@@ -87,7 +88,16 @@ const (
 	REDISKEY_SECURITY_SNAP = "hq:st:snap:%d" ///<证券快照数据(参数：sid) (calc写入)
 )
 
-func F10Mobile(scode string) (*F10MobileTerminal, error) {
+func F10Mobile(scode int) (*F10MobileTerminal, error) {
+	var f10 F10MobileTerminal
+	key := fmt.Sprintf(REDIS_F10_HOMEPAGE, scode)
+	data, err := RedisCache.GetBytes(key)
+	if err == nil {
+		if err = json.Unmarshal(data, &f10); err == nil {
+			return &f10, nil
+		}
+		logging.Debug("f10首页: GetCache error |%v", err)
+	}
 
 	sc := finchina.NewTQ_OA_STCODE()
 	if err := sc.GetCompcode(scode); err != nil {
@@ -97,17 +107,17 @@ func F10Mobile(scode string) (*F10MobileTerminal, error) {
 	/*-------------------------------------------------------------------*/
 	/*----------------------------公司信息--------------------------------*/
 	comp := finchina.NewCompInfo()
-	cinfo, err := comp.GetCompInfo(sc.COMPCODE.String)     // 查询公司资料
+	cinfo, err := comp.GetCompInfo(sc.COMPCODE.String) // 查询公司资料
+	if err != nil {
+		return nil, err
+	}
 	industry, err := comp.GetCompTrade(sc.COMPCODE.String) // 查询行业
 	if err != nil {
-		logging.Debug("%v", err.Error())
 		return nil, err
 	}
 	// 查询上市日期 总股本
-	sercui := finchina.NewSecurityInfo()
-	securdate, err := sercui.GetSecurityBasicInfo(sc.COMPCODE.String)
+	securdate, err := finchina.NewSecurityInfo().GetSecurityBasicInfo(sc.COMPCODE.String)
 	if err != nil {
-		logging.Debug("%v", err.Error())
 		return nil, err
 	}
 	listdate, err := strconv.Atoi(securdate.LISTDATE.String) // 上市日期转int
@@ -116,8 +126,7 @@ func F10Mobile(scode string) (*F10MobileTerminal, error) {
 		return nil, err
 	}
 	// 主营收入构成
-	busiinfo := finchina.NewTQ_SK_BUSIINFO()
-	busilist, err := busiinfo.GetBusiInfo(sc.COMPCODE.String)
+	busilist, err := finchina.NewTQ_SK_BUSIINFO().GetBusiInfo(sc.COMPCODE.String)
 	if err != nil {
 		logging.Debug("%v", err.Error())
 		return nil, err
@@ -286,27 +295,26 @@ func F10Mobile(scode string) (*F10MobileTerminal, error) {
 		Top10Rate:        top10rate,
 		LegalPersonsRate: num / (equity.ASK.Float64 * 10000),
 	}
-	cde, _ := strconv.Atoi(scode)
-	f10 := &F10MobileTerminal{
-		Scode:    int32(cde),
-		Hname:    cinfo.COMPNAME.String,
-		CompInfo: t1,
-		Equity:   t2,
-		Dividend: t3,
-		Finance:  t4,
-	}
 
-	return f10, nil
+	f10.Scode = scode
+	f10.Hname = cinfo.COMPNAME.String
+	f10.CompInfo = t1
+	f10.Equity = t2
+	f10.Dividend = t3
+	f10.Finance = t4
+
+	bys, err := json.Marshal(&f10)
+	if err != nil {
+		logging.Debug("高管详情: SetCache error")
+	}
+	RedisCache.Setex(key, TTL.F10HomePage, bys)
+
+	return &f10, nil
 }
 
 // 获取个股快照
-func getStockSnapshot(scode string) (*publish.REDIS_BIN_STOCK_SNAPSHOT, error) {
-
-	i, err := strconv.Atoi(scode)
-	if err != nil {
-		logging.Error("String to int Error | %v", err)
-	}
-	key := fmt.Sprintf(REDISKEY_SECURITY_SNAP, i)
+func getStockSnapshot(scode int) (*publish.REDIS_BIN_STOCK_SNAPSHOT, error) {
+	key := fmt.Sprintf(REDISKEY_SECURITY_SNAP, scode)
 
 	bin, err := RedisStore.GetBytes(key)
 	if err != nil {

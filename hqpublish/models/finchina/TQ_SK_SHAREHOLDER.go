@@ -17,7 +17,7 @@ type TQ_SK_SHAREHOLDER struct {
 	Model          `db:"-" `
 	ID             int64           // ID
 	COMPCODE       string          // 公司内码
-	ENDDATE        string          // 截止日期
+	ENDDATE        int             // 截止日期
 	HOLDERAMT      float64         // 持股数量
 	HOLDERRTO      float64         // 持股数量占总股本比例
 	SHHOLDERNAME   string          // 股东名称
@@ -113,8 +113,8 @@ func (this *ShareHoldersTop10) GetShareHoldersTop10(compCode, diviTime string) (
 }
 
 // 十大股东发布日期
-func (this *TQ_SK_SHAREHOLDER) GetSharEndDate(comcode string) ([]*TQ_SK_SHAREHOLDER, error) {
-	var shar []*TQ_SK_SHAREHOLDER
+func (this *TQ_SK_SHAREHOLDER) GetSharEndDate(comcode string) ([]int, error) {
+	var dates []int
 
 	Bulid := this.Db.Select("ENDDATE").
 		From(this.TableName).
@@ -125,16 +125,16 @@ func (this *TQ_SK_SHAREHOLDER) GetSharEndDate(comcode string) ([]*TQ_SK_SHAREHOL
 		Limit(5)
 
 	_, err := this.SelectWhere(Bulid, nil).
-		LoadStructs(&shar)
+		LoadStructs(&dates)
 
-	return shar, err
+	return dates, err
 }
 
 // 查询十大股东信息
-func (this *TQ_SK_SHAREHOLDER) GetSharBaseL(comcode string, limit int32, enddate string) ([]*TQ_SK_SHAREHOLDER, error) {
+func (this *TQ_SK_SHAREHOLDER) GetSharBaseL(comcode string, limit int32, enddate int) ([]*TQ_SK_SHAREHOLDER, error) {
 	var shar []*TQ_SK_SHAREHOLDER
 
-	if len(enddate) < 1 {
+	if enddate < 1 {
 		Bulid := this.Db.Select("SHHOLDERNAME, HOLDERAMT, HOLDERRTO, CURCHG ,ENDDATE").
 			From(this.TableName).
 			Where(fmt.Sprintf("COMPCODE ='%v'", comcode)).

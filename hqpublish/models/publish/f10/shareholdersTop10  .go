@@ -1,117 +1,134 @@
 package f10
 
 import (
-	"strconv"
+	"encoding/json"
+	"fmt"
 
+	. "haina.com/market/hqpublish/models"
 	"haina.com/market/hqpublish/models/finchina"
 	"haina.com/share/logging"
 )
 
-type Date struct {
-	Sid      int32       `json:"sid"`     // 证券ID
-	Num      int32       `json:"num"`     // 条数
-	Htype    int32       `json:"htype"`   // 1：股东； 2：流通股东
-	Ndate    []*NEndDate `json:"ndate"`   // 日期数组
-	HoldersL []*Holders  `json:"holders"` // 股东信息
-}
-
-// 统计日期
-type NEndDate struct {
-	Date string `json:"date"`
+type ResTop10 struct {
+	Sid      int        `json:"sid"`     // 证券ID
+	Num      int        `json:"num"`     // 条数
+	Htype    int        `json:"htype"`   // 1：股东； 2：流通股东
+	Ndate    []int      `json:"ndate"`   // 日期数组
+	HoldersL []*Holders `json:"holders"` // 股东信息
 }
 
 // 十大股东信息
 type Holders struct {
-	Date     string  `json:"date"`     // 日期
+	Date     int     `json:"date"`     // 日期
 	Name     string  `json:"name"`     // 股东名称
 	Holdings float64 `json:"holdings"` // 持股数量
 	Rate     float64 `json:"rate"`     // 占比
 	Change   float64 `json:"change"`   // 变动
 }
 
+type ShareHolderTop10 struct{}
+
 // 获取十大股东信息
-func GetHN_F10_ShareholdersTop10(scode string, limit int32, htype int32, enddate string) (*Date, error) {
-	var date Date
-	scd, _ := strconv.Atoi(scode)
-	date.Sid = int32(scd)
-	date.Htype = htype
+func GetHN_F10_ShareholdersTop10(scode int, htype int, enddate int) (*ResTop10, error) {
+	var top ResTop10
+	key := fmt.Sprintf(REDIS_F10_SHAREHOLDERSTOP10, htype, scode, enddate)
+	data, err := RedisCache.GetBytes(key)
+	if err == nil {
+		if err = json.Unmarshal(data, &top); err == nil {
+			return &top, nil
+		}
+		logging.Debug("Top10: GetCache error |%v", err)
+	}
 
+	top.Sid = scode
+	top.Htype = htype
 	sc := finchina.NewTQ_OA_STCODE()
-	if err := sc.GetCompcode(scode); err != nil {
+	if err = sc.GetCompcode(scode); err != nil {
 		return nil, err
 	}
 
-	if limit < 10 {
-		limit = 10
+	switch htype {
+	case 1:
+		err = new(ShareHolderTop10).Top10(&top, sc.COMPCODE.String, enddate)
+	case 2:
+		err = new(ShareHolderTop10).Top10Current(&top, sc.COMPCODE.String, enddate)
+	default:
+		logging.Error("invalid param type of 'htype'")
+		err = fmt.Errorf("invalid param type of 'htype'")
+	}
+	if err == nil {
+		bys, err := json.Marshal(&top)
+		if err != nil {
+			logging.Debug("Top10: SetCache error")
+			return &top, nil
+		}
+		RedisCache.Setex(key, TTL.F10HomePage, bys)
 	}
 
-	// 判断是流通股东还是正常股东
-	if htype == 1 { // 1、股东
-		// 十大股东发布日期
-		rdate, err := finchina.NewTQ_SK_SHAREHOLDER().GetSharEndDate(sc.COMPCODE.String)
-		if err != nil {
-			logging.Error("%v", err)
-			return nil, err
-		}
-		var nd []*NEndDate
-		for _, v := range rdate {
-			var d NEndDate
-			d.Date = v.ENDDATE
-			nd = append(nd, &d)
-		}
-		// 十大股东信息
-		ldate, err := finchina.NewTQ_SK_SHAREHOLDER().GetSharBaseL(sc.COMPCODE.String, limit, enddate)
-		if err != nil {
-			logging.Error("%v", err)
-			return nil, err
-		}
-		var hd []*Holders
-		for _, v := range ldate {
-			var h Holders
-			h.Date = v.ENDDATE
-			h.Name = v.SHHOLDERNAME
-			h.Holdings = v.HOLDERAMT
-			h.Rate = v.HOLDERRTO
-			h.Change = v.CURCHG.Float64
-			hd = append(hd, &h)
-		}
-		date.Num = int32(len(hd))
-		date.Ndate = nd
-		date.HoldersL = hd
-		return &date, err
-	} //else if htype == 2 { // 2、流通股东
-	// 查询日期列表
-	rdate, err := finchina.NewTQ_SK_OTSHOLDER().GetOtshEndDate(sc.COMPCODE.String)
+	return &top, err
+}
+
+// 十大股东
+func (*ShareHolderTop10) Top10(top *ResTop10, compcode string, enddate int) error {
+	// 十大股东发布日期
+	times, err := finchina.NewTQ_SK_SHAREHOLDER().GetSharEndDate(compcode)
 	if err != nil {
 		logging.Error("%v", err)
-		return nil, err
+		return err
 	}
-	var nd []*NEndDate
-	for _, v := range rdate {
-		var d NEndDate
-		d.Date = v.ENDDATE
-		nd = append(nd, &d)
-	}
-	// 查询股东信息
-	ldate, err := finchina.NewTQ_SK_OTSHOLDER().GetOtshTop10L(enddate, sc.COMPCODE.String, limit)
+
+	// 十大股东信息
+	ldate, err := finchina.NewTQ_SK_SHAREHOLDER().GetSharBaseL(compcode, 10, enddate)
 	if err != nil {
 		logging.Error("%v", err)
-		return nil, err
+		return err
 	}
 	var hd []*Holders
 	for _, v := range ldate {
-		var h Holders
-		h.Date = v.ENDDATE
-		h.Name = v.SHHOLDERNAME
-		h.Holdings = v.HOLDERAMT
-		h.Rate = v.PCTOFFLOTSHARES.Float64
-		h.Change = v.HOLDERSUMCHGRATE.Float64
-		hd = append(hd, &h)
+		h := &Holders{
+			Date:     v.ENDDATE,
+			Name:     v.SHHOLDERNAME,
+			Holdings: v.HOLDERAMT,
+			Rate:     v.HOLDERRTO,
+			Change:   v.CURCHG.Float64,
+		}
+		hd = append(hd, h)
 	}
-	date.Num = int32(len(hd))
-	date.Ndate = nd
-	date.HoldersL = hd
-	return &date, err
-	//}
+	top.Num = len(hd)
+	top.Ndate = times
+	top.HoldersL = hd
 
+	return nil
+}
+
+// 十大流通股东
+func (*ShareHolderTop10) Top10Current(top *ResTop10, compcode string, enddate int) error {
+	// 查询日期列表
+	times, err := finchina.NewTQ_SK_OTSHOLDER().GetOtshEndDate(compcode)
+	if err != nil {
+		logging.Error("%v", err)
+		return err
+	}
+
+	// 查询股东信息
+	ldate, err := finchina.NewTQ_SK_OTSHOLDER().GetOtshTop10L(compcode, 10, enddate)
+	if err != nil {
+		logging.Error("%v", err)
+		return err
+	}
+	var hd []*Holders
+	for _, v := range ldate {
+		h := &Holders{
+			Date:     v.ENDDATE,
+			Name:     v.SHHOLDERNAME,
+			Holdings: v.HOLDERAMT,
+			Rate:     v.PCTOFFLOTSHARES.Float64,
+			Change:   v.HOLDERSUMCHGRATE.Float64,
+		}
+		hd = append(hd, h)
+	}
+	top.Num = len(hd)
+	top.Ndate = times
+	top.HoldersL = hd
+	return nil
 }

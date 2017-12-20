@@ -114,7 +114,7 @@ func (this *TQ_COMP_INFO) GetCompInfoFromFC(scode string) (*TQ_COMP_INFO, error)
 type CompInfo struct {
 	models.Model `db:"-" `
 	COMPNAME     dbr.NullString  // 机构全称
-	REGCAPITAL   dbr.NullFloat64 // 注册资本
+	REGCAPITAL   dbr.NullFloat64 // 注册资本(万元)
 	REGION       dbr.NullString  // 省份 所在地区
 	BSECRETARY   dbr.NullString  // 董秘
 	CHAIRMAN     dbr.NullString  // 董事长
@@ -150,10 +150,10 @@ func (this *CompInfo) GetCompInfo(compCode string) (*CompInfo, error) {
 func (this *CompInfo) GetCompTrade(compCode string) (string, error) {
 	comp := NewTQ_COMP_INDUSTRY()
 
-	builder := comp.Db.Select("*").From(comp.TableName)
+	builder := comp.Db.Select("LEVEL2NAME").From(comp.TableName)
 	err := builder.Where("COMPCODE=?", compCode).
 		Where("ISVALID=1").
-		Where("INDCLASSCODE=2107 or INDCLASSCODE=2214 or INDCLASSCODE=2016").
+		Where("INDCLASSCODE=2214 or INDCLASSCODE=2107 or INDCLASSCODE=2106").
 		Limit(1).
 		LoadStruct(comp)
 	if err != nil {

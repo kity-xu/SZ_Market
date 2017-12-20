@@ -18,7 +18,7 @@ import (
 type TQ_SK_OTSHOLDER struct {
 	Model            `db:"-" `
 	ID               int64           // ID
-	ENDDATE          string          // 放置本次股东信息的截止日期
+	ENDDATE          int             // 放置本次股东信息的截止日期
 	HOLDERSUMCHG     dbr.NullFloat64 // 增持股份 (?大于1是增持小于是减少)
 	HOLDERAMT        float64         // 持股数
 	HOLDERRTO        float64         // 持股数量占总股本比例
@@ -141,10 +141,10 @@ func (this *TQ_SK_OTSHOLDER) GetTop10Group(enddate string, scode string, market 
 }
 
 // 获取十大流通股东 zxw
-func (this *TQ_SK_OTSHOLDER) GetOtshTop10L(enddate string, scode string, limit int32) ([]*TQ_SK_OTSHOLDER, error) {
+func (this *TQ_SK_OTSHOLDER) GetOtshTop10L(scode string, limit int32, enddate int) ([]*TQ_SK_OTSHOLDER, error) {
 	var data []*TQ_SK_OTSHOLDER
 
-	if len(enddate) < 1 {
+	if enddate < 1 {
 		bulid := this.Db.Select("SHHOLDERNAME,HOLDERAMT,PCTOFFLOTSHARES,HOLDERSUMCHGRATE,ENDDATE").
 			From(this.TableName).
 			Where(fmt.Sprintf("COMPCODE ='%v'", scode)).
@@ -180,8 +180,8 @@ func (this *TQ_SK_OTSHOLDER) GetOtshTop10L(enddate string, scode string, limit i
 }
 
 // 获取发布日期
-func (this *TQ_SK_OTSHOLDER) GetOtshEndDate(scode string) ([]*TQ_SK_OTSHOLDER, error) {
-	var data []*TQ_SK_OTSHOLDER
+func (this *TQ_SK_OTSHOLDER) GetOtshEndDate(scode string) ([]int, error) {
+	var times []int
 	bulid := this.Db.Select("ENDDATE").
 		From(this.TableName).
 		Where(fmt.Sprintf("COMPCODE ='%v'", scode)).
@@ -191,11 +191,11 @@ func (this *TQ_SK_OTSHOLDER) GetOtshEndDate(scode string) ([]*TQ_SK_OTSHOLDER, e
 		Limit(uint64(5))
 
 	_, err := this.SelectWhere(bulid, nil).
-		LoadStructs(&data)
+		LoadStructs(&times)
 
 	if err != nil {
 		logging.Debug("%v", err)
-		return data, err
+		return times, err
 	}
-	return data, err
+	return times, err
 }
