@@ -2,6 +2,8 @@
 package publish2
 
 import (
+	"haina.com/share/logging"
+
 	"github.com/gin-gonic/gin"
 	"haina.com/market/hqpublish/models/publish2"
 	"haina.com/share/lib"
@@ -25,7 +27,13 @@ func (SMT) POST(c *gin.Context) {
 		return
 	}
 
-	result := publish2.GetSMTbyMarket(_param.Which, getExchageByReq(_param.Which))
+	marketID := getExchageByReq(_param.Which)
+	if marketID == "" {
+		logging.Error("SMTS:Invalid request param 'Which'")
+		lib.WriteString(c, 40002, nil)
+		return
+	}
+	result := publish2.GetSMTbyMarket(_param.Which, marketID)
 	if result == nil {
 		lib.WriteString(c, 40002, nil)
 		return

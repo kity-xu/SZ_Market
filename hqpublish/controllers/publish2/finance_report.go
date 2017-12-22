@@ -2,6 +2,8 @@
 package publish2
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
@@ -52,7 +54,7 @@ type FinanceReportRecord struct {
 
 type FinanceReport struct {
 	Count int                  `json:"count"`
-	Dates []int                `json:"dates"`
+	Dates []string             `json:"dates"`
 	Rows  *FinanceReportRecord `json:"rows"`
 }
 
@@ -79,6 +81,7 @@ func (this *FinanceReport) POST(c *gin.Context) {
 func (this *FinanceReport) PostJson(c *gin.Context) {
 	var req struct {
 		Sid   int `json:"sid" binding:"required"`
+		Ptime int `json:"ptime"`
 		Count int `json:"count"`
 	}
 	if err := c.BindJSON(&req); err != nil {
@@ -95,24 +98,39 @@ func (this *FinanceReport) PostJson(c *gin.Context) {
 	}
 	s := NewSid(req.Sid)
 
-	this.jsonProcess(c, s, req.Count)
+	this.jsonProcess(c, s, req.Count, req.Ptime)
 }
 func (this *FinanceReport) PostPB(c *gin.Context) {
 }
 
-func (this *FinanceReport) jsonProcess(c *gin.Context, sid *Sid, count int, ptime int) {
+func (this *FinanceReport) getResultJson(rows []*FinanceReportRecord, ptime int) {
+	dates := make([]string, 5, 5)
+	pt := strconv.Itoa(ptime)
+	var tag bool = false
+	for i, v := range rows {
+		dates[i] = v.Profit.Date
+		if dates[i] == pt {
+			this.Rows = v
+			tag = true
+		}
+	}
 
-	finish := false
+	if !tag {
+		this.Rows = rows[0]
+	}
+	this.Dates = dates
+}
+
+func (this *FinanceReport) jsonProcess(c *gin.Context, sid *Sid, count int, ptime int) {
+	var Rows []*FinanceReportRecord
+
 	if count == 5 {
-		if err := this.readCacheJson(sid.Sid); err == nil {
+		Rows, err := this.readCacheJson(sid.Sid)
+		if err == nil {
+			this.getResultJson(Rows, ptime)
 			lib.WriteString(c, 200, this)
 			return
 		}
-		defer func() {
-			if finish {
-				this.saveCacheJson(sid.Sid)
-			}
-		}()
 	}
 
 	sum := 4 + count
@@ -153,28 +171,30 @@ func (this *FinanceReport) jsonProcess(c *gin.Context, sid *Sid, count int, ptim
 	}
 
 	if actual < count {
-		this.rigger(ls, ls_debt, ls_flow, actual)
+		Rows = this.rigger(ls, ls_debt, ls_flow, actual)
 	} else {
-		this.rigger(ls, ls_debt, ls_flow, count)
+		Rows = this.rigger(ls, ls_debt, ls_flow, count)
+	}
+	if len(Rows) == 0 {
+		lib.WriteString(c, 40002, nil)
 	}
 
-	finish = true
+	this.saveCacheJson(sid.Sid, Rows)
 
+	this.getResultJson(Rows, ptime)
 	lib.WriteString(c, 200, this)
 }
 
-func (this *FinanceReport) rigger(ls []io_finchina.Profits, ls_debt *io_finchina.Liabilities, ls_flow *io_finchina.Cashflow, count int) *FinanceReport {
+func (this *FinanceReport) rigger(ls []io_finchina.Profits, ls_debt []io_finchina.Liabilities, ls_flow []io_finchina.Cashflow, count int) []*FinanceReportRecord {
 	logging.Debug("rigger len %v, count %v", len(ls), count)
 
-	this.Rows = make([]*FinanceReportRecord, 0, count)
+	Rows := make([]*FinanceReportRecord, 0, count)
 
 	dates := make([]string, count, count)
-	for i := 0; i < count; i++ {
-		dates[i] = ls[i].ENDDATE.String
-	}
 
 	for i := 0; i < count; i++ {
 		//logging.Debug("i %v", i)
+		dates[i] = ls[i].ENDDATE.String
 		node := &FinanceReportRecord{
 			Profit: ProfitTable{
 				Date:      ls[i].ENDDATE.String,
@@ -221,36 +241,38 @@ func (this *FinanceReport) rigger(ls []io_finchina.Profits, ls_debt *io_finchina
 				logging.Debug("%v %s - %v %s no pass", ayear, amonth, byear, bmonth)
 			} */
 		}
-		this.Rows = append(this.Rows, node)
+		Rows = append(Rows, node)
 	}
+	this.Dates = dates
 	this.Count = count
-	return this
+	return Rows
 }
 
 const FinanceReportKey = "finance:report:%v"
 
-func (this *FinanceReport) readCacheJson(sid int) error {
+func (this *FinanceReport) readCacheJson(sid int) ([]*FinanceReportRecord, error) {
+	var Rows []*FinanceReportRecord
 	key := fmt.Sprintf(FinanceReportKey, sid)
 	cache, err := models.GetCache(key)
 	if err != nil {
 		if err == redis.ErrNil {
 			logging.Info("Redis GetCache not found | %v", key)
-			return err
+			return nil, err
 		}
 		logging.Debug("Redis GetCache Err | %v", err)
-		return err
+		return nil, err
 	}
 	logging.Debug("hit redis cache %v", key)
-	err = json.Unmarshal(cache, this)
+	err = json.Unmarshal(cache, &Rows)
 	if err != nil {
 		logging.Debug("Json Unmarshal Err | %v", err)
-		return err
+		return nil, err
 	}
-	return nil
+	return Rows, nil
 }
-func (this *FinanceReport) saveCacheJson(sid int) error {
+func (this *FinanceReport) saveCacheJson(sid int, rows []*FinanceReportRecord) error {
 	key := fmt.Sprintf(FinanceReportKey, sid)
-	cache, err := json.Marshal(this)
+	cache, err := json.Marshal(&rows)
 	if err != nil {
 		logging.Debug("Json Marshal Err | %v", err)
 		return err

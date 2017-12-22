@@ -1,8 +1,10 @@
 package publish2
 
 import (
+	"fmt"
+
+	. "haina.com/market/hqpublish/models"
 	"haina.com/share/logging"
-	"strconv"
 
 	"haina.com/market/hqpublish/models/finchina"
 )
@@ -26,8 +28,14 @@ func NewDividendJson() *DividendJson {
 }
 
 func (DividendJson) GetDividendJson(sid int32) (*ResDiv, error) {
+	res := &ResDiv{}
+	key := fmt.Sprintf(REDIS_CACHE_DIVIDEND_K, sid)
+	if _, err := GetResFromCache(key, res); err == nil {
+		return res, nil
+	}
+
 	sc := finchina.NewTQ_OA_STCODE()
-	if err := sc.GetCompcode(strconv.Itoa(int(sid))); err != nil {
+	if err := sc.GetCompcode(sid); err != nil {
 		return nil, err
 	}
 	divs, err := finchina.NewDividendRO().GetDividendRO(sc.COMPCODE.String)
@@ -49,9 +57,9 @@ func (DividendJson) GetDividendJson(sid int32) (*ResDiv, error) {
 		dividends = append(dividends, div)
 	}
 
-	res := &ResDiv{
-		Num:  len(dividends),
-		Divs: dividends,
-	}
+	res.Num = len(dividends)
+	res.Divs = dividends
+	SetResToCache(key, res)
+
 	return res, nil
 }

@@ -62,12 +62,12 @@ const (
 	REDIS_F10_SHAREHOLDERSTOP10 = "hq:f10:shareholders:%v:%v:%v" // 十大股东
 )
 
-// 20171212 zxw add ----------------------------end
-
-// 资金数据的缓冲
 const (
 	REDIS_CAP_FLOW_MIN = "hq:trade:min:%d"
 
-	REDIS_CACHE_CAPITAL_SMT  = "cap:smt:%d"     //融资融券
-	REDIS_CACHE_CAPITAL_FLOW = "cap:flow:%d:%d" //资金趋势
+	REDIS_CACHE_CAPITAL_SMT       = "cap:smt:%d"     //融资融券
+	REDIS_CACHE_CAPITAL_FLOW      = "cap:flow:%d:%d" //资金趋势
+	REDIS_CACHE_DIVIDEND_K        = "cap:div:%d"     //K线上的分红配股
+	REDIS_CACHE_CAPITAL_MARKETID_ = "cap:mflow:%d"   //市场分类的资金流向
+	REDIS_CACHE_CAPITAL_SINGLE    = "cap:single:%d"  //个股资金流向
 )

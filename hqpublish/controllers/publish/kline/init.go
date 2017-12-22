@@ -22,7 +22,7 @@ func init() {
 			Trade_200 = 0
 			now := time.Now()
 			// 计算下一个零点
-			next := now.Add(time.Hour * 1)
+			next := now.Add(time.Minute * 10)
 			next = time.Date(next.Year(), next.Month(), next.Day(), next.Hour(), 0, 0, 0, next.Location())
 			t := time.NewTimer(next.Sub(now))
 			<-t.C

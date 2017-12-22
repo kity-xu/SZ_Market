@@ -4,8 +4,6 @@ package publish2
 import (
 	"fmt"
 
-	"haina.com/share/logging"
-
 	. "haina.com/market/hqpublish/models"
 
 	"haina.com/market/hqpublish/models/finchina"
@@ -25,6 +23,12 @@ type resSmt struct {
 }
 
 func GetSMTbyMarket(mid int32, ntype string) *resSmt {
+	res := &resSmt{}
+	key := fmt.Sprintf(REDIS_CACHE_CAPITAL_SMT, mid)
+	if _, err := GetResFromCache(key, res); err == nil {
+		return res
+	}
+
 	smts, err := finchina.NewTQ_SK_FINMRGNTRADE().GetSMTFromFC(60, ntype)
 	if err != nil {
 		return nil
@@ -40,20 +44,10 @@ func GetSMTbyMarket(mid int32, ntype string) *resSmt {
 		}
 		Smts = append(Smts, smt)
 	}
+	res.MId = mid
+	res.Num = len(Smts)
+	res.Smts = Smts
 
-	res := &resSmt{
-		MId:  mid,
-		Num:  len(Smts),
-		Smts: Smts,
-	}
+	SetResToCache(key, res)
 	return res
-}
-
-func GetSmtsFromeCache(which int32, mapping interface{}) error {
-	key := fmt.Sprintf(REDIS_CACHE_CAPITAL_SMT, which)
-	if err := RedisCache.Hmset(key, mapping); err != nil {
-		logging.Error("%v", err)
-		return err
-	}
-	return nil
 }

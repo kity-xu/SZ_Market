@@ -65,8 +65,12 @@ func RegPublish(rg *gin.RouterGroup) {
 	rg.POST("/block/stock/id", publish.NewBlockInfoC().POST)
 	// 查询板块快照 -zxw
 	//rg.POST("/snapshoot", publish.NewBlockShotC().POST)(作废)
-	// 根据板块类型查询所有板块(优化后)
+	// 根据板块类型查询所有板块
 	rg.POST("/block/list", publish.NewStockBlock().POST)
+
+	// 根据板块类型查询所有板块(hq2.2 板块里加了上证、深证、创业、中小板)
+	rg.POST("/block/mulist", publish.NewStockBlock().MulPOST)
+
 	// 查询板块下成分股(优化后)
 	rg.POST("/block/stocks", publish.NewStockElement().POST)
 

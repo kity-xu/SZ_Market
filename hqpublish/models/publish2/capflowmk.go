@@ -1,7 +1,12 @@
 // 市场资金流向
 package publish2
 
-import "haina.com/market/hqpublish/models/szdb"
+import (
+	"fmt"
+
+	. "haina.com/market/hqpublish/models"
+	"haina.com/market/hqpublish/models/szdb"
+)
 
 type MkCapflow struct{}
 
@@ -30,7 +35,13 @@ type FundDays struct {
 }
 
 func (*MkCapflow) GetMkCapflow(marketID int32) (*FundDays, error) {
-	flows, err := szdb.NewSZ_HQ_MARKETFUNDFLOW().GetMarketFundFlow(30, criterionMarketID(marketID))
+	res := &FundDays{}
+	key := fmt.Sprintf(REDIS_CACHE_CAPITAL_MARKETID_, marketID)
+	if _, err := GetResFromCache(key, res); err == nil {
+		return res, nil
+	}
+
+	flows, err := szdb.NewSZ_HQ_MARKETFUNDFLOW().GetMarketFundFlow(15, criterionMarketID(marketID))
 	if len(flows) == 0 || err != nil {
 		return nil, err
 	}
@@ -52,11 +63,10 @@ func (*MkCapflow) GetMkCapflow(marketID int32) (*FundDays, error) {
 		}
 		fundjson = append(fundjson, fj)
 	}
-	res := &FundDays{
-		Num:   int32(len(flows)),
-		Funds: &fundjson,
-	}
+	res.Num = int32(len(flows))
+	res.Funds = &fundjson
 
+	SetResToCache(key, res)
 	return res, nil
 }
 

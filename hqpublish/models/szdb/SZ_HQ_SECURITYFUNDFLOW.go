@@ -43,7 +43,7 @@ func NewSZ_HQ_SECURITYFUNDFLOW() *SZ_HQ_SECURITYFUNDFLOW {
 }
 
 // 股票历史日资金流向
-func (this *SZ_HQ_SECURITYFUNDFLOW) GetHisSecurityFlow(count int32, sid int32) ([]SZ_HQ_SECURITYFUNDFLOW, error) {
+func (this *SZ_HQ_SECURITYFUNDFLOW) GetHisSecurityFlow(count int, sid int32) ([]SZ_HQ_SECURITYFUNDFLOW, error) {
 	var capflow []SZ_HQ_SECURITYFUNDFLOW
 
 	exps := map[string]interface{}{

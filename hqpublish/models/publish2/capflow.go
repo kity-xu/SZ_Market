@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 
+	"haina.com/market/hqpublish/controllers/publish/kline"
 	"haina.com/market/hqpublish/models/szdb"
 	. "haina.com/share/models"
 
@@ -94,33 +95,37 @@ func (this *Fundflow) GetFundflowReply(sid int32) (*PayloadFundflow, error) {
 		return nil, err
 	}
 
+	last := &protocol.TagTradeScaleStat{
+		NTime:             ele.NTime,
+		LlHugeBuyValue:    ele.LlHugeBuyValue,
+		LlBigBuyValue:     ele.LlBigBuyValue,
+		LlMiddleBuyValue:  ele.LlMiddleBuyValue,
+		LlSmallBuyValue:   ele.LlSmallBuyValue,
+		LlHugeSellValue:   ele.LlHugeSellValue,
+		LlBigSellValue:    ele.LlBigSellValue,
+		LlMiddleSellValue: ele.LlMiddleSellValue,
+		LlSmallSellValue:  ele.LlSmallSellValue,
+	}
 	var payload = &PayloadFundflow{
-		SID: sid,
-		Num: int32(len(funds)),
-		Last: &protocol.TagTradeScaleStat{
-			NTime:             ele.NTime,
-			LlHugeBuyValue:    ele.LlHugeBuyValue,
-			LlBigBuyValue:     ele.LlBigBuyValue,
-			LlMiddleBuyValue:  ele.LlMiddleBuyValue,
-			LlSmallBuyValue:   ele.LlSmallBuyValue,
-			LlHugeSellValue:   ele.LlHugeSellValue,
-			LlBigSellValue:    ele.LlBigSellValue,
-			LlMiddleSellValue: ele.LlMiddleSellValue,
-			LlSmallSellValue:  ele.LlSmallSellValue,
-		},
-		CapDays: this.getCapflowDays(sid),
+		SID:     sid,
+		Num:     int32(len(funds)),
+		Last:    last,
+		CapDays: this.getCapflowDays(sid, last, 5),
 		Funds:   funds,
 	}
 	return payload, nil
 }
 
-func (f *Fundflow) getCapflowDays(sid int32) []*protocol.Fund {
-	capdays, err := szdb.NewSZ_HQ_SECURITYFUNDFLOW().GetHisSecurityFlow(4, sid)
+func (f *Fundflow) getCapflowDays(sid int32, last *protocol.TagTradeScaleStat, count int) []*protocol.Fund {
+	var funds []*protocol.Fund
+	key := fmt.Sprintf(REDIS_CACHE_CAPITAL_SINGLE, sid)
+
+	GetResFromCache(key, &funds)
+	capdays, err := szdb.NewSZ_HQ_SECURITYFUNDFLOW().GetHisSecurityFlow(count, sid)
 	if len(capdays) == 0 || err != nil {
 		return nil
 	}
 
-	var funds []*protocol.Fund
 	for _, v := range capdays {
 		flow := &protocol.Fund{
 			NTime: v.TRADEDATE,
@@ -128,5 +133,31 @@ func (f *Fundflow) getCapflowDays(sid int32) []*protocol.Fund {
 		}
 		funds = append(funds, flow)
 	}
-	return funds
+	SetResToCache(key, &funds)
+	return formartCapdays(funds, last, count)
+}
+
+// 处理最新一天的资金K线
+func formartCapdays(funds []*protocol.Fund, last *protocol.TagTradeScaleStat, count int) []*protocol.Fund {
+	kline.InitMarketTradeDate()
+	if len(funds) != 5 {
+		return funds
+	}
+	// ==5
+	flow := last.LlBigBuyValue + last.LlHugeBuyValue - last.LlBigSellValue - last.LlHugeSellValue // 主力资金流向
+
+	if funds[0].NTime == kline.Trade_100 {
+		return funds
+	} else {
+		cdays := make([]*protocol.Fund, count, count)
+		for i := 0; i < count-1; i++ {
+			cdays[i+1] = funds[i]
+		}
+		f := &protocol.Fund{
+			NTime: kline.Trade_100,
+			Flow:  flow / 10000,
+		}
+		cdays[0] = f
+		return cdays
+	}
 }

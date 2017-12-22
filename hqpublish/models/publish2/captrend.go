@@ -227,7 +227,7 @@ func getFlowListFromCache(sid, periodID int32) []*PeriodCapFlow {
 			logging.Error("资金趋势：redisCache not fund & SZ db not fund |%v", err)
 			return nil
 		}
-		setFlowListToCache(key, list)
+		setFlowListToCache(key, &list)
 	} else {
 		if err = json.Unmarshal([]byte(data), &list); err != nil {
 			logging.Error("资金趋势：Unmarshal redisCache error |%v", err)
@@ -277,9 +277,9 @@ func getFlowListFromSZDB(sid int32, periodID int32) ([]*PeriodCapFlow, error) {
 }
 
 // set list to cache
-func setFlowListToCache(key string, list []*PeriodCapFlow) error {
+func setFlowListToCache(key string, list *[]*PeriodCapFlow) error {
 	SortCapFlow(list)
-	bys, err := json.Marshal(&list)
+	bys, err := json.Marshal(list)
 	if err != nil {
 		logging.Error("资金趋势：Marshal redisCache error |%v", err)
 		return err
@@ -295,11 +295,11 @@ func setFlowListToCache(key string, list []*PeriodCapFlow) error {
 //------------------------------------------------------------------------------------------------------//
 
 // 资金流向升序排序
-func SortCapFlow(list []*PeriodCapFlow) {
-	if len(list) == 0 {
+func SortCapFlow(list *[]*PeriodCapFlow) {
+	if len(*list) == 0 {
 		return
 	}
-	sort.Sort(sort.Reverse(clist(list)))
+	sort.Sort(sort.Reverse(clist(*list)))
 }
 
 type clist []*PeriodCapFlow
