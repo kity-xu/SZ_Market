@@ -23,6 +23,7 @@ type resSmt struct {
 }
 
 func GetSMTbyMarket(mid int32, ntype string) *resSmt {
+
 	res := &resSmt{}
 	key := fmt.Sprintf(REDIS_CACHE_CAPITAL_SMT, mid)
 	if _, err := GetResFromCache(key, res); err == nil {

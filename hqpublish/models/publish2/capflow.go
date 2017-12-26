@@ -120,7 +120,9 @@ func (f *Fundflow) getCapflowDays(sid int32, last *protocol.TagTradeScaleStat, c
 	var funds []*protocol.Fund
 	key := fmt.Sprintf(REDIS_CACHE_CAPITAL_SINGLE, sid)
 
-	GetResFromCache(key, &funds)
+	if _, err := GetResFromCache(key, &funds); err == nil {
+		return formartCapdays(funds, last, count)
+	}
 	capdays, err := szdb.NewSZ_HQ_SECURITYFUNDFLOW().GetHisSecurityFlow(count, sid)
 	if len(capdays) == 0 || err != nil {
 		return nil
