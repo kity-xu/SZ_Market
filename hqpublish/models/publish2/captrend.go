@@ -13,6 +13,7 @@ import (
 
 	. "haina.com/market/hqpublish/models"
 
+	"haina.com/market/hqpublish/controllers/publish/kline"
 	"haina.com/market/hqpublish/models/szdb"
 )
 
@@ -227,7 +228,9 @@ func getFlowListFromCache(sid, periodID int32) []*PeriodCapFlow {
 			logging.Error("资金趋势：redisCache not fund & SZ db not fund |%v", err)
 			return nil
 		}
-		setFlowListToCache(key, &list)
+		SortCapFlow(&list)                    // 升序排序
+		formartCapTrend(&list, sid, periodID) //加最后一根
+		setFlowListToCache(key, &list)        // set cache
 	} else {
 		if err = json.Unmarshal([]byte(data), &list); err != nil {
 			logging.Error("资金趋势：Unmarshal redisCache error |%v", err)
@@ -278,7 +281,6 @@ func getFlowListFromSZDB(sid int32, periodID int32) ([]*PeriodCapFlow, error) {
 
 // set list to cache
 func setFlowListToCache(key string, list *[]*PeriodCapFlow) error {
-	SortCapFlow(list)
 	bys, err := json.Marshal(list)
 	if err != nil {
 		logging.Error("资金趋势：Marshal redisCache error |%v", err)
@@ -314,4 +316,76 @@ func (this clist) Swap(i, j int) {
 
 func (this clist) Less(i, j int) bool {
 	return this[j].TradeDate < this[i].TradeDate
+}
+
+//----------------------------------------------------------maybeAdd------------------------//
+// 处理最新一天的资金趋势
+func formartCapTrend(funds *[]*PeriodCapFlow, sid int32, ntype int32) *[]*PeriodCapFlow {
+	kline.InitMarketTradeDate()
+	last := (*funds)[len(*funds)-1]
+	if last.TradeDate == kline.Trade_100 { // 库里更新取库里，不做其他操作
+		return nil
+	}
+	captoday := &PeriodCapFlow{
+		TradeDate: kline.Trade_100,
+	}
+
+	cap, _ := CapFlowToday(sid)
+	switch ntype {
+	case 1:
+		captoday.NetFlowin = float64(cap.LlValueOfInFlow) / 10000
+		captoday.HugeFlowin = float64(cap.LlHugeBuyValue) / 10000
+		captoday.BigFlowin = float64(cap.LlBigBuyValue) / 10000
+		*funds = append(*funds, captoday)
+	case 2:
+		if last.TradeDate < kline.Trade_100 {
+			b1, _ := DateAdd(last.TradeDate) //找到该日期所在周日的那天
+			b2, _ := DateAdd(captoday.TradeDate)
+
+			if !b1.Equal(b2) { //不同属一周（周一）新建
+				captoday.NetFlowin = float64(cap.LlValueOfInFlow) / 10000
+				captoday.HugeFlowin = float64(cap.LlHugeBuyValue) / 10000
+				captoday.BigFlowin = float64(cap.LlBigBuyValue) / 10000
+				*funds = append(*funds, captoday)
+			} else { //同属一周，更新最后一根
+				last.TradeDate = captoday.TradeDate
+				last.NetFlowin += float64(cap.LlValueOfInFlow) / 10000
+				last.HugeFlowin += float64(cap.LlHugeBuyValue) / 10000
+				last.BigFlowin += float64(cap.LlBigBuyValue) / 10000
+				(*funds)[len(*funds)-1] = last
+			}
+		}
+	case 3:
+		if last.TradeDate < kline.Trade_100 {
+			if last.TradeDate/100 != captoday.TradeDate/100 { //不同月
+				captoday.NetFlowin = float64(cap.LlValueOfInFlow) / 10000
+				captoday.HugeFlowin = float64(cap.LlHugeBuyValue) / 10000
+				captoday.BigFlowin = float64(cap.LlBigBuyValue) / 10000
+				*funds = append(*funds, captoday)
+			} else {
+				last.TradeDate = captoday.TradeDate
+				last.NetFlowin += float64(cap.LlValueOfInFlow) / 10000
+				last.HugeFlowin += float64(cap.LlHugeBuyValue) / 10000
+				last.BigFlowin += float64(cap.LlBigBuyValue) / 10000
+				(*funds)[len(*funds)-1] = last
+			}
+		}
+	}
+	return nil
+}
+
+// 当日资金流向
+func CapFlowToday(sid int32) (*TagTradeScaleStat, error) {
+	keyd := fmt.Sprintf("hq:trade:day:%d", sid)
+	data, err := RedisStore.GetBytes(keyd)
+	if err != nil {
+		logging.Error("%v", err.Error())
+		return nil, err
+	}
+	var ele = TagTradeScaleStat{}
+	if err = binary.Read(bytes.NewBuffer(data), binary.LittleEndian, &ele); err != nil && err != io.EOF {
+		logging.Error("%v", err.Error())
+		return nil, err
+	}
+	return &ele, nil
 }

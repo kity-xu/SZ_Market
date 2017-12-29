@@ -100,6 +100,7 @@ type DividendRO struct {
 	PROBONUSRT         dbr.NullFloat64 //送股比例(10:X)
 	TRANADDRT          dbr.NullFloat64 //转增比例(10:X)
 	BONUSRT            dbr.NullFloat64 //赠股比例(10:X)
+	XDRDATE            dbr.NullString  //除权除息日
 	EQURECORDDATE      dbr.NullString  //股权登记日
 }
 
@@ -121,7 +122,7 @@ func (this *DividendRO) GetDividendRO(compCode string) (*[]DividendRO, error) {
 		"CUR=?":         "CNY",
 		"ISVALID=?":     1,
 	}
-	builder := this.Db.Select("DIVIYEAR,PRETAXCASHMAXDVCNY,PROBONUSRT,TRANADDRT,BONUSRT,EQURECORDDATE").From(this.TableName)
+	builder := this.Db.Select("DIVIYEAR,PRETAXCASHMAXDVCNY,PROBONUSRT,TRANADDRT,BONUSRT,XDRDATE,EQURECORDDATE").From(this.TableName)
 	_, err := this.SelectWhere(builder, exps).OrderBy("DIVIYEAR desc").LoadStructs(&divs)
 	if err != nil {
 		return nil, err

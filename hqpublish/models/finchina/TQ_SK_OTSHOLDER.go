@@ -1,11 +1,11 @@
 package finchina
 
 import (
+	"haina.com/share/gocraft/dbr"
 	"haina.com/share/logging"
 
 	"fmt"
 
-	"haina.com/share/gocraft/dbr"
 	. "haina.com/share/models"
 )
 
@@ -16,18 +16,14 @@ import (
 */
 
 type TQ_SK_OTSHOLDER struct {
-	Model            `db:"-" `
-	ID               int64           // ID
-	ENDDATE          int             // 放置本次股东信息的截止日期
-	HOLDERSUMCHG     dbr.NullFloat64 // 增持股份 (?大于1是增持小于是减少)
-	HOLDERAMT        float64         // 持股数
-	HOLDERRTO        float64         // 持股数量占总股本比例
-	HOLDERSUMCHGRATE dbr.NullFloat64 // 持股数量增减幅度
-	PCTOFFLOATSHARES float64         // 持股数量占流通A股比例
-	ISHIS            int             // 是否上一报告期存在股东
-	SYMBOL           string          // 股票代码
-	SHHOLDERNAME     string          // 股东名称
-	PCTOFFLOTSHARES  dbr.NullFloat64 // 占流通股比
+	Model           `db:"-" `
+	SHHOLDERCODE    dbr.NullString  // 股东代码
+	SHHOLDERNAME    string          // 股东名称
+	HOLDERAMT       dbr.NullFloat64 // 持股数
+	RANK            int             //股东排名
+	PCTOFFLOTSHARES dbr.NullFloat64 // 占流通股比
+	ENDDATE         int             // 放置本次股东信息的截止日期
+	HOLDERSUMCHG    dbr.NullFloat64 //持股数量增减
 }
 
 func NewTQ_SK_OTSHOLDER() *TQ_SK_OTSHOLDER {
@@ -37,32 +33,6 @@ func NewTQ_SK_OTSHOLDER() *TQ_SK_OTSHOLDER {
 			Db:        MyCat,
 		},
 	}
-}
-
-func NewTQ_SK_OTSHOLDERTx(tx *dbr.Tx) *TQ_SK_OTSHOLDER {
-	return &TQ_SK_OTSHOLDER{
-		Model: Model{
-			TableName: TABLE_TQ_SK_OTSHOLDER,
-			Db:        MyCat,
-			Tx:        tx,
-		},
-	}
-}
-func NewCalculate() *Calculate {
-	return &Calculate{
-		Model: Model{
-			TableName: TABLE_TQ_SK_OTSHOLDER,
-			Db:        MyCat,
-		},
-	}
-}
-
-type Calculate struct {
-	Model `db:"-" `
-	///////////下面数据计算获得
-	CR   string // 较上期变化
-	Rate string // 累计占总股本比
-	Sumh string // 前十大股东累计持有股份
 }
 
 /**
@@ -92,64 +62,16 @@ func (this *TQ_SK_OTSHOLDER) GetEndDate(sCode string, edata string, limit int, m
 	return dataTop10, err
 }
 
-// 获单条数据
-func (this *Calculate) GetSingleCalculate(enddate string, scode string, market string) *Calculate {
-	//根据证券代码获取公司内码
-	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode); err != nil {
-		return this
-
-	}
-
-	builder := this.Db.Select("SUM(a.Sumh) As Sumh,SUM(a.HOLDERRTO) As Rate").
-		From("(SELECT  HOLDERAMT As Sumh ,HOLDERRTO FROM " + this.TableName).
-		Where("COMPCODE='" + sc.COMPCODE.String + "' and ENDDATE= '" + enddate + "'").
-		OrderBy("HOLDERAMT desc limit 10)a")
-	err := this.SelectWhere(builder, nil).
-		LoadStruct(this)
-	if err != nil {
-		logging.Debug("%v", err)
-	}
-	return this
-}
-
-// 获取十大流通股东信息
-func (this *TQ_SK_OTSHOLDER) GetTop10Group(enddate string, scode string, market string) ([]*TQ_SK_OTSHOLDER, error) {
-	var data []*TQ_SK_OTSHOLDER
-	//根据证券代码获取公司内码
-	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode); err != nil {
-		return data, err
-
-	}
-
-	bulid := this.Db.Select(" * ").
-		From(this.TableName).
-		Where("COMPCODE = '" + sc.COMPCODE.String + "' and ENDDATE IN (" + enddate + ") and ISVALID =1").
-		OrderBy("ENDDATE,HOLDERAMT  desc ")
-
-	//bulid = bulid.Limit(10)
-
-	_, err := this.SelectWhere(bulid, nil).LoadStructs(&data)
-
-	if err != nil {
-		logging.Debug("%v", err)
-		return data, err
-	}
-
-	return data, nil
-}
-
 // 获取十大流通股东 zxw
 func (this *TQ_SK_OTSHOLDER) GetOtshTop10L(scode string, limit int32, enddate int) ([]*TQ_SK_OTSHOLDER, error) {
 	var data []*TQ_SK_OTSHOLDER
 
 	if enddate < 1 {
-		bulid := this.Db.Select("SHHOLDERNAME,HOLDERAMT,PCTOFFLOTSHARES,HOLDERSUMCHGRATE,ENDDATE").
+		bulid := this.Db.Select("SHHOLDERCODE, SHHOLDERNAME, HOLDERAMT, RANK, PCTOFFLOTSHARES, ENDDATE, HOLDERSUMCHG").
 			From(this.TableName).
 			Where(fmt.Sprintf("COMPCODE ='%v'", scode)).
 			Where("ISVALID='1'").
-			OrderBy("HOLDERAMT DESC,ENDDATE DESC").Limit(uint64(limit))
+			OrderBy("ENDDATE DESC, RANK ASC").Limit(uint64(limit))
 
 		_, err := this.SelectWhere(bulid, nil).
 			LoadStructs(&data)
@@ -160,12 +82,12 @@ func (this *TQ_SK_OTSHOLDER) GetOtshTop10L(scode string, limit int32, enddate in
 		}
 		return data, err
 	} else {
-		bulid := this.Db.Select("SHHOLDERNAME,HOLDERAMT,PCTOFFLOTSHARES,HOLDERSUMCHGRATE,ENDDATE").
+		bulid := this.Db.Select("SHHOLDERCODE, SHHOLDERNAME, HOLDERAMT, RANK, PCTOFFLOTSHARES, ENDDATE, HOLDERSUMCHG").
 			From(this.TableName).
 			Where(fmt.Sprintf("COMPCODE ='%v'", scode)).
 			Where("ISVALID='1'").
 			Where(fmt.Sprintf("ENDDATE='%v'", enddate)).
-			OrderBy("HOLDERAMT DESC,ENDDATE DESC").Limit(uint64(limit))
+			OrderBy("ENDDATE DESC,RANK ASC").Limit(uint64(limit))
 
 		_, err := this.SelectWhere(bulid, nil).
 			LoadStructs(&data)

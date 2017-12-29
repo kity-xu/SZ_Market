@@ -88,8 +88,8 @@ func (*ShareHolderTop10) Top10(top *ResTop10, compcode string, enddate int) erro
 		h := &Holders{
 			Date:     v.ENDDATE,
 			Name:     v.SHHOLDERNAME,
-			Holdings: v.HOLDERAMT,
-			Rate:     v.HOLDERRTO,
+			Holdings: v.HOLDERAMT.Float64,
+			Rate:     v.HOLDERRTO.Float64,
 			Change:   v.CURCHG.Float64,
 		}
 		hd = append(hd, h)
@@ -121,9 +121,9 @@ func (*ShareHolderTop10) Top10Current(top *ResTop10, compcode string, enddate in
 		h := &Holders{
 			Date:     v.ENDDATE,
 			Name:     v.SHHOLDERNAME,
-			Holdings: v.HOLDERAMT,
+			Holdings: v.HOLDERAMT.Float64,
 			Rate:     v.PCTOFFLOTSHARES.Float64,
-			Change:   v.HOLDERSUMCHGRATE.Float64,
+			Change:   v.HOLDERSUMCHG.Float64,
 		}
 		hd = append(hd, h)
 	}

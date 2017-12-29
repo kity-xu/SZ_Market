@@ -31,7 +31,7 @@ const (
 
 //MicroLink Redis 键值
 const (
-	REDIS_ACCESS_TOKEN_MEMBERID = "m:token:%s" //会员ID
+	REDIS_ACCESS_TOKEN_MEMBERID = "so:token:%s" //会员ID
 )
 
 var (

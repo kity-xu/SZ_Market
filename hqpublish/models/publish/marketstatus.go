@@ -91,7 +91,6 @@ func (this MarketStatus) GetSingle(mid int32) (*protocol.MarketStatus, error) {
 	if err == nil {
 		return this.Decode(bin)
 	}
-	logging.Info("GetCache %s: %v", key, err)
 
 	// 如果请求者提供非法的市场ID，那么数据Redis里一定查不到该ID的数据
 	// 如果将没找到也当成错误返回，那么已查到的市场状态数据也将会被丢弃  如

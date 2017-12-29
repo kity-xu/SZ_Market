@@ -28,8 +28,6 @@ func GetRequestData(c *gin.Context, bufsize int) ([]byte, error) {
 		logging.Error("Body Read: %v", err)
 		return nil, err
 	}
-	//logging.Info("\x1b[0;31mRequest Body len %d\x1b[0m", n)
-	logging.Info("Request Body len %d", n)
 	return temp[:n], nil
 }
 
@@ -45,7 +43,6 @@ func RecvAndUnmarshalJson(c *gin.Context, bufsize int, v interface{}) (int, erro
 	if err := json.Unmarshal(buf, v); err != nil {
 		return 40004, err
 	}
-	logging.Info("Parsed Data %+v", v)
 	return 0, nil
 }
 

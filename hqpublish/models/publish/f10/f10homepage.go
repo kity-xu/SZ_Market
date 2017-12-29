@@ -44,7 +44,7 @@ type F10_Equity_Shareholder struct {
 	Top1sha          string  `json:"no1share"`         //第一大股东           ///TQ_SK_SHAREHOLDER
 	Top10Rate        float64 `json:"top10rate"`        //前十大股东占比
 	LegalPersonsRate float64 `json:"legalPersonsRate"` //法人所占比例         ///TQ_SK_SHAREHOLDERNUM
-	//Totalshrto     float64 `json:"Totalshrto"`       //股东总户数较上期增减
+	Totalshrto       float64 `json:"totalShrto"`       //股东总户数较上期增减
 }
 
 //3.分红配股
@@ -169,7 +169,7 @@ func F10Mobile(scode int) (*F10MobileTerminal, error) {
 			PRO:       v.PROBONUSRT.Float64,         //送股（股）
 			TranAddRT: v.TRANADDRT.Float64,          //转增（股）
 			BonusRT:   v.BONUSRT.Float64,            //赠股（股）
-			RegDate:   v.EQURECORDDATE.String,
+			RegDate:   v.EQURECORDDATE.String,       //股权登记日
 		}
 		t3.List = append(t3.List, div)
 	}
@@ -277,6 +277,14 @@ func F10Mobile(scode int) (*F10MobileTerminal, error) {
 	var top10rate float64 = 0.0
 	var nametop1 string
 
+	var shrto float64
+	last := shnum.TOTALSHAMT.Float64 - shnum.TOTALSHRTO.Float64 // 这期股东总户数 - 股东总户数较上期增减 = 上期股东总户数
+	if last != 0 {
+		shrto = (shnum.TOTALSHAMT.Float64 - last) / last
+	} else {
+		shrto = 100 //上期为0
+	}
+
 	for _, v := range *top10 {
 		top10rate += v.HOLDERRTO.Float64
 		if v.RANK.Int64 == int64(1) {
@@ -287,10 +295,10 @@ func F10Mobile(scode int) (*F10MobileTerminal, error) {
 	num := finchina.NewTQ_SK_IINVHOLDCHG().GetInstitutionStockNum(sc.COMPCODE.String, t4.EndDate)
 
 	t2 := F10_Equity_Shareholder{
-		Totalshare: equity.TOTALSHARE.Float64,
-		Circskamt:  equity.CIRCSKAMT.Float64,
-		Totalshamt: shnum.TOTALSHAMT.Float64,
-		//Totalshrto:       shrto,
+		Totalshare:       equity.TOTALSHARE.Float64,
+		Circskamt:        equity.CIRCSKAMT.Float64,
+		Totalshamt:       shnum.TOTALSHAMT.Float64,
+		Totalshrto:       shrto,
 		Top1sha:          nametop1,
 		Top10Rate:        top10rate,
 		LegalPersonsRate: num / (equity.ASK.Float64 * 10000),

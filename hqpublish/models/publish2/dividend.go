@@ -20,7 +20,7 @@ type DividendJson struct {
 	PROBONUSRT         float64 `json:"pro"`       //送股比例(10:X)
 	TRANADDRT          float64 `json:"tranAddRt"` //转增比例(10:X)
 	BONUSRT            float64 `json:"bonusRt"`   //赠股比例(10:X)
-	EQURECORDDATE      string  `json:"regDate"`   //股权登记日
+	EQURECORDDATE      string  `json:"regDate"`   //股权登记日 -- > 除权除息日
 }
 
 func NewDividendJson() *DividendJson {
@@ -52,7 +52,7 @@ func (DividendJson) GetDividendJson(sid int32) (*ResDiv, error) {
 			PROBONUSRT:         v.PROBONUSRT.Float64,
 			TRANADDRT:          v.TRANADDRT.Float64,
 			BONUSRT:            v.BONUSRT.Float64,
-			EQURECORDDATE:      v.EQURECORDDATE.String,
+			EQURECORDDATE:      v.XDRDATE.String, //分红配股日
 		}
 		dividends = append(dividends, div)
 	}
