@@ -351,7 +351,7 @@ func (this XRXD) FactorGroupOp(req *pro.RequestXRXD, fs []*pro.Factor, rows []*p
 	// 从数据库取出来的除权因子数组是 下标小->大 时间小->大
 	// 从Redis取出来的K线数据数组是  下标小->大 时间大->小
 	// 这里反转一下K线数组, 使其符合：下标小->大 时间小->大
-	this.ReverseKList(rows)
+	//this.ReverseKList(rows)
 
 	//  // debug show
 	//	for n, v := range kg {
