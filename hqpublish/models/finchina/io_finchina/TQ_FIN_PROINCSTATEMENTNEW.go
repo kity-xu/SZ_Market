@@ -87,7 +87,7 @@ func (this *TQ_FIN_PROINCSTATEMENTNEW) getListByCompcode(compcode string, report
 		OrderBy("ENDDATE DESC").
 		Paginate(uint64(page), uint64(per_page)).
 		LoadStruct(&sli)
-	if err != nil && err != dbr.ErrNotFound {
+	if err != nil { //&& err != dbr.ErrNotFound
 		return nil, err
 	}
 

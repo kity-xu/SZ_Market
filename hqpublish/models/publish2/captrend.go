@@ -203,9 +203,9 @@ func GetCapFlowListMin(sid int32) []*PeriodCapFlow {
 		}
 		p := &PeriodCapFlow{
 			TradeDate:  ele.NTime,
-			NetFlowin:  float64(ele.LlHugeBuyValue + ele.LlBigBuyValue + ele.LlMiddleBuyValue + ele.LlSmallBuyValue - ele.LlHugeSellValue - ele.LlBigSellValue - ele.LlMiddleSellValue - ele.LlSmallSellValue),
-			HugeFlowin: float64(ele.LlHugeBuyValue - ele.LlHugeSellValue),
-			BigFlowin:  float64(ele.LlBigBuyValue - ele.LlBigSellValue),
+			NetFlowin:  float64(ele.LlHugeBuyValue+ele.LlBigBuyValue-ele.LlHugeSellValue-ele.LlBigSellValue) / 10000,
+			HugeFlowin: float64(ele.LlHugeBuyValue-ele.LlHugeSellValue) / 10000,
+			BigFlowin:  float64(ele.LlBigBuyValue-ele.LlBigSellValue) / 10000,
 		}
 		list = append(list, p)
 	}
@@ -252,9 +252,9 @@ func getFlowListFromSZDB(sid int32, periodID int32) ([]*PeriodCapFlow, error) {
 		for _, v := range pfl {
 			p := &PeriodCapFlow{
 				TradeDate:  v.TRADEDATE,
-				NetFlowin:  v.HUGEBUYVALUE.Float64 + v.BIGBUYVALUE.Float64 + v.MIDDLEBUYVALUE.Float64 + v.SMALLBUYVALUE.Float64 - v.HUGESELLVALUE.Float64 - v.BIGSELLVALUE.Float64 - v.MIDDLESELLVALUE.Float64 - v.SMALLSELLVALUE.Float64,
+				NetFlowin:  v.HUGEBUYVALUE.Float64 + v.BIGBUYVALUE.Float64 - v.HUGESELLVALUE.Float64 - v.BIGSELLVALUE.Float64,
 				HugeFlowin: v.HUGEBUYVALUE.Float64 - v.HUGESELLVALUE.Float64,
-				BigFlowin:  v.BIGBUYVALUE.Float64 - v.HUGESELLVALUE.Float64,
+				BigFlowin:  v.BIGBUYVALUE.Float64 - v.BIGSELLVALUE.Float64,
 			}
 			list = append(list, p)
 		}
@@ -268,9 +268,9 @@ func getFlowListFromSZDB(sid int32, periodID int32) ([]*PeriodCapFlow, error) {
 		for _, v := range pfl {
 			p := &PeriodCapFlow{
 				TradeDate:  utils.DatetimeToInt32(v.ENTRYDATE.String), //v.ENTRYDATE
-				NetFlowin:  v.HUGEBUYVALUE.Float64 + v.BIGBUYVALUE.Float64 + v.MIDDLEBUYVALUE.Float64 + v.SMALLBUYVALUE.Float64 - v.HUGESELLVALUE.Float64 - v.BIGSELLVALUE.Float64 - v.MIDDLESELLVALUE.Float64 - v.SMALLSELLVALUE.Float64,
+				NetFlowin:  v.HUGEBUYVALUE.Float64 + v.BIGBUYVALUE.Float64 - v.HUGESELLVALUE.Float64 - v.BIGSELLVALUE.Float64,
 				HugeFlowin: v.HUGEBUYVALUE.Float64 - v.HUGESELLVALUE.Float64,
-				BigFlowin:  v.BIGBUYVALUE.Float64 - v.HUGESELLVALUE.Float64,
+				BigFlowin:  v.BIGBUYVALUE.Float64 - v.BIGSELLVALUE.Float64,
 			}
 			list = append(list, p)
 		}

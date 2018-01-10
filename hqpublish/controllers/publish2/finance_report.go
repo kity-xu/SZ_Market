@@ -135,8 +135,6 @@ func (this *FinanceReport) jsonProcess(c *gin.Context, sid *Sid, count int, ptim
 
 	sum := 4 + count
 
-	logging.Debug("count %v, sum %v", count, sum)
-
 	ls, err := io_finchina.NewProfits().GetList(sid.Symbol, sid.Market, 0, sum, 1)
 	if err != nil {
 		logging.Error("Err | %v", err)

@@ -20,8 +20,9 @@ func NewSid(sid int) *Sid {
 }
 
 func (s *Sid) Parse() {
-	s.Symbol = strconv.Itoa(int(s.Sid % 1000000))
-	s.Market = strconv.Itoa(int(s.Sid / 1000000))
+	ss := strconv.Itoa(int(s.Sid))
+	s.Symbol = ss[3:]
+	s.Market = ss[:3]
 }
 
 func (s Sid) String() string {

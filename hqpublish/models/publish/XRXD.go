@@ -351,7 +351,7 @@ func (this XRXD) FactorGroupOp(req *pro.RequestXRXD, fs []*pro.Factor, rows []*p
 	// 从数据库取出来的除权因子数组是 下标小->大 时间小->大
 	// 从Redis取出来的K线数据数组是  下标小->大 时间大->小
 	// 这里反转一下K线数组, 使其符合：下标小->大 时间小->大
-	//this.ReverseKList(rows)
+	this.ReverseKList(rows)
 
 	//  // debug show
 	//	for n, v := range kg {
@@ -385,13 +385,13 @@ func (this XRXD) FactorGroupOp(req *pro.RequestXRXD, fs []*pro.Factor, rows []*p
 }
 
 // GetXRDAllKlines ...
-func (this XRXD) GetXRDAllKlines(req *pro.RequestXRXD)(*[]*pro.KInfo, error){
+func (this XRXD) GetXRDAllKlines(req *pro.RequestXRXD) (*[]*pro.KInfo, error) {
 	var kind string
 	switch req.Type {
 	case 1:
-		kind=FStore.Day
+		kind = FStore.Day
 	case 2:
-		kind=FStore.Week
+		kind = FStore.Week
 	case 3:
 		kind = FStore.Month
 	case 4:
@@ -399,17 +399,17 @@ func (this XRXD) GetXRDAllKlines(req *pro.RequestXRXD)(*[]*pro.KInfo, error){
 	default:
 		return nil, ERROR_REQUEST_PARAM
 	}
-	key := fmt.Sprintf("hq:st:xrd:%s:%d", kind,req.SID)
+	key := fmt.Sprintf("hq:st:xrd:%s:%d", kind, req.SID)
 	bs, err := RedisCache.GetBytes(key)
-	if err != nil || len(bs)==0{
-		return this.GetXRXDObj(key,req)
+	if err != nil || len(bs) == 0 {
+		return this.GetXRXDObj(key, req)
 	}
 
 	table := &pro.KInfoTable{}
 	if err = proto.Unmarshal(bs, table); err != nil {
 		return nil, err
 	}
-	return &(table.List),nil
+	return &(table.List), nil
 }
 
 // GetXRXDObj...
@@ -418,8 +418,9 @@ func (this XRXD) GetXRXDObj(key string, req *pro.RequestXRXD) (*[]*pro.KInfo, er
 	var fgs []*FactorGroup
 	lsbin, err := lib.ReadFileBinary(filepath)
 	if err != nil {
+		// 判断是否新股 TODO
 		logging.Error("%v", err)
-		return nil, err
+		return nil, DATA_ISNULL
 	}
 
 	// 获取除权因子列表
@@ -500,13 +501,13 @@ func (this XRXD) GetXRXDObj(key string, req *pro.RequestXRXD) (*[]*pro.KInfo, er
 	}
 
 	table := &pro.KInfoTable{
-		List:*kline,
+		List: *kline,
 	}
 	data, err := proto.Marshal(table)
 	if err != nil {
 		logging.Error("Marshal: SetCache XRXD err |%v", err)
 	}
-	if err = RedisCache.Setex(key, ttl,data); err != nil {
+	if err = RedisCache.Setex(key, ttl, data); err != nil {
 		logging.Error("Set: SetCache XRXD err |%v", err)
 	}
 	return kline, nil

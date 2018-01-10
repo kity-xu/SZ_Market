@@ -39,6 +39,13 @@ func NewXRXD() *XRXD {
 	return &XRXD{}
 }
 
+type Null struct {
+	SID   int32
+	Type  int32
+	Total int
+	Num   int
+}
+
 func (this *XRXD) POST(c *gin.Context) {
 	replayfmt := c.Query(models.CONTEXT_FORMAT)
 	if len(replayfmt) == 0 {
@@ -72,6 +79,16 @@ func (this *XRXD) PostJson(c *gin.Context) {
 	if req.Type < 10 {
 		klines, err := publish.NewXRXD().GetXRDAllKlines(&req)
 		if err != nil {
+			if err == models.DATA_ISNULL {
+				res := &Null{
+					SID:   req.SID,
+					Type:  req.Type,
+					Total: -1,
+					Num:   -1,
+				}
+				WriteJson(c, 200, res)
+				return
+			}
 			logging.Error("%v", err)
 			WriteJson(c, 40002, nil)
 			return
@@ -136,6 +153,16 @@ func (this *XRXD) PostPB(c *gin.Context) {
 	if req.Type < 10 {
 		klines, err := publish.NewXRXD().GetXRDAllKlines(&req)
 		if err != nil {
+			if err == models.DATA_ISNULL {
+				res := &protocol.PayloadXRXD{
+					SID:   req.SID,
+					Type:  req.Type,
+					Total: -1,
+					Num:   -1,
+				}
+				WriteDataPB(c, protocol.HAINA_PUBLISH_CMD_ACK_XRXD, res)
+				return
+			}
 			logging.Error("%v", err)
 			WriteDataErrCode(c, 40002)
 			return

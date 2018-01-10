@@ -41,7 +41,7 @@ func (this *TQ_EXPT_SKSTATN) getSingleBySymbolAndExchange(symbol string, exchang
 		OrderBy("PUBLISHDATE DESC").
 		Limit(1).
 		LoadStruct(this)
-	if err != nil && err != dbr.ErrNotFound {
+	if err != nil { //&& err != dbr.ErrNotFound
 		return err
 	}
 

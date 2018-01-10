@@ -38,21 +38,25 @@ func (this *TQ_OA_STCODE) getCompcode(symbol interface{}) error {
 	default:
 		return fmt.Errorf("Invalid symbol type")
 	}
+	logging.Info("--------%s", seg)
 	key := fmt.Sprintf(REDIS_SYMBOL_COMPCODE, seg)
 	v, err := RedisCache.Get(key)
 	if err != nil {
 		if err != redigo.ErrNil {
 			logging.Error("Redis get %s: %s", key, err)
 		}
-
-		var cond string
-		cond = "EXCHANGE in ('001003','001002')"
-		symstr := "0"
-		if len(seg) > 6 {
-			symstr = seg[3:]
+		if len(seg) != 9 {
+			return fmt.Errorf("Invalid symbol...")
 		}
-		cond += " and SETYPE='101' and SYMBOL=" + symstr
-
+		var exchange string
+		if seg[:3] == "100" {
+			exchange = "001002"
+		} else if seg[:3] == "200" {
+			exchange = "001003"
+		} else {
+			exchange = ""
+		}
+		cond := fmt.Sprintf("EXCHANGE=%s and SETYPE in ('101','701') and SYMBOL=%s", exchange, seg[3:])
 		err = this.Db.Select("*").From(this.TableName).Where(cond).Limit(1).LoadStruct(this)
 		if err != nil {
 			logging.Error("finchina db: getCompcode: %s", err)
