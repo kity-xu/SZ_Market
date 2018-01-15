@@ -75,31 +75,28 @@ func (this *FinanceChart) PostJson(c *gin.Context) {
 		return
 	}
 
-	logging.Debug("params %+v", req)
-
 	// 默认5条
 	if req.Count == 0 {
 		req.Count = 5
 	}
-	s := NewSid(req.Sid)
 
-	this.jsonProcess(c, s, req.Count)
+	this.jsonProcess(c, req.Sid, req.Count)
 }
 
 func (this *FinanceChart) PostPB(c *gin.Context) {
 }
 
-func (this *FinanceChart) jsonProcess(c *gin.Context, sid *Sid, count int) {
+func (this *FinanceChart) jsonProcess(c *gin.Context, sid int, count int) {
 
 	finish := false
 	if count == 5 {
-		if err := this.readCacheJson(sid.Sid); err == nil {
+		if err := this.readCacheJson(sid); err == nil {
 			lib.WriteString(c, 200, this)
 			return
 		}
 		defer func() {
 			if finish {
-				this.saveCacheJson(sid.Sid)
+				this.saveCacheJson(sid)
 			}
 		}()
 	}
@@ -108,7 +105,7 @@ func (this *FinanceChart) jsonProcess(c *gin.Context, sid *Sid, count int) {
 
 	logging.Debug("count %v, sum %v", count, sum)
 
-	ls, err := io_finchina.NewProfits().GetList(sid.Symbol, sid.Market, 0, sum, 1)
+	ls, err := io_finchina.NewProfits().GetList(sid, 0, sum, 1)
 	if err != nil {
 		logging.Error("Err | %v", err)
 		lib.WriteString(c, 40002, nil)
@@ -203,7 +200,7 @@ func (this *FinanceChart) readCacheJson(sid int) error {
 		logging.Debug("Redis GetCache Err | %v", err)
 		return err
 	}
-	logging.Debug("hit redis cache %v", key)
+	//logging.Debug("hit redis cache %v", key)
 	err = json.Unmarshal(cache, this)
 	if err != nil {
 		logging.Debug("Json Unmarshal Err | %v", err)

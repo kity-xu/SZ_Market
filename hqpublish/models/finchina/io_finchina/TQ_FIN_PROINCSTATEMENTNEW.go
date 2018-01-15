@@ -76,7 +76,6 @@ func NewTQ_FIN_PROINCSTATEMENTNEW() *TQ_FIN_PROINCSTATEMENTNEW {
 
 func (this *TQ_FIN_PROINCSTATEMENTNEW) getListByCompcode(compcode string, report_data_type int, per_page int, page int) ([]TQ_FIN_PROINCSTATEMENTNEW, error) {
 	var sli []TQ_FIN_PROINCSTATEMENTNEW
-
 	builder := this.Db.Select("ENDDATE", "BASICEPS", "NETPROFIT", "BIZTOTINCO", "BIZINCO", "PERPROFIT").From(this.TableName)
 	if report_data_type != 0 {
 		builder.Where("REPORTDATETYPE=?", report_data_type)
@@ -96,9 +95,9 @@ func (this *TQ_FIN_PROINCSTATEMENTNEW) getListByCompcode(compcode string, report
 
 //------------------------------------------------------------------------------
 
-func (this *TQ_FIN_PROINCSTATEMENTNEW) GetList(symble string, market string, report_data_type int, per_page int, page int) ([]TQ_FIN_PROINCSTATEMENTNEW, error) {
-	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(symble, market); err != nil {
+func (this *TQ_FIN_PROINCSTATEMENTNEW) GetList(sid int, report_data_type int, per_page int, page int) ([]TQ_FIN_PROINCSTATEMENTNEW, error) {
+	sc := finchina.NewTQ_OA_STCODE()
+	if err := sc.GetCompcode(sid); err != nil {
 		logging.Error("%T GetList error: %s", *this, err)
 		return nil, err
 	}

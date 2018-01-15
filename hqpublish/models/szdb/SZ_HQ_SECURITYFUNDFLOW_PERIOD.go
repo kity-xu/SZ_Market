@@ -14,8 +14,8 @@ type SZ_HQ_SECURITYFUNDFLOW_PERIOD struct {
 	PERIODID     int32 //周期ID
 	//TRADEMONTH     int32           //月份
 	//TRADEWEEK      int32           //该月第几周
-	LASTDATE     int32           //日期
-	ENTRYTIME    string          //库更新时间点
+	LASTDATE     dbr.NullInt64   //日期
+	ENTRYTIME    dbr.NullString  //库更新时间点
 	HUGEBUYVALUE dbr.NullFloat64 //#特大买单成交额(元)
 	BIGBUYVALUE  dbr.NullFloat64 //#大买单成交额(元)
 	//MIDDLEBUYVALUE dbr.NullFloat64 //#中买单成交额(元)
@@ -46,7 +46,7 @@ func (s *SZ_HQ_SECURITYFUNDFLOW_PERIOD) GetSecurityFundFlowPeriod(sid int32, per
 		"PERIODID=?": periodID,
 	}
 	builder := s.Db.Select("*").From(s.TableName)
-	_, err := s.SelectWhere(builder, exps).OrderBy("ENTRYDATE desc").LoadStructs(&capflow)
+	_, err := s.SelectWhere(builder, exps).OrderBy("LASTDATE desc").LoadStructs(&capflow)
 	if err != nil {
 		logging.Error("%s", err.Error())
 		return capflow, err

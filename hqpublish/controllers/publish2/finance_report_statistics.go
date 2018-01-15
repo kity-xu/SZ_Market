@@ -1,6 +1,8 @@
 package publish2
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
@@ -11,7 +13,6 @@ import (
 
 	"encoding/json"
 
-	. "haina.com/market/hqpublish/controllers"
 	"haina.com/market/hqpublish/models/finchina/io_finchina"
 	"haina.com/share/garyburd/redigo/redis"
 )
@@ -69,29 +70,28 @@ func (this *ReportStatistics) PostJson(c *gin.Context) {
 		return
 	}
 
-	s := NewSid(req.Sid)
-
-	this.jsonProcess(c, s, req.Period)
+	this.jsonProcess(c, req.Sid, req.Period)
 }
 func (this *ReportStatistics) PostPB(c *gin.Context) {
 }
 
-func (this *ReportStatistics) jsonProcess(c *gin.Context, sid *Sid, period int) {
+func (this *ReportStatistics) jsonProcess(c *gin.Context, sid int, period int) {
 
 	finish := false
-	if err := this.ReadCacheJson(sid.Sid, period); err == nil {
+	if err := this.ReadCacheJson(sid, period); err == nil {
 		lib.WriteString(c, 200, this)
 		return
 	}
 	defer func() {
 		if finish {
-			this.SaveCacheJson(sid.Sid, period)
+			this.SaveCacheJson(sid, period)
 		}
 	}()
 
 	statistics := io_finchina.NewTQ_EXPT_SKSTATRT()
 
-	err := statistics.GetSingle(sid.Symbol, sid.Market, period)
+	seg := strconv.Itoa(sid)
+	err := statistics.GetSingle(seg[3:], seg[:3], period)
 	if err != nil {
 		logging.Error("Err | %v", err)
 		lib.WriteString(c, 40002, nil)
@@ -105,8 +105,8 @@ func (this *ReportStatistics) jsonProcess(c *gin.Context, sid *Sid, period int) 
 	lib.WriteString(c, 200, this)
 }
 
-func (this *ReportStatistics) rigger(sid *Sid, period int, statistics *io_finchina.TQ_EXPT_SKSTATRT) *ReportStatistics {
-	this.Sid = sid.Sid
+func (this *ReportStatistics) rigger(sid int, period int, statistics *io_finchina.TQ_EXPT_SKSTATRT) *ReportStatistics {
+	this.Sid = sid
 	this.Period = period
 	this.Statistics = &Statistics{
 		Sale:       statistics.SELL.Int64,

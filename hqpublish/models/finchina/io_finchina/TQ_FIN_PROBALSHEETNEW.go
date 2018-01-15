@@ -141,10 +141,10 @@ func (this *TQ_FIN_PROBALSHEETNEW) getListByCompcode(compcode string, report_dat
 
 //------------------------------------------------------------------------------
 
-func (this *TQ_FIN_PROBALSHEETNEW) GetList(scode string, market string, report_data_type int, per_page int, page int) ([]TQ_FIN_PROBALSHEETNEW, error) {
+func (this *TQ_FIN_PROBALSHEETNEW) GetList(sid int, report_data_type int, per_page int, page int) ([]TQ_FIN_PROBALSHEETNEW, error) {
 
-	sc := NewTQ_OA_STCODE()
-	if err := sc.getCompcode(scode, market); err != nil {
+	sc := finchina.NewTQ_OA_STCODE()
+	if err := sc.GetCompcode(sid); err != nil {
 		logging.Error("%T GetList error: %s", *this, err)
 		return nil, err
 	}

@@ -99,7 +99,7 @@
 	</redisMicroLink>
 	
 	<fileStore>
-		<path>E:/opt/develop/store/kline</path>
+		<path>E:/opt/develop/hgs/hgs_file/kline</path>
 		<day>dk.dat</day>
 		<index>index.dat</index>
 		<week>wk.dat</week>

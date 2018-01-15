@@ -90,15 +90,12 @@ func (this *FinanceReport) PostJson(c *gin.Context) {
 		return
 	}
 
-	logging.Debug("params %+v", req)
-
 	// 默认5条
 	if req.Count == 0 {
 		req.Count = 5
 	}
-	s := NewSid(req.Sid)
 
-	this.jsonProcess(c, s, req.Count, req.Ptime)
+	this.jsonProcess(c, req.Sid, req.Count, req.Ptime)
 }
 func (this *FinanceReport) PostPB(c *gin.Context) {
 }
@@ -121,11 +118,11 @@ func (this *FinanceReport) getResultJson(rows []*FinanceReportRecord, ptime int)
 	this.Dates = dates
 }
 
-func (this *FinanceReport) jsonProcess(c *gin.Context, sid *Sid, count int, ptime int) {
+func (this *FinanceReport) jsonProcess(c *gin.Context, sid int, count int, ptime int) {
 	var Rows []*FinanceReportRecord
 
 	if count == 5 {
-		Rows, err := this.readCacheJson(sid.Sid)
+		Rows, err := this.readCacheJson(sid)
 		if err == nil {
 			this.getResultJson(Rows, ptime)
 			lib.WriteString(c, 200, this)
@@ -135,19 +132,19 @@ func (this *FinanceReport) jsonProcess(c *gin.Context, sid *Sid, count int, ptim
 
 	sum := 4 + count
 
-	ls, err := io_finchina.NewProfits().GetList(sid.Symbol, sid.Market, 0, sum, 1)
+	ls, err := io_finchina.NewProfits().GetList(sid, 0, sum, 1)
 	if err != nil {
 		logging.Error("Err | %v", err)
 		lib.WriteString(c, 40002, nil)
 		return
 	}
-	ls_debt, err := io_finchina.NewLiabilities().GetList(sid.Symbol, sid.Market, 0, sum, 1)
+	ls_debt, err := io_finchina.NewLiabilities().GetList(sid, 0, sum, 1)
 	if err != nil {
 		logging.Error("Err | %v", err)
 		lib.WriteString(c, 40002, nil)
 		return
 	}
-	ls_flow, err := io_finchina.NewCashflow().GetList(sid.Symbol, sid.Market, 0, sum, 1)
+	ls_flow, err := io_finchina.NewCashflow().GetList(sid, 0, sum, 1)
 	if err != nil {
 		logging.Error("Err | %v", err)
 		lib.WriteString(c, 40002, nil)
@@ -177,7 +174,7 @@ func (this *FinanceReport) jsonProcess(c *gin.Context, sid *Sid, count int, ptim
 		lib.WriteString(c, 40002, nil)
 	}
 
-	this.saveCacheJson(sid.Sid, Rows)
+	this.saveCacheJson(sid, Rows)
 
 	this.getResultJson(Rows, ptime)
 	lib.WriteString(c, 200, this)
@@ -260,7 +257,7 @@ func (this *FinanceReport) readCacheJson(sid int) ([]*FinanceReportRecord, error
 		logging.Debug("Redis GetCache Err | %v", err)
 		return nil, err
 	}
-	logging.Debug("hit redis cache %v", key)
+	//logging.Debug("hit redis cache %v", key)
 	err = json.Unmarshal(cache, &Rows)
 	if err != nil {
 		logging.Debug("Json Unmarshal Err | %v", err)

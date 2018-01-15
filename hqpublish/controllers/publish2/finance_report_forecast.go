@@ -1,17 +1,18 @@
 package publish2
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
 
 	"haina.com/market/hqpublish/models"
 
+	"encoding/json"
 	"fmt"
 
-	"encoding/json"
-
-	. "haina.com/market/hqpublish/controllers"
 	"haina.com/market/hqpublish/models/finchina/io_finchina"
 	"haina.com/share/garyburd/redigo/redis"
 )
@@ -66,28 +67,27 @@ func (this *ReportForecast) PostJson(c *gin.Context) {
 
 	logging.Debug("params %+v", req)
 
-	s := NewSid(req.Sid)
-
-	this.jsonProcess(c, s)
+	this.jsonProcess(c, req.Sid)
 }
 func (this *ReportForecast) PostPB(c *gin.Context) {
 }
 
-func (this *ReportForecast) jsonProcess(c *gin.Context, sid *Sid) {
+func (this *ReportForecast) jsonProcess(c *gin.Context, sid int) {
 
-	if err := this.readCacheJson(sid.Sid); err == nil {
+	if err := this.readCacheJson(sid); err == nil {
 		lib.WriteString(c, 200, this)
 		return
 	}
 	finish := false
 	defer func() {
 		if finish {
-			this.saveCacheJson(sid.Sid)
+			this.saveCacheJson(sid)
 		}
 	}()
 
 	forecast := io_finchina.NewTQ_EXPT_SKSTATN()
-	err := forecast.GetSingle(sid.Symbol, sid.Market)
+	seg := strconv.Itoa(sid)
+	err := forecast.GetSingle(seg[3:], seg[:3])
 	if err != nil {
 		logging.Error("Err | %v", err)
 		lib.WriteString(c, 40002, nil)
@@ -100,21 +100,63 @@ func (this *ReportForecast) jsonProcess(c *gin.Context, sid *Sid) {
 	lib.WriteString(c, 200, this)
 }
 
-func (this *ReportForecast) rigger(sid *Sid, forecast *io_finchina.TQ_EXPT_SKSTATN) *ReportForecast {
-	this.Sid = sid.Sid
+func (this *ReportForecast) rigger(sid int, forecast *io_finchina.TQ_EXPT_SKSTATN) *ReportForecast {
+	this.Sid = sid
+	tms := time.Now().Format("2006")
+	tm, _ := strconv.Atoi(tms)
+	tm1, _ := strconv.Atoi(forecast.TENDDATE.String)
+	tm2, _ := strconv.Atoi(forecast.NENDDATE.String)
+	tm3, _ := strconv.Atoi(forecast.YANENDDATE.String)
 
-	this.Tenddate = forecast.TENDDATE.String
-	this.Teps = forecast.TEPS.Float64
-	this.Tpe = forecast.TPE.Float64
+	if tm == tm1/10000 { //今年
+		this.Tenddate = forecast.TENDDATE.String
+		this.Teps = forecast.TEPS.Float64
+		this.Tpe = forecast.TPE.Float64
 
-	this.Nenddate = forecast.NENDDATE.String
-	this.Neps = forecast.NEPS.Float64
-	this.Npe = forecast.NPE.Float64
+		this.Nenddate = strconv.Itoa((tm+1)*10000 + 1231)
+		this.Neps = forecast.NEPS.Float64
+		this.Npe = forecast.NPE.Float64
 
-	this.Yanenddate = forecast.YANENDDATE.String
-	this.Yaneps = forecast.YANEPS.Float64
-	this.Yanpe = forecast.YANPE.Float64
+		this.Yanenddate = strconv.Itoa((tm+2)*10000 + 1231)
+		this.Yaneps = forecast.YANEPS.Float64
+		this.Yanpe = forecast.YANPE.Float64
+	} else if tm == tm2/10000 || tm3 == 0 { //明年
+		this.Tenddate = forecast.NENDDATE.String
+		this.Teps = forecast.NEPS.Float64
+		this.Tpe = forecast.NPE.Float64
 
+		this.Nenddate = strconv.Itoa((tm+1)*10000 + 1231)
+		this.Neps = forecast.YANEPS.Float64
+		this.Npe = forecast.YANPE.Float64
+
+		this.Yanenddate = strconv.Itoa((tm+2)*10000 + 1231)
+		this.Yaneps = 0
+		this.Yanpe = 0
+	} else if tm == tm3/10000 || tm2 == 0 { //后年
+		this.Tenddate = forecast.YANENDDATE.String
+		this.Teps = forecast.YANEPS.Float64
+		this.Tpe = forecast.YANPE.Float64
+
+		this.Nenddate = strconv.Itoa((tm+1)*10000 + 1231)
+		this.Neps = 0
+		this.Npe = 0
+
+		this.Yanenddate = strconv.Itoa((tm+2)*10000 + 1231)
+		this.Yaneps = 0
+		this.Yanpe = 0
+	} else {
+		this.Tenddate = tms + "1231"
+		this.Teps = 0
+		this.Tpe = 0
+
+		this.Nenddate = strconv.Itoa((tm+1)*10000 + 1231)
+		this.Neps = 0
+		this.Npe = 0
+
+		this.Yanenddate = strconv.Itoa((tm+2)*10000 + 1231)
+		this.Yaneps = 0
+		this.Yanpe = 0
+	}
 	return this
 }
 

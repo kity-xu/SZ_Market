@@ -263,10 +263,10 @@ func getFlowListFromSZDB(sid int32, periodID int32) ([]*PeriodCapFlow, error) {
 		if len(pfl) == 0 || err != nil {
 			return nil, err
 		}
-		
+
 		for _, v := range pfl {
 			p := &PeriodCapFlow{
-				TradeDate:  v.LASTDATE, //v.ENTRYDATE
+				TradeDate:  int32(v.LASTDATE.Int64), //v.ENTRYDATE
 				NetFlowin:  v.HUGEBUYVALUE.Float64 + v.BIGBUYVALUE.Float64 - v.HUGESELLVALUE.Float64 - v.BIGSELLVALUE.Float64,
 				HugeFlowin: v.HUGEBUYVALUE.Float64 - v.HUGESELLVALUE.Float64,
 				BigFlowin:  v.BIGBUYVALUE.Float64 - v.BIGSELLVALUE.Float64,
