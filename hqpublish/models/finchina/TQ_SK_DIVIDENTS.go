@@ -113,10 +113,10 @@ func NewDividendRO() *DividendRO {
 	}
 }
 
-func (this *DividendRO) GetDividendRO(compCode string) (*[]DividendRO, error) {
+func (this *DividendRO) GetDividendRO(secode string) (*[]DividendRO, error) {
 	var divs []DividendRO
 	exps := map[string]interface{}{
-		"COMPCODE=?":    compCode,
+		"SECODE=?":      secode,
 		"DATETYPE=?":    "4",
 		"GRAOBJTYPE!=?": "99",
 		"CUR=?":         "CNY",

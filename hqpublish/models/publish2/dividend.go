@@ -38,7 +38,7 @@ func (DividendJson) GetDividendJson(sid int32) (*ResDiv, error) {
 	if err := sc.GetCompcode(sid); err != nil {
 		return nil, err
 	}
-	divs, err := finchina.NewDividendRO().GetDividendRO(sc.COMPCODE.String)
+	divs, err := finchina.NewDividendRO().GetDividendRO(sc.SECODE.String)
 	if err != nil {
 		logging.Error("%v", err)
 		return nil, err

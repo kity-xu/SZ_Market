@@ -8,7 +8,6 @@ import (
 	"io"
 	"sort"
 
-	"haina.com/share/kityxu/utils"
 	"haina.com/share/logging"
 
 	. "haina.com/market/hqpublish/models"
@@ -264,10 +263,10 @@ func getFlowListFromSZDB(sid int32, periodID int32) ([]*PeriodCapFlow, error) {
 		if len(pfl) == 0 || err != nil {
 			return nil, err
 		}
-		logging.Info("%v", pfl[0].ENTRYDATE)
+		
 		for _, v := range pfl {
 			p := &PeriodCapFlow{
-				TradeDate:  utils.DatetimeToInt32(v.ENTRYDATE.String), //v.ENTRYDATE
+				TradeDate:  v.LASTDATE, //v.ENTRYDATE
 				NetFlowin:  v.HUGEBUYVALUE.Float64 + v.BIGBUYVALUE.Float64 - v.HUGESELLVALUE.Float64 - v.BIGSELLVALUE.Float64,
 				HugeFlowin: v.HUGEBUYVALUE.Float64 - v.HUGESELLVALUE.Float64,
 				BigFlowin:  v.BIGBUYVALUE.Float64 - v.BIGSELLVALUE.Float64,

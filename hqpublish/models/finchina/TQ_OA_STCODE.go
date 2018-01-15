@@ -2,7 +2,7 @@
 package finchina
 
 import (
-	"database/sql"
+	"encoding/json"
 	"fmt"
 
 	. "haina.com/market/hqpublish/models"
@@ -17,6 +17,8 @@ import (
 type TQ_OA_STCODE struct {
 	Model    `db:"-"`
 	COMPCODE dbr.NullString //公司代码(公司内码) 通过 SYMBOL 得到
+	SECODE   dbr.NullString //分市场内码
+	SYMBOL   dbr.NullString //股票代码
 }
 
 func NewTQ_OA_STCODE() *TQ_OA_STCODE {
@@ -38,9 +40,9 @@ func (this *TQ_OA_STCODE) getCompcode(symbol interface{}) error {
 	default:
 		return fmt.Errorf("Invalid symbol type")
 	}
-	logging.Info("--------%s", seg)
+
 	key := fmt.Sprintf(REDIS_SYMBOL_COMPCODE, seg)
-	v, err := RedisCache.Get(key)
+	v, err := RedisCache.GetBytes(key)
 	if err != nil {
 		if err != redigo.ErrNil {
 			logging.Error("Redis get %s: %s", key, err)
@@ -66,7 +68,9 @@ func (this *TQ_OA_STCODE) getCompcode(symbol interface{}) error {
 			logging.Error("finchina db: getCompcode: Query COMPCODE is NULL by SYMBOL='%s'", TABLE_TQ_OA_STCODE, symbol)
 			return ErrNullComp
 		}
-		if err := RedisCache.Setex(key, REDIS_TTL, []byte(this.COMPCODE.String)); err != nil {
+
+		data, _ := json.Marshal(this)
+		if err := RedisCache.Setex(key, REDIS_TTL, data); err != nil {
 			logging.Error("Redis cache %s TTL %d: %s", key, REDIS_TTL, err)
 			return err
 		}
@@ -74,13 +78,7 @@ func (this *TQ_OA_STCODE) getCompcode(symbol interface{}) error {
 		return nil
 	}
 
-	this.COMPCODE = dbr.NullString{
-		NullString: sql.NullString{
-			String: string(v),
-			Valid:  true,
-		},
-	}
-
+	json.Unmarshal(v, this)
 	return nil
 }
 

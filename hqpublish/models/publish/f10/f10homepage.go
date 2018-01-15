@@ -155,7 +155,7 @@ func F10Mobile(scode int) (*F10MobileTerminal, error) {
 
 	/*-------------------------------------------------------------------*/
 	/*--------------------------分红配股----------------------------------*/
-	divs, err := finchina.NewDividendRO().GetDividendRO(sc.COMPCODE.String)
+	divs, err := finchina.NewDividendRO().GetDividendRO(sc.SECODE.String)
 	if err != nil {
 		logging.Debug("%v", err.Error())
 		return nil, err
@@ -191,9 +191,12 @@ func F10Mobile(scode int) (*F10MobileTerminal, error) {
 	// 计算市盈率
 	// 市盈率（动）=收盘价/EPSDILUTEDNEWP
 	var lep float64
-	if prottmdate.EPSDILUTEDNEWP.Float64 > 0 {
-		lep = (float64(snapdate.NLastPx) / 10000) / prottmdate.EPSDILUTEDNEWP.Float64
+	if prottmdate.EPSDILUTEDNEWP.Float64 != 0 {
+		lep = (float64(snapdate.NLastPx / 10000)) / prottmdate.EPSDILUTEDNEWP.Float64
+	} else {
+		lep = -9999
 	}
+
 	// 查询资产负债表
 	proba, err := finchina.NewTQ_FIN_PROBALSHEETNEW().GetBaseInfo(sc.COMPCODE.String)
 	if err != nil {

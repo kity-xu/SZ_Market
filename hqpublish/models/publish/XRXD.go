@@ -399,7 +399,7 @@ func (this XRXD) GetXRDAllKlines(req *pro.RequestXRXD) (*[]*pro.KInfo, error) {
 	default:
 		return nil, ERROR_REQUEST_PARAM
 	}
-	key := fmt.Sprintf("hq:st:xrd:%s:%d", kind, req.SID)
+	key := fmt.Sprintf("hq:st:xrd:%s:%d:%d", kind, req.SID, req.Method)
 	bs, err := RedisCache.GetBytes(key)
 	if err != nil || len(bs) == 0 {
 		return this.GetXRXDObj(key, req)

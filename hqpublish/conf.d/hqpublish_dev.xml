@@ -45,7 +45,7 @@
     </session>
 	<database>
         <driverName>mysql</driverName>
-        <dataSource>f10_user:907fd7f123adcedd26a1bf537268f492@tcp(103.235.250.86:3306)/finchina?charset=utf8</dataSource>
+        <dataSource>f10_user:907fd7f123adcedd26a1bf537268f492@tcp(103.235.250.85:3306)/finchina?charset=utf8</dataSource>
     </database>
 	
 	<dbMicroLink>

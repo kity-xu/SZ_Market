@@ -9,22 +9,22 @@ import (
 )
 
 type SZ_HQ_SECURITYFUNDFLOW_PERIOD struct {
-	models.Model   `db:"-" `
-	SID            int32           //证券ID
-	PERIODID       int32           //周期ID
-	TRADEMONTH     int32           //月份
-	TRADEWEEK      int32           //该月第几周
-	ENTRYDATE      dbr.NullString  //日期
-	ENTRYTIME      string          //库更新时间点
-	HUGEBUYVALUE   dbr.NullFloat64 //#特大买单成交额(元)
-	BIGBUYVALUE    dbr.NullFloat64 //#大买单成交额(元)
-	MIDDLEBUYVALUE dbr.NullFloat64 //#中买单成交额(元)
-	SMALLBUYVALUE  dbr.NullFloat64 //#小买单成交额(元)
+	models.Model `db:"-" `
+	SID          int32 //证券ID
+	PERIODID     int32 //周期ID
+	//TRADEMONTH     int32           //月份
+	//TRADEWEEK      int32           //该月第几周
+	LASTDATE     int32           //日期
+	ENTRYTIME    string          //库更新时间点
+	HUGEBUYVALUE dbr.NullFloat64 //#特大买单成交额(元)
+	BIGBUYVALUE  dbr.NullFloat64 //#大买单成交额(元)
+	//MIDDLEBUYVALUE dbr.NullFloat64 //#中买单成交额(元)
+	//SMALLBUYVALUE  dbr.NullFloat64 //#小买单成交额(元)
 
-	HUGESELLVALUE   dbr.NullFloat64 //#特大卖单成交额(元)
-	BIGSELLVALUE    dbr.NullFloat64 //#大卖单成交额(元)
-	MIDDLESELLVALUE dbr.NullFloat64 //#中卖单成交额(元)
-	SMALLSELLVALUE  dbr.NullFloat64 //#小卖单成交额(元)
+	HUGESELLVALUE dbr.NullFloat64 //#特大卖单成交额(元)
+	BIGSELLVALUE  dbr.NullFloat64 //#大卖单成交额(元)
+	//MIDDLESELLVALUE dbr.NullFloat64 //#中卖单成交额(元)
+	//SMALLSELLVALUE  dbr.NullFloat64 //#小卖单成交额(元)
 }
 
 func NewSZ_HQ_SECURITYFUNDFLOW_PERIOD() *SZ_HQ_SECURITYFUNDFLOW_PERIOD {
