@@ -118,6 +118,7 @@ func (this *DividendRO) GetDividendRO(secode string) (*[]DividendRO, error) {
 	exps := map[string]interface{}{
 		"SECODE=?":      secode,
 		"DATETYPE=?":    "4",
+		"DIVITYPE!=?":   "0",
 		"GRAOBJTYPE!=?": "99",
 		"CUR=?":         "CNY",
 		"ISVALID=?":     1,

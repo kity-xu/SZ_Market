@@ -33,7 +33,7 @@ func (this *TQ_SK_BUSIINFO) GetBusiInfo(scode string) ([]*TQ_SK_BUSIINFO, error)
 		From(this.TableName).
 		Where(fmt.Sprintf("COMPCODE ='%v'", scode)).
 		Where("typestyle = '2' AND ISVALID ='1'").
-		Where(fmt.Sprintf("ENTRYDATE  =(select ENTRYDATE  FROM tq_sk_busiinfo WHERE COMPCODE ='%v' AND typestyle = '2' AND ISVALID ='1' ORDER BY publishdate DESC LIMIT 1)", scode)).
+		Where(fmt.Sprintf("publishdate  =(select publishdate  FROM tq_sk_busiinfo WHERE COMPCODE ='%v' AND typestyle = '2' AND ISVALID ='1' ORDER BY publishdate DESC LIMIT 1)", scode)).
 		OrderBy("TCOREBIZINCOME DESC")
 
 	_, err := this.SelectWhere(builder, nil).

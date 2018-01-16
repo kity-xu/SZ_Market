@@ -3,6 +3,7 @@ package f10
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	"bytes"
 	"encoding/binary"
@@ -133,15 +134,34 @@ func F10Mobile(scode int) (*F10MobileTerminal, error) {
 	}
 	fbdata := ""
 	var busil []*BusiinfoKeyValue
+	var other BusiinfoKeyValue
+	var isother bool
 	for i, v := range busilist {
 		if i == 0 {
 			fbdata = v.ENTRYDATE.String
 		}
+
+		if strings.Contains(v.CLASSNAME.String, "其他") {
+			other.KeyName = "其他业务"
+			other.Value = v.TCOREBIZINCOME.Float64
+			other.Ratio = v.COREBIZINCRTO.Float64
+			isother = true
+			continue
+		}
+
 		var kv BusiinfoKeyValue
 		kv.KeyName = v.CLASSNAME.String
 		kv.Value = v.TCOREBIZINCOME.Float64
 		kv.Ratio = v.COREBIZINCRTO.Float64
 		busil = append(busil, &kv)
+	}
+
+	if isother {
+		busil = append(busil, &other)
+	}
+	if len(busil) > 5 {
+		busil[5].KeyName = "其他"
+		busil[5].Value = 100 - busil[4].Value - busil[3].Value - busil[2].Value - busil[1].Value - busil[0].Value
 	}
 
 	t1 := F10_Compinfo{
