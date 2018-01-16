@@ -93,12 +93,12 @@ type REDIS_BIN_INDEX_SNAPSHOT struct {
 }
 
 // GetStockSnapshotObj 获取证券快照
-func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
+func GetStockSnapshotObj(key string, sid int32) (*protocol.KInfo, error) {
 	var ntime int32
 	bin, err := redis.Get(key)
 	if err != nil {
 		logging.Error("redis not found key: %v", key)
-		return nil, nil
+		return nil, err
 	}
 
 	data := REDIS_BIN_STOCK_SNAPSHOT{}
@@ -109,6 +109,11 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 		if err = binary.Read(buf, binary.LittleEndian, index); err != nil && err != io.EOF { //指数
 			logging.Error("binary decode error: %v", err)
 			return nil, err
+		}
+
+		if index.NTradingPhase == 'H' || index.NTradingPhase == 'P' { // 停盘
+			logging.Debug("index sid:%v delist----TradingPhase:%c", sid, index.NTradingPhase)
+			return nil, nil
 		}
 
 		var avgpx uint32
@@ -135,12 +140,11 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 			LlValue:  index.LlValue,
 			NAvgPx:   avgpx,
 		}
-
-		if ret.LlVolume < 1 {
-			logging.Debug("index sid:%v delist", ret.NSID)
-			return nil, nil
-		}
 		return ret, nil
+	}
+	if data.NTradingPhase == 'H' || data.NTradingPhase == 'P' { //停盘
+		logging.Debug("stock sid:%v delist----TradingPhase:%c", sid, data.NTradingPhase)
+		return nil, nil
 	}
 
 	var avgpx uint32
@@ -165,11 +169,6 @@ func GetStockSnapshotObj(key string) (*protocol.KInfo, error) {
 		LlVolume: data.LlVolume,
 		LlValue:  data.LlValue,
 		NAvgPx:   avgpx,
-	}
-
-	if ret.LlVolume < 1 { // 个股停牌
-		logging.Debug("stock sid:%v delist", ret.NSID)
-		return nil, nil
 	}
 	return ret, nil
 }
