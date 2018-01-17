@@ -20,17 +20,17 @@ import (
 type ReportForecast struct {
 	Sid int `json:"sid"` // 证券ID
 
-	Tenddate string  `json:"tenddate"` // 预测截止日期（一期）
-	Teps     float64 `json:"teps"`     // 一致预期每股收益(一期）
-	Tpe      float64 `json:"tpe"`      // 一致预期市盈率(PE)(一期)
+	Tenddate string `json:"tenddate"` // 预测截止日期（一期）
+	Teps     string `json:"teps"`     // 一致预期每股收益(一期）
+	Tpe      string `json:"tpe"`      // 一致预期市盈率(PE)(一期)
 
-	Nenddate string  `json:"nenddate"` // 预测截止日期（二期）
-	Neps     float64 `json:"neps"`     // 一致预期每股收益(二期）
-	Npe      float64 `json:"npe"`      //  一致预期市盈率(PE)(二期)
+	Nenddate string `json:"nenddate"` // 预测截止日期（二期）
+	Neps     string `json:"neps"`     // 一致预期每股收益(二期）
+	Npe      string `json:"npe"`      //  一致预期市盈率(PE)(二期)
 
-	Yanenddate string  `json:"yanenddate"` // 预测截止日期（三期）
-	Yaneps     float64 `json:"yaneps"`     // 一致预期每股收益(三期）
-	Yanpe      float64 `json:"yanpe"`      //  一致预期市盈率(PE)(三期)
+	Yanenddate string `json:"yanenddate"` // 预测截止日期（三期）
+	Yaneps     string `json:"yaneps"`     // 一致预期每股收益(三期）
+	Yanpe      string `json:"yanpe"`      //  一致预期市盈率(PE)(三期)
 }
 
 func NewReportForecast() *ReportForecast {
@@ -110,52 +110,52 @@ func (this *ReportForecast) rigger(sid int, forecast *io_finchina.TQ_EXPT_SKSTAT
 
 	if tm == tm1/10000 { //今年
 		this.Tenddate = forecast.TENDDATE.String
-		this.Teps = forecast.TEPS.Float64
-		this.Tpe = forecast.TPE.Float64
+		this.Teps = fmt.Sprintf("%.2f", forecast.TEPS.Float64)
+		this.Tpe = fmt.Sprintf("%.2f", forecast.TPE.Float64)
 
 		this.Nenddate = strconv.Itoa((tm+1)*10000 + 1231)
-		this.Neps = forecast.NEPS.Float64
-		this.Npe = forecast.NPE.Float64
+		this.Neps = fmt.Sprintf("%.2f", forecast.NEPS.Float64)
+		this.Npe = fmt.Sprintf("%.2f", forecast.NPE.Float64)
 
 		this.Yanenddate = strconv.Itoa((tm+2)*10000 + 1231)
-		this.Yaneps = forecast.YANEPS.Float64
-		this.Yanpe = forecast.YANPE.Float64
+		this.Yaneps = fmt.Sprintf("%.2f", forecast.YANEPS.Float64)
+		this.Yanpe = fmt.Sprintf("%.2f", forecast.YANPE.Float64)
 	} else if tm == tm2/10000 || tm3 == 0 { //明年
 		this.Tenddate = forecast.NENDDATE.String
-		this.Teps = forecast.NEPS.Float64
-		this.Tpe = forecast.NPE.Float64
+		this.Teps = fmt.Sprintf("%.2f", forecast.NEPS.Float64)
+		this.Tpe = fmt.Sprintf("%.2f", forecast.NPE.Float64)
 
 		this.Nenddate = strconv.Itoa((tm+1)*10000 + 1231)
-		this.Neps = forecast.YANEPS.Float64
-		this.Npe = forecast.YANPE.Float64
+		this.Neps = fmt.Sprintf("%.2f", forecast.YANEPS.Float64)
+		this.Npe = fmt.Sprintf("%.2f", forecast.YANPE.Float64)
 
 		this.Yanenddate = strconv.Itoa((tm+2)*10000 + 1231)
-		this.Yaneps = 0
-		this.Yanpe = 0
+		this.Yaneps = "-"
+		this.Yanpe = "-"
 	} else if tm == tm3/10000 || tm2 == 0 { //后年
 		this.Tenddate = forecast.YANENDDATE.String
-		this.Teps = forecast.YANEPS.Float64
-		this.Tpe = forecast.YANPE.Float64
+		this.Teps = fmt.Sprintf("%.2f", forecast.YANEPS.Float64)
+		this.Tpe = fmt.Sprintf("%.2f", forecast.YANPE.Float64)
 
 		this.Nenddate = strconv.Itoa((tm+1)*10000 + 1231)
-		this.Neps = 0
-		this.Npe = 0
+		this.Neps = "-"
+		this.Npe = "-"
 
 		this.Yanenddate = strconv.Itoa((tm+2)*10000 + 1231)
-		this.Yaneps = 0
-		this.Yanpe = 0
+		this.Yaneps = "-"
+		this.Yanpe = "-"
 	} else {
 		this.Tenddate = tms + "1231"
-		this.Teps = 0
-		this.Tpe = 0
+		this.Teps = "-"
+		this.Tpe = "-"
 
 		this.Nenddate = strconv.Itoa((tm+1)*10000 + 1231)
-		this.Neps = 0
-		this.Npe = 0
+		this.Neps = "-"
+		this.Npe = "-"
 
 		this.Yanenddate = strconv.Itoa((tm+2)*10000 + 1231)
-		this.Yaneps = 0
-		this.Yanpe = 0
+		this.Yaneps = "-"
+		this.Yanpe = "-"
 	}
 	return this
 }

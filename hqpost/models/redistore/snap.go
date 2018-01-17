@@ -97,8 +97,8 @@ func GetStockSnapshotObj(key string, sid int32) (*protocol.KInfo, error) {
 	var ntime int32
 	bin, err := redis.Get(key)
 	if err != nil {
-		logging.Error("redis not found key: %v", key)
-		return nil, err
+		logging.Debug("redis not found key: %v", key)
+		return nil, nil
 	}
 
 	data := REDIS_BIN_STOCK_SNAPSHOT{}
@@ -111,7 +111,7 @@ func GetStockSnapshotObj(key string, sid int32) (*protocol.KInfo, error) {
 			return nil, err
 		}
 
-		if index.NTradingPhase == 'H' || index.NTradingPhase == 'P' { // 停盘
+		if index.LlVolume == 0 { // 停盘
 			logging.Debug("index sid:%v delist----TradingPhase:%c", sid, index.NTradingPhase)
 			return nil, nil
 		}
@@ -142,7 +142,7 @@ func GetStockSnapshotObj(key string, sid int32) (*protocol.KInfo, error) {
 		}
 		return ret, nil
 	}
-	if data.NTradingPhase == 'H' || data.NTradingPhase == 'P' { //停盘
+	if data.LlVolume == 0 { //停盘
 		logging.Debug("stock sid:%v delist----TradingPhase:%c", sid, data.NTradingPhase)
 		return nil, nil
 	}

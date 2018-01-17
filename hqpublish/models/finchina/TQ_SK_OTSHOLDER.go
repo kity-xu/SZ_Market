@@ -24,6 +24,7 @@ type TQ_SK_OTSHOLDER struct {
 	PCTOFFLOTSHARES dbr.NullFloat64 // 占流通股比
 	ENDDATE         int             // 放置本次股东信息的截止日期
 	HOLDERSUMCHG    dbr.NullFloat64 //持股数量增减
+	ISHIS           int             //上一期股东是否存在
 }
 
 func NewTQ_SK_OTSHOLDER() *TQ_SK_OTSHOLDER {
@@ -67,7 +68,7 @@ func (this *TQ_SK_OTSHOLDER) GetOtshTop10L(scode string, limit int32, enddate in
 	var data []*TQ_SK_OTSHOLDER
 
 	if enddate < 1 {
-		bulid := this.Db.Select("SHHOLDERCODE, SHHOLDERNAME, HOLDERAMT, RANK, PCTOFFLOTSHARES, ENDDATE, HOLDERSUMCHG").
+		bulid := this.Db.Select("SHHOLDERCODE, SHHOLDERNAME, HOLDERAMT, RANK, PCTOFFLOTSHARES, ENDDATE, HOLDERSUMCHG, ISHIS").
 			From(this.TableName).
 			Where(fmt.Sprintf("COMPCODE ='%v'", scode)).
 			Where("ISVALID='1'").

@@ -136,6 +136,7 @@ func F10Mobile(scode int) (*F10MobileTerminal, error) {
 	var busil []*BusiinfoKeyValue
 	var other BusiinfoKeyValue
 	var isother bool
+	var vlue, ratio float64
 	for i, v := range busilist {
 		if i == 0 {
 			fbdata = v.ENTRYDATE.String
@@ -147,6 +148,10 @@ func F10Mobile(scode int) (*F10MobileTerminal, error) {
 			other.Ratio = v.COREBIZINCRTO.Float64
 			isother = true
 			continue
+		}
+		if i > 4 {
+			vlue += v.TCOREBIZINCOME.Float64
+			ratio += v.COREBIZINCRTO.Float64
 		}
 
 		var kv BusiinfoKeyValue
@@ -161,7 +166,8 @@ func F10Mobile(scode int) (*F10MobileTerminal, error) {
 	}
 	if len(busil) > 5 {
 		busil[5].KeyName = "其他"
-		busil[5].Value = 100 - busil[4].Value - busil[3].Value - busil[2].Value - busil[1].Value - busil[0].Value
+		busil[5].Value = vlue
+		busil[5].Ratio = ratio
 	}
 
 	t1 := F10_Compinfo{

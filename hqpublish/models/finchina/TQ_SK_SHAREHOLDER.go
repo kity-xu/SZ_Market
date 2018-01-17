@@ -22,6 +22,7 @@ type TQ_SK_SHAREHOLDER struct {
 	HOLDERRTO    dbr.NullFloat64 // 持股数量占总股本比例
 	ENDDATE      int             // 截止日期
 	CURCHG       dbr.NullFloat64 // 本期变动数量
+	ISHIS        int             //是否上一期存在的股东
 }
 
 func NewTQ_SK_SHAREHOLDER() *TQ_SK_SHAREHOLDER {
@@ -91,7 +92,7 @@ func (this *TQ_SK_SHAREHOLDER) GetSharBaseL(comcode string, limit int32, enddate
 	var shar []*TQ_SK_SHAREHOLDER
 
 	if enddate < 1 {
-		Bulid := this.Db.Select("SHHOLDERCODE, SHHOLDERNAME, RANK, HOLDERAMT, HOLDERRTO, CURCHG, ENDDATE").
+		Bulid := this.Db.Select("SHHOLDERCODE, SHHOLDERNAME, RANK, HOLDERAMT, HOLDERRTO, CURCHG, ENDDATE, ISHIS").
 			From(this.TableName).
 			Where(fmt.Sprintf("COMPCODE ='%v'", comcode)).
 			Where("ISVALID=1").

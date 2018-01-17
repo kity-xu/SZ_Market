@@ -64,7 +64,7 @@ func HisDayKline(sids *[]int32) {
 // GetIntradayKInfo ... 获取当天的KInfo
 func GetIntradayKInfo(sid int32) (*protocol.KInfo, error) {
 	key := fmt.Sprintf(cl.REDISKEY_SECURITY_SNAP, sid)
-	return redistore.GetStockSnapshotObj(key)
+	return redistore.GetStockSnapshotObj(key, sid)
 }
 
 // CreateSingleHgsFile ... 生成该sid的hgs_file

@@ -6,7 +6,7 @@ import "errors"
 //---------------------------------------------------------------------------------
 const (
 	APP_NAME    = "hqpost"
-	APP_VERSION = "2.0.0"
+	APP_VERSION = "2.2.0"
 	APP_PID     = "hqpost"
 )
 

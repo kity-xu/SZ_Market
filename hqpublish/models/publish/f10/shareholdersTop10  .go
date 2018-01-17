@@ -24,6 +24,7 @@ type Holders struct {
 	Holdings float64 `json:"holdings"` // 持股数量
 	Rate     float64 `json:"rate"`     // 占比
 	Change   float64 `json:"change"`   // 变动
+	IsHis    int     `json:"ishis"`    // 上一期股东是否存在
 }
 
 type ShareHolderTop10 struct{}
@@ -91,6 +92,7 @@ func (*ShareHolderTop10) Top10(top *ResTop10, compcode string, enddate int) erro
 			Holdings: v.HOLDERAMT.Float64,
 			Rate:     v.HOLDERRTO.Float64,
 			Change:   v.CURCHG.Float64,
+			IsHis:    v.ISHIS,
 		}
 		hd = append(hd, h)
 	}
@@ -124,6 +126,7 @@ func (*ShareHolderTop10) Top10Current(top *ResTop10, compcode string, enddate in
 			Holdings: v.HOLDERAMT.Float64,
 			Rate:     v.PCTOFFLOTSHARES.Float64,
 			Change:   v.HOLDERSUMCHG.Float64,
+			IsHis:    v.ISHIS,
 		}
 		hd = append(hd, h)
 	}
