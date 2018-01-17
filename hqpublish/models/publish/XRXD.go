@@ -212,9 +212,8 @@ func (this XRXD) ReverseKList(s []*pro.KInfo) {
 }
 
 func (this XRXD) CalcBeforeRightRecoverKLine(k *pro.KInfo, factor float64) {
-	logging.Info("--------kinfo:%v", k)
-	logging.Info("--------factor:%v", factor)
-
+	//logging.Info("--------kinfo:%v", k)
+	//logging.Info("--------factor:%v", factor)
 	//fmt.Println("Before Right calc origin", factor, k)
 	k.NOpenPx = int32(float64(k.NOpenPx) / factor) // 开盘价
 	k.NHighPx = int32(float64(k.NHighPx) / factor) // 最高价
@@ -403,16 +402,16 @@ func (this XRXD) GetXRDAllKlines(req *pro.RequestXRXD) (*[]*pro.KInfo, error) {
 		return nil, ERROR_REQUEST_PARAM
 	}
 	key := fmt.Sprintf("hq:st:xrd:%s:%d:%d", kind, req.SID, req.Method)
-	//bs, err := RedisCache.GetBytes(key)
-	//if err != nil || len(bs) == 0 {
-	return this.GetXRXDObj(key, req)
-	//}
+	bs, err := RedisCache.GetBytes(key)
+	if err != nil || len(bs) == 0 {
+		return this.GetXRXDObj(key, req)
+	}
 
-	//table := &pro.KInfoTable{}
-	//if err = proto.Unmarshal(bs, table); err != nil {
-	//	return nil, err
-	//}
-	//return &(table.List), nil
+	table := &pro.KInfoTable{}
+	if err = proto.Unmarshal(bs, table); err != nil {
+		return nil, err
+	}
+	return &(table.List), nil
 }
 
 // GetXRXDObj...
@@ -506,13 +505,13 @@ func (this XRXD) GetXRXDObj(key string, req *pro.RequestXRXD) (*[]*pro.KInfo, er
 	table := &pro.KInfoTable{
 		List: *kline,
 	}
-	_, err = proto.Marshal(table)
+	data, err := proto.Marshal(table)
 	if err != nil {
 		logging.Error("Marshal: SetCache XRXD err |%v, %s", err, ttl)
 	}
-	//if err = RedisCache.Setex(key, ttl, data); err != nil {
-	//	logging.Error("Set: SetCache XRXD err |%v", err)
-	//}
+	if err = RedisCache.Setex(key, ttl, data); err != nil {
+		logging.Error("Set: SetCache XRXD err |%v", err)
+	}
 	return kline, nil
 }
 

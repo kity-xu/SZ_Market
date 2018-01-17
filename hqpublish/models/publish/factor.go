@@ -117,7 +117,16 @@ func (this Factor) GetReferFactors(sid int32) ([]*pro.Factor, error) {
 		frows = append(frows, &newf)
 	}
 	if len(frows) == 0 {
-		return nil, errors.New(fmt.Sprintf("finchina TQ_SK_XDRY no data by sid %d", sid))
+		newf := pro.Factor{
+			NBeginDate:  19000101,
+			NEndDate:    99999999,
+			DfXDY:       1.00,
+			DfLTDXDY:    1.00,
+			DfTHELTDXDY: 1.00,
+		}
+		frows = append(frows, &newf)
+		logging.Debug("finchina TQ_SK_XDRY no data by sid %d", sid)
+		//return nil, errors.New(fmt.Sprintf("finchina TQ_SK_XDRY no data by sid %d", sid))
 	}
 	// 当最后一条没有截止日期时：ENDDATE 数据库值为 19000101，这样的话就出现了 起始时间<截止时间
 	// 这里改为 99999999 更符合主观认知和方便后续逻辑处理

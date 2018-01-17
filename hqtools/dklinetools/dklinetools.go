@@ -23,6 +23,7 @@ func main() {
 	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8", nil)
 	// 服务器用
 	//conn, err := dbr.Open("mysql", "finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8", nil)
+	//onn, err := dbr.Open("mysql", "f10_user:907fd7f123adcedd26a1bf537268f492@tcp(103.235.250.85:3306)/finchina?charset=utf8", nil)
 	conn, err := dbr.Open("mysql", "f10_user:907fd7f123adcedd26a1bf537268f492@tcp(103.235.250.85:3306)/finchina?charset=utf8", nil)
 	if err != nil {
 		logging.Debug("mysql onn", err)

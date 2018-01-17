@@ -142,12 +142,25 @@ func (f *Fundflow) getCapflowDays(sid int32, last *protocol.TagTradeScaleStat, c
 // 处理最新一天的资金K线
 func formartCapdays(funds []*protocol.Fund, last *protocol.TagTradeScaleStat, count int) []*protocol.Fund {
 	kline.InitMarketTradeDate()
+	flow := last.LlBigBuyValue + last.LlHugeBuyValue - last.LlBigSellValue - last.LlHugeSellValue // 主力资金流向
 	if len(funds) != 5 {
 		ReversalArray(funds)
+
+		var tag bool
+		for _, v := range funds {
+			if kline.Trade_100 == v.NTime {
+				tag = true
+			}
+		}
+		if !tag {
+			f := &protocol.Fund{
+				NTime: kline.Trade_100,
+				Flow:  flow / 10000,
+			}
+			funds = append(funds, f)
+		}
 		return funds
 	}
-	// ==5
-	flow := last.LlBigBuyValue + last.LlHugeBuyValue - last.LlBigSellValue - last.LlHugeSellValue // 主力资金流向
 
 	if funds[0].NTime == kline.Trade_100 {
 		ReversalArray(funds)
