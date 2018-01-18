@@ -4,9 +4,11 @@ package publish2
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"haina.com/market/hqpublish/models"
+	"haina.com/market/hqpublish/models/finchina"
 	"haina.com/market/hqpublish/models/finchina/io_finchina"
 	"haina.com/share/logging"
 
@@ -105,7 +107,21 @@ func (this *FinanceChart) jsonProcess(c *gin.Context, sid int, count int) {
 
 	logging.Debug("count %v, sum %v", count, sum)
 
-	ls, err := io_finchina.NewProfits().GetList(sid, 0, sum, 1)
+	sc := finchina.NewTQ_OA_STCODE()
+	if err := sc.GetCompcode(sid); err != nil {
+		logging.Error("%T GetList error: %s", *this, err)
+		lib.WriteString(c, 40002, nil)
+		return
+	}
+
+	list, err := io_finchina.NewTQ_SK_BASICINFO().GetBaseinfo(sc.SECODE.String)
+	if err != nil {
+		logging.Error("getBaseinfo err|%v", err)
+		lib.WriteString(c, 40002, nil)
+		return
+	}
+
+	ls, err := io_finchina.NewProfits().GetList(sc.COMPCODE.String, list.LISTDATE.String, 0, sum, 1)
 	if err != nil {
 		logging.Error("Err | %v", err)
 		lib.WriteString(c, 40002, nil)
@@ -130,7 +146,7 @@ func (this *FinanceChart) jsonProcess(c *gin.Context, sid int, count int) {
 	lib.WriteString(c, 200, this)
 }
 
-func (this *FinanceChart) rigger(ls []io_finchina.Profits, count int) *FinanceChart {
+func (this *FinanceChart) rigger(sc finchina.TQ_OA_STCODE, ls []io_finchina.Profits, count int) *FinanceChart {
 	//logging.Debug("rigger len %v, count %v", len(ls), count)
 
 	this.EPS = make([]*NodeEPS, 0, count)
@@ -162,8 +178,11 @@ func (this *FinanceChart) rigger(ls []io_finchina.Profits, count int) *FinanceCh
 			amonth := a.ENDDATE.String[4:6]
 			bmonth := b.ENDDATE.String[4:6]
 
+			date_a, _ := strconv.Atoi(a.ENDDATE.String)
+
 			if ayear-1 == byear && amonth == bmonth {
-				//logging.Debug("%v %s - %v %s to pass", ayear, amonth, byear, bmonth)
+				binfo, _ := io_finchina.NewTQ_SK_BASICINFO().GetBaseinfo(sc.SECODE.String)
+
 				if b.BASICEPS.Float64 != 0 {
 					eps.Rate = (a.BASICEPS.Float64 - b.BASICEPS.Float64) / b.BASICEPS.Float64
 				}
@@ -172,6 +191,13 @@ func (this *FinanceChart) rigger(ls []io_finchina.Profits, count int) *FinanceCh
 				}
 				if b.NETPROFIT.Float64 != 0 {
 					netprofit.Rate = (a.NETPROFIT.Float64 - b.NETPROFIT.Float64) / b.NETPROFIT.Float64
+				}
+
+				listdate, _ := strconv.Atoi(binfo.LISTDATE.String)
+				if date_a < (listdate + 10000) {
+					eps.Rate = 0
+					income.Rate = 0
+					netprofit.Rate = 0
 				}
 			} /* else {
 				logging.Debug("%v %s - %v %s no pass", ayear, amonth, byear, bmonth)

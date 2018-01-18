@@ -260,6 +260,7 @@ func maybeAddKline(reply *[]*protocol.KInfo, Sid int32, e error) error {
 			kinfo.LlValue = 0
 			kinfo.LlVolume = 0
 			kinfo.NAvgPx = 1
+			logging.Info("新增一根K线-----Trade_100：%v", Trade_100)
 			*reply = append(*reply, &kinfo)
 		}
 	} else if kinfo.NSID/1000000 == 200 {
@@ -273,6 +274,7 @@ func maybeAddKline(reply *[]*protocol.KInfo, Sid int32, e error) error {
 			kinfo.LlValue = 0
 			kinfo.LlVolume = 0
 			kinfo.NAvgPx = 1
+			logging.Info("新增一根K线-----Trade_100：%v", Trade_200)
 			*reply = append(*reply, &kinfo)
 		}
 	} else {

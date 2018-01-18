@@ -89,9 +89,9 @@ const (
 	REDISKEY_SECURITY_SNAP = "hq:st:snap:%d" ///<证券快照数据(参数：sid) (calc写入)
 )
 
-func F10Mobile(scode int) (*F10MobileTerminal, error) {
+func F10Mobile(sid int) (*F10MobileTerminal, error) {
 	var f10 F10MobileTerminal
-	key := fmt.Sprintf(REDIS_F10_HOMEPAGE, scode)
+	key := fmt.Sprintf(REDIS_F10_HOMEPAGE, sid)
 	data, err := RedisCache.GetBytes(key)
 	if err == nil {
 		if err = json.Unmarshal(data, &f10); err == nil {
@@ -101,7 +101,7 @@ func F10Mobile(scode int) (*F10MobileTerminal, error) {
 	}
 
 	sc := finchina.NewTQ_OA_STCODE()
-	if err := sc.GetCompcode(scode); err != nil {
+	if err := sc.GetCompcode(sid); err != nil {
 		return nil, err
 	}
 
@@ -117,7 +117,7 @@ func F10Mobile(scode int) (*F10MobileTerminal, error) {
 		return nil, err
 	}
 	// 查询上市日期 总股本
-	securdate, err := finchina.NewSecurityInfo().GetSecurityBasicInfo(sc.COMPCODE.String)
+	securdate, err := finchina.NewSecurityInfo().GetSecurityBasicInfo(sc.SECODE.String)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func F10Mobile(scode int) (*F10MobileTerminal, error) {
 	/*-------------------------------------------------------------------*/
 	/*--------------------------财务数据----------------------------------*/
 	// 调用快照接口获取最新价
-	snapdate, err := getStockSnapshot(scode)
+	snapdate, err := getStockSnapshot(sid)
 	if err != nil {
 		logging.Debug("%v", err.Error())
 		return nil, err
@@ -333,7 +333,7 @@ func F10Mobile(scode int) (*F10MobileTerminal, error) {
 		LegalPersonsRate: num / (equity.ASK.Float64 * 10000),
 	}
 
-	f10.Scode = scode
+	f10.Scode = sid
 	f10.Hname = cinfo.COMPNAME.String
 	f10.CompInfo = t1
 	f10.Equity = t2

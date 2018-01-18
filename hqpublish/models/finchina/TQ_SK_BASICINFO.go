@@ -27,8 +27,8 @@ func (this *SecurityInfo) GetSecurityBasicInfo(scode string) (*SecurityInfo, err
 	info := NewSecurityInfo()
 
 	exps := map[string]interface{}{
-		"COMPCODE=?": scode,
-		"ISVALID=?":  1,
+		"SECODE=?":  scode,
+		"ISVALID=?": 1,
 	}
 	builder := info.Db.Select("*").From(info.TableName)
 	err := info.SelectWhere(builder, exps).Limit(1).LoadStruct(info)

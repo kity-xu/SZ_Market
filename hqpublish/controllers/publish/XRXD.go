@@ -70,7 +70,7 @@ func (this *XRXD) PostJson(c *gin.Context) {
 		WriteJson(c, code, nil)
 		return
 	}
-	logging.Info("Request %+v", req)
+
 	if req.SID == 0 || req.TimeIndex < 0 || req.Num < 0 {
 		WriteJson(c, 40004, nil)
 		return

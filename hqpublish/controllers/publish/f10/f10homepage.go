@@ -20,7 +20,7 @@ func NewHN_F10_Mobile() *HN_F10_Mobile {
 func (this *HN_F10_Mobile) GetF10_Mobile(c *gin.Context) {
 
 	var _param struct {
-		Scode int `json:"sid" binding:"required"`
+		Sid int `json:"sid" binding:"required"`
 	}
 
 	if err := c.BindJSON(&_param); err != nil {
@@ -29,7 +29,7 @@ func (this *HN_F10_Mobile) GetF10_Mobile(c *gin.Context) {
 		return
 	}
 
-	f10, err := f10.F10Mobile(_param.Scode)
+	f10, err := f10.F10Mobile(_param.Sid)
 	if err != nil {
 		logging.Error("%v", err)
 		lib.WriteString(c, 40002, nil)

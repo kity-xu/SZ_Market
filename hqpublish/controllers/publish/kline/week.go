@@ -91,50 +91,27 @@ func maybeAddWeekLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 	kinfo = *(*reply)[len(*reply)-1]
 
 	lday := kinfo.NTime
-	today := models.GetCurrentTime()
 
-	if kinfo.NSID/1000000 == 100 {
-		if lday < Trade_100 { //是交易日
+	if lday < Trade_100 { //是交易日
 
-			//判断是否同属一周
-			b1, _ := models.DateAdd(kinfo.NTime) //找到该日期所在周日的那天
-			b2, _ := models.DateAdd(today)
+		//判断是否同属一周
+		b1, _ := models.DateAdd(kinfo.NTime) //找到该日期所在周日的那天
+		b2, _ := models.DateAdd(Trade_100)
 
-			if !b1.Equal(b2) { //是交易日但不同属一周（周一）新建
-				kinfo.NTime = today
-				kinfo.NPreCPx = kinfo.NLastPx
-				kinfo.NOpenPx = kinfo.NLastPx
-				kinfo.NHighPx = kinfo.NLastPx
-				kinfo.NLowPx = kinfo.NLastPx
-				kinfo.NLastPx = kinfo.NLastPx
-				kinfo.LlValue = 0
-				kinfo.LlVolume = 0
-				kinfo.NAvgPx = 1
-				*reply = append(*reply, &kinfo)
-			}
+		if !b1.Equal(b2) { //是交易日但不同属一周（周一）新建
+			kinfo.NTime = Trade_100
+			kinfo.NPreCPx = kinfo.NLastPx
+			kinfo.NOpenPx = kinfo.NLastPx
+			kinfo.NHighPx = kinfo.NLastPx
+			kinfo.NLowPx = kinfo.NLastPx
+			kinfo.NLastPx = kinfo.NLastPx
+			kinfo.LlValue = 0
+			kinfo.LlVolume = 0
+			kinfo.NAvgPx = 1
+			*reply = append(*reply, &kinfo)
+		} else { //同属一周，更新(只更新时间)
+			(*reply)[len(*reply)-1].NTime = Trade_100
 		}
-	} else if kinfo.NSID/1000000 == 200 {
-		if lday < Trade_200 {
-
-			//判断是否同属一周
-			b1, _ := models.DateAdd(kinfo.NTime) //找到该日期所在周日的那天
-			b2, _ := models.DateAdd(today)
-
-			if !b1.Equal(b2) { //是交易日但不同属一周（周一）新建
-				kinfo.NTime = today
-				kinfo.NPreCPx = kinfo.NLastPx
-				kinfo.NOpenPx = kinfo.NLastPx
-				kinfo.NHighPx = kinfo.NLastPx
-				kinfo.NLowPx = kinfo.NLastPx
-				kinfo.NLastPx = kinfo.NLastPx
-				kinfo.LlValue = 0
-				kinfo.LlVolume = 0
-				kinfo.NAvgPx = 1
-				*reply = append(*reply, &kinfo)
-			}
-		}
-	} else {
-		return fmt.Errorf("Invalid NSID...")
 	}
 	return nil
 }

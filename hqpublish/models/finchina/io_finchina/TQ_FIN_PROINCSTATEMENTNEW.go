@@ -4,7 +4,6 @@ package io_finchina
 import (
 	"haina.com/market/hqpublish/models/finchina"
 	"haina.com/share/gocraft/dbr"
-	"haina.com/share/logging"
 	. "haina.com/share/models"
 )
 
@@ -74,7 +73,8 @@ func NewTQ_FIN_PROINCSTATEMENTNEW() *TQ_FIN_PROINCSTATEMENTNEW {
 	}
 }
 
-func (this *TQ_FIN_PROINCSTATEMENTNEW) getListByCompcode(compcode string, report_data_type int, per_page int, page int) ([]TQ_FIN_PROINCSTATEMENTNEW, error) {
+func (this *TQ_FIN_PROINCSTATEMENTNEW) getListByCompcode(compcode string, listdate string, report_data_type int, per_page int, page int) ([]TQ_FIN_PROINCSTATEMENTNEW, error) {
+
 	var sli []TQ_FIN_PROINCSTATEMENTNEW
 	builder := this.Db.Select("ENDDATE", "BASICEPS", "NETPROFIT", "BIZTOTINCO", "BIZINCO", "PERPROFIT").From(this.TableName)
 	if report_data_type != 0 {
@@ -83,10 +83,11 @@ func (this *TQ_FIN_PROINCSTATEMENTNEW) getListByCompcode(compcode string, report
 	err := builder.Where("COMPCODE=?", compcode).
 		Where("ISVALID=1").
 		Where("REPORTTYPE=?", 3).
+		//Where("ENDDATE>=?", listdate).
 		OrderBy("ENDDATE DESC").
 		Paginate(uint64(page), uint64(per_page)).
 		LoadStruct(&sli)
-	if err != nil { //&& err != dbr.ErrNotFound
+	if err != nil && err != dbr.ErrNotFound {
 		return nil, err
 	}
 
@@ -95,14 +96,8 @@ func (this *TQ_FIN_PROINCSTATEMENTNEW) getListByCompcode(compcode string, report
 
 //------------------------------------------------------------------------------
 
-func (this *TQ_FIN_PROINCSTATEMENTNEW) GetList(sid int, report_data_type int, per_page int, page int) ([]TQ_FIN_PROINCSTATEMENTNEW, error) {
-	sc := finchina.NewTQ_OA_STCODE()
-	if err := sc.GetCompcode(sid); err != nil {
-		logging.Error("%T GetList error: %s", *this, err)
-		return nil, err
-	}
-
-	return this.getListByCompcode(sc.COMPCODE.String, report_data_type, per_page, page)
+func (this *TQ_FIN_PROINCSTATEMENTNEW) GetList(compcode string, listdate string, report_data_type int, per_page int, page int) ([]TQ_FIN_PROINCSTATEMENTNEW, error) {
+	return this.getListByCompcode(compcode, listdate, report_data_type, per_page, page)
 }
 
 // TQ_FIN_PROBINCSTATEMENTNEW    中文名称：银行利润表(新准则产品表)

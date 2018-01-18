@@ -131,9 +131,9 @@ func NewCompInfo() *CompInfo {
 	}
 }
 
-func (this *CompInfo) GetCompInfo(compCode string) (*CompInfo, error) {
+func (this *CompInfo) GetCompInfo(compcode string) (*CompInfo, error) {
 	exps := map[string]interface{}{
-		"COMPCODE=?": compCode,
+		"COMPCODE=?": compcode,
 		"ISVALID=?":  1,
 	}
 	builder := this.Db.Select("COMPNAME ,REGCAPITAL,REGION,BSECRETARY,CHAIRMAN,REGADDR,MAJORBIZ").From(this.TableName)
@@ -147,11 +147,11 @@ func (this *CompInfo) GetCompInfo(compCode string) (*CompInfo, error) {
 }
 
 //获取公司所属行业
-func (this *CompInfo) GetCompTrade(compCode string) (string, error) {
+func (this *CompInfo) GetCompTrade(compcode string) (string, error) {
 	comp := NewTQ_COMP_INDUSTRY()
 
 	builder := comp.Db.Select("LEVEL2NAME").From(comp.TableName)
-	err := builder.Where("COMPCODE=?", compCode).
+	err := builder.Where("COMPCODE=?", compcode).
 		Where("ISVALID=1").
 		Where("INDCLASSCODE=2214 or INDCLASSCODE=2107 or INDCLASSCODE=2106").
 		Limit(1).

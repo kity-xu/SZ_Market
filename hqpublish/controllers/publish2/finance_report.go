@@ -15,6 +15,7 @@ import (
 	"encoding/json"
 
 	. "haina.com/market/hqpublish/controllers"
+	"haina.com/market/hqpublish/models/finchina"
 	"haina.com/market/hqpublish/models/finchina/io_finchina"
 	"haina.com/share/garyburd/redigo/redis"
 )
@@ -113,7 +114,11 @@ func (this *FinanceReport) getResultJson(rows []*FinanceReportRecord, ptime int)
 	}
 
 	if !tag {
-		this.Rows = rows[0]
+		if len(rows) > 0 {
+			this.Rows = rows[0]
+		} else {
+			this.Rows = &FinanceReportRecord{}
+		}
 	}
 	this.Dates = dates
 }
@@ -132,29 +137,90 @@ func (this *FinanceReport) jsonProcess(c *gin.Context, sid int, count int, ptime
 
 	sum := 4 + count
 
-	ls, err := io_finchina.NewProfits().GetList(sid, 0, sum, 1)
+	sc := finchina.NewTQ_OA_STCODE()
+	if err := sc.GetCompcode(sid); err != nil {
+		logging.Error("%T GetList error: %s", *this, err)
+		lib.WriteString(c, 40002, nil)
+		return
+	}
+
+	list, err := io_finchina.NewTQ_SK_BASICINFO().GetBaseinfo(sc.SECODE.String)
+	if err != nil {
+		logging.Error("getBaseinfo err|%v", err)
+		lib.WriteString(c, 40002, nil)
+		return
+	}
+
+	ls, err := io_finchina.NewProfits().GetList(sc.COMPCODE.String, list.LISTDATE.String, 0, sum, 1)
 	if err != nil {
 		logging.Error("Err | %v", err)
 		lib.WriteString(c, 40002, nil)
 		return
 	}
-	ls_debt, err := io_finchina.NewLiabilities().GetList(sid, 0, sum, 1)
+	ls_debt, err := io_finchina.NewLiabilities().GetList(sc.COMPCODE.String, list.LISTDATE.String, 0, sum, 1)
 	if err != nil {
 		logging.Error("Err | %v", err)
 		lib.WriteString(c, 40002, nil)
 		return
 	}
-	ls_flow, err := io_finchina.NewCashflow().GetList(sid, 0, sum, 1)
+	ls_flow, err := io_finchina.NewCashflow().GetList(sc.COMPCODE.String, list.LISTDATE.String, 0, sum, 1)
 	if err != nil {
 		logging.Error("Err | %v", err)
 		lib.WriteString(c, 40002, nil)
 		return
 	}
 
-	if len(ls) != len(ls_debt) || len(ls) != len(ls_flow) {
-		logging.Error("Err | incomplete data")
-		lib.WriteString(c, 40002, nil)
-		return
+	len_debt := len(ls_debt)
+	len_flow := len(ls_flow)
+	if len(ls) != len_debt || len(ls) != len_flow { // 规范利润表、资产负债表、现金流量表的对应时间条数
+		// 以ls的条数和日期为基准
+		for i, v := range ls {
+			if len_debt > i {
+				if v.ENDDATE.String != ls_debt[i].ENDDATE.String {
+					one := io_finchina.Liabilities{
+						FinChinaLiabilities: io_finchina.FinChinaLiabilities{
+							TQ_FIN_PROBALSHEETNEW: io_finchina.TQ_FIN_PROBALSHEETNEW{
+								ENDDATE: v.ENDDATE,
+							},
+						},
+					}
+					ls_debt[i] = one
+				}
+
+			} else {
+				one := io_finchina.Liabilities{
+					FinChinaLiabilities: io_finchina.FinChinaLiabilities{
+						TQ_FIN_PROBALSHEETNEW: io_finchina.TQ_FIN_PROBALSHEETNEW{
+							ENDDATE: v.ENDDATE,
+						},
+					},
+				}
+				ls_debt = append(ls_debt, one)
+			}
+
+			if len_flow > i {
+				if v.ENDDATE.String != ls_flow[i].ENDDATE.String {
+					one := io_finchina.Cashflow{
+						FinChinaCashflow: io_finchina.FinChinaCashflow{
+							TQ_FIN_PROCFSTATEMENTNEW: io_finchina.TQ_FIN_PROCFSTATEMENTNEW{
+								ENDDATE: v.ENDDATE,
+							},
+						},
+					}
+					ls_flow[i] = one
+				}
+			} else {
+				one := io_finchina.Cashflow{
+					FinChinaCashflow: io_finchina.FinChinaCashflow{
+						TQ_FIN_PROCFSTATEMENTNEW: io_finchina.TQ_FIN_PROCFSTATEMENTNEW{
+							ENDDATE: v.ENDDATE,
+						},
+					},
+				}
+				ls_flow = append(ls_flow, one)
+			}
+
+		}
 	}
 
 	// 计算实际条数，如果数据库里条数不够，计算修正

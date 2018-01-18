@@ -7,7 +7,6 @@ import (
 
 	"haina.com/market/hqpublish/models/finchina"
 	"haina.com/share/gocraft/dbr"
-	"haina.com/share/logging"
 )
 
 ////  TQ_FIN_PROBALSHEETNEW	  一般企业资产负债表(新准则产品表)
@@ -119,7 +118,7 @@ func NewTQ_FIN_PROBALSHEETNEW() *TQ_FIN_PROBALSHEETNEW {
 	}
 }
 
-func (this *TQ_FIN_PROBALSHEETNEW) getListByCompcode(compcode string, report_data_type int, per_page int, page int) ([]TQ_FIN_PROBALSHEETNEW, error) {
+func (this *TQ_FIN_PROBALSHEETNEW) getListByCompcode(compcode string, listdate string, report_data_type int, per_page int, page int) ([]TQ_FIN_PROBALSHEETNEW, error) {
 	var sli []TQ_FIN_PROBALSHEETNEW
 
 	builder := this.Db.Select("ENDDATE", "TOTASSET", "TOTLIAB", "RIGHAGGR").From(this.TableName)
@@ -128,6 +127,7 @@ func (this *TQ_FIN_PROBALSHEETNEW) getListByCompcode(compcode string, report_dat
 	}
 	err := builder.Where("COMPCODE=?", compcode).
 		Where("ISVALID=1").
+		//Where("ENDDATE>=?", listdate).
 		Where("REPORTTYPE=?", 3).
 		OrderBy("ENDDATE DESC").
 		Paginate(uint64(page), uint64(per_page)).
@@ -141,15 +141,8 @@ func (this *TQ_FIN_PROBALSHEETNEW) getListByCompcode(compcode string, report_dat
 
 //------------------------------------------------------------------------------
 
-func (this *TQ_FIN_PROBALSHEETNEW) GetList(sid int, report_data_type int, per_page int, page int) ([]TQ_FIN_PROBALSHEETNEW, error) {
-
-	sc := finchina.NewTQ_OA_STCODE()
-	if err := sc.GetCompcode(sid); err != nil {
-		logging.Error("%T GetList error: %s", *this, err)
-		return nil, err
-	}
-
-	return this.getListByCompcode(sc.COMPCODE.String, report_data_type, per_page, page)
+func (this *TQ_FIN_PROBALSHEETNEW) GetList(compcode string, listdate string, report_data_type int, per_page int, page int) ([]TQ_FIN_PROBALSHEETNEW, error) {
+	return this.getListByCompcode(compcode, listdate, report_data_type, per_page, page)
 }
 
 //--------------------------------------------------------------------------------

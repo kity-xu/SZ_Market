@@ -3,6 +3,7 @@ package kline
 import (
 	"ProtocolBuffer/projects/hqpublish/go/protocol"
 	"strconv"
+	"sync"
 	"time"
 
 	"haina.com/market/hqpublish/models/publish"
@@ -15,22 +16,29 @@ var (
 	Trade_200 int32 = 0
 )
 
+var once sync.Once
+
 func init() {
+	once.Do(Timer)
+}
+
+func Timer() {
 	go func() {
 		t1 := time.NewTimer(time.Minute * 5)
 		for {
 			//f()
 			now := time.Now()
 			ntime, _ := strconv.Atoi(now.Format("20060102"))
-			Trade_100 = 0
-			Trade_200 = 0
 
 			if 800 < ntime%10000 && ntime%10000 < 1000 { // 8:00 < ntime < 9:00
 				<-t1.C
 				t1.Reset(time.Minute * 5)
+				Trade_100 = 0
+				Trade_200 = 0
 			}
-			//// 计算下一个零点
-			//next := now.Add(time.Hour * 1)
+			// 计算下一个零点
+			//now := time.Now()
+			//next := now.Add(time.Minute * 30)
 			//next = time.Date(next.Year(), next.Month(), next.Day(), next.Hour(), 0, 0, 0, next.Location())
 			//t := time.NewTimer(next.Sub(now))
 			//<-t.C
@@ -53,13 +61,12 @@ func initMarketTradeDate() {
 		return
 	}
 	for _, v := range mlist.MSList {
-		if v.NMarket == 100000000 {
-			Trade_100 = v.NTradeDate
-		}
-		if v.NMarket == 200000000 {
-			Trade_200 = v.NTradeDate
+		if v.NTradeDate != 0 {
+			Trade_200, Trade_100 = v.NTradeDate, v.NTradeDate
 		}
 	}
+	logging.Info("---------------Trade_100:%v", Trade_100)
+	logging.Info("---------------Trade_100:%v", Trade_200)
 }
 
 //市场状态获取当前交易日

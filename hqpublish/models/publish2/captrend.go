@@ -330,11 +330,14 @@ func formartCapTrend(funds *[]*PeriodCapFlow, sid int32, ntype int32) *[]*Period
 	}
 
 	cap, _ := CapFlowToday(sid)
+	today_NetFlowin := float64(cap.LlHugeBuyValue+cap.LlBigBuyValue-cap.LlBigSellValue-cap.LlHugeSellValue) / 10000
+	today_HugeFlowin := float64(cap.LlHugeBuyValue-cap.LlHugeSellValue) / 10000
+	today_BigFlowin := float64(cap.LlBigBuyValue-cap.LlBigSellValue) / 10000
 	switch ntype {
 	case 1:
-		captoday.NetFlowin = float64(cap.LlValueOfInFlow) / 10000
-		captoday.HugeFlowin = float64(cap.LlHugeBuyValue) / 10000
-		captoday.BigFlowin = float64(cap.LlBigBuyValue) / 10000
+		captoday.NetFlowin = today_NetFlowin
+		captoday.HugeFlowin = today_HugeFlowin
+		captoday.BigFlowin = today_BigFlowin
 		*funds = append(*funds, captoday)
 	case 2:
 		if last.TradeDate < kline.Trade_100 {
@@ -342,30 +345,30 @@ func formartCapTrend(funds *[]*PeriodCapFlow, sid int32, ntype int32) *[]*Period
 			b2, _ := DateAdd(captoday.TradeDate)
 
 			if !b1.Equal(b2) { //不同属一周（周一）新建
-				captoday.NetFlowin = float64(cap.LlValueOfInFlow) / 10000
-				captoday.HugeFlowin = float64(cap.LlHugeBuyValue) / 10000
-				captoday.BigFlowin = float64(cap.LlBigBuyValue) / 10000
+				captoday.NetFlowin = today_NetFlowin
+				captoday.HugeFlowin = today_HugeFlowin
+				captoday.BigFlowin = today_BigFlowin
 				*funds = append(*funds, captoday)
 			} else { //同属一周，更新最后一根
 				last.TradeDate = captoday.TradeDate
-				last.NetFlowin += float64(cap.LlValueOfInFlow) / 10000
-				last.HugeFlowin += float64(cap.LlHugeBuyValue) / 10000
-				last.BigFlowin += float64(cap.LlBigBuyValue) / 10000
+				last.NetFlowin += today_NetFlowin
+				last.HugeFlowin += today_HugeFlowin
+				last.BigFlowin += today_BigFlowin
 				(*funds)[len(*funds)-1] = last
 			}
 		}
 	case 3:
 		if last.TradeDate < kline.Trade_100 {
 			if last.TradeDate/100 != captoday.TradeDate/100 { //不同月
-				captoday.NetFlowin = float64(cap.LlValueOfInFlow) / 10000
-				captoday.HugeFlowin = float64(cap.LlHugeBuyValue) / 10000
-				captoday.BigFlowin = float64(cap.LlBigBuyValue) / 10000
+				captoday.NetFlowin = today_NetFlowin
+				captoday.HugeFlowin = today_HugeFlowin
+				captoday.BigFlowin = today_BigFlowin
 				*funds = append(*funds, captoday)
 			} else {
 				last.TradeDate = captoday.TradeDate
-				last.NetFlowin += float64(cap.LlValueOfInFlow) / 10000
-				last.HugeFlowin += float64(cap.LlHugeBuyValue) / 10000
-				last.BigFlowin += float64(cap.LlBigBuyValue) / 10000
+				last.NetFlowin += today_NetFlowin
+				last.HugeFlowin += today_HugeFlowin
+				last.BigFlowin += today_BigFlowin
 				(*funds)[len(*funds)-1] = last
 			}
 		}

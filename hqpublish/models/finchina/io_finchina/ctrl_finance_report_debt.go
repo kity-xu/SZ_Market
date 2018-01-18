@@ -10,8 +10,8 @@ func NewLiabilities() *Liabilities {
 	return &Liabilities{}
 }
 
-func (this *Liabilities) GetList(sid int, report_type int, per_page int, page int) ([]Liabilities, error) {
-	return NewFinChinaLiabilities().getLiabilitiesList(sid, report_type, per_page, page)
+func (this *Liabilities) GetList(compcode string, listdate string, report_type int, per_page int, page int) ([]Liabilities, error) {
+	return NewFinChinaLiabilities().getLiabilitiesList(compcode, listdate, report_type, per_page, page)
 }
 
 //------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ func NewFinChinaLiabilities() *FinChinaLiabilities {
 	return &FinChinaLiabilities{}
 }
 
-func (this *FinChinaLiabilities) getLiabilitiesList(sid int, report_data_type int, per_page int, page int) ([]Liabilities, error) {
+func (this *FinChinaLiabilities) getLiabilitiesList(compcode string, listdate string, report_data_type int, per_page int, page int) ([]Liabilities, error) {
 	var (
 		slidb []TQ_FIN_PROBALSHEETNEW
 		len1  int
@@ -32,7 +32,7 @@ func (this *FinChinaLiabilities) getLiabilitiesList(sid int, report_data_type in
 	)
 	sli := make([]Liabilities, 0, per_page)
 
-	slidb, err = NewTQ_FIN_PROBALSHEETNEW().GetList(sid, report_data_type, per_page, page)
+	slidb, err = NewTQ_FIN_PROBALSHEETNEW().GetList(compcode, listdate, report_data_type, per_page, page)
 	if err != nil {
 		return nil, err
 	}

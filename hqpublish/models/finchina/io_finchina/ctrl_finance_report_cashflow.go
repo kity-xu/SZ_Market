@@ -10,8 +10,8 @@ func NewCashflow() *Cashflow {
 	return &Cashflow{}
 }
 
-func (this *Cashflow) GetList(sid int, report_data_type int, per_page int, page int) ([]Cashflow, error) {
-	return NewFinChinaCashflow().getCashflowList(sid, report_data_type, per_page, page)
+func (this *Cashflow) GetList(compocode string, listdate string, report_data_type int, per_page int, page int) ([]Cashflow, error) {
+	return NewFinChinaCashflow().getCashflowList(compocode, listdate, report_data_type, per_page, page)
 }
 
 //------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ func NewFinChinaCashflow() *FinChinaCashflow {
 	return &FinChinaCashflow{}
 }
 
-func (this *FinChinaCashflow) getCashflowList(sid int, report_data_type int, per_page int, page int) ([]Cashflow, error) {
+func (this *FinChinaCashflow) getCashflowList(compcode string, listdate string, report_data_type int, per_page int, page int) ([]Cashflow, error) {
 	var (
 		slidb []TQ_FIN_PROCFSTATEMENTNEW
 		len1  int
@@ -31,7 +31,7 @@ func (this *FinChinaCashflow) getCashflowList(sid int, report_data_type int, per
 	)
 	sli := make([]Cashflow, 0, per_page)
 
-	slidb, err = NewTQ_FIN_PROCFSTATEMENTNEW().GetList(sid, report_data_type, per_page, page)
+	slidb, err = NewTQ_FIN_PROCFSTATEMENTNEW().GetList(compcode, listdate, report_data_type, per_page, page)
 	if err != nil {
 		return nil, err
 	}

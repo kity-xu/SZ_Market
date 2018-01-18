@@ -90,39 +90,22 @@ func maybeAddMonthLine(reply *[]*protocol.KInfo, Sid int32, e error) error {
 	kinfo = *(*reply)[len(*reply)-1]
 
 	lday := kinfo.NTime
-	today := models.GetCurrentTime()
-	if kinfo.NSID/1000000 == 100 {
-		if lday < Trade_100 { //是交易日
-			if kinfo.NTime/100 != today/100 { //不同月
-				kinfo.NTime = today
-				kinfo.NPreCPx = kinfo.NLastPx
-				kinfo.NOpenPx = kinfo.NLastPx
-				kinfo.NHighPx = kinfo.NLastPx
-				kinfo.NLowPx = kinfo.NLastPx
-				kinfo.NLastPx = kinfo.NLastPx
-				kinfo.LlValue = 0
-				kinfo.LlVolume = 0
-				kinfo.NAvgPx = 1
-				*reply = append(*reply, &kinfo)
-			}
+
+	if lday < Trade_100 { //是交易日
+		if kinfo.NTime/100 != Trade_100/100 { //不同月
+			kinfo.NTime = Trade_100
+			kinfo.NPreCPx = kinfo.NLastPx
+			kinfo.NOpenPx = kinfo.NLastPx
+			kinfo.NHighPx = kinfo.NLastPx
+			kinfo.NLowPx = kinfo.NLastPx
+			kinfo.NLastPx = kinfo.NLastPx
+			kinfo.LlValue = 0
+			kinfo.LlVolume = 0
+			kinfo.NAvgPx = 1
+			*reply = append(*reply, &kinfo)
+		} else {
+			(*reply)[len(*reply)-1].NTime = Trade_100
 		}
-	} else if kinfo.NSID/1000000 == 200 {
-		if lday < Trade_200 {
-			if kinfo.NTime/100 != today/100 { //不同月
-				kinfo.NTime = today
-				kinfo.NPreCPx = kinfo.NLastPx
-				kinfo.NOpenPx = kinfo.NLastPx
-				kinfo.NHighPx = kinfo.NLastPx
-				kinfo.NLowPx = kinfo.NLastPx
-				kinfo.NLastPx = kinfo.NLastPx
-				kinfo.LlValue = 0
-				kinfo.LlVolume = 0
-				kinfo.NAvgPx = 1
-				*reply = append(*reply, &kinfo)
-			}
-		}
-	} else {
-		return fmt.Errorf("Invalid NSID...")
 	}
 	return nil
 }
