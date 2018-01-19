@@ -143,7 +143,7 @@ func F10Mobile(sid int) (*F10MobileTerminal, error) {
 		}
 
 		if strings.Contains(v.CLASSNAME.String, "其他") {
-			other.KeyName = "其他业务"
+			other.KeyName = v.CLASSNAME.String
 			other.Value = v.TCOREBIZINCOME.Float64
 			other.Ratio = v.COREBIZINCRTO.Float64
 			isother = true
@@ -152,22 +152,26 @@ func F10Mobile(sid int) (*F10MobileTerminal, error) {
 		if i > 4 {
 			vlue += v.TCOREBIZINCOME.Float64
 			ratio += v.COREBIZINCRTO.Float64
+		} else {
+			var kv BusiinfoKeyValue
+			kv.KeyName = v.CLASSNAME.String
+			kv.Value = v.TCOREBIZINCOME.Float64
+			kv.Ratio = v.COREBIZINCRTO.Float64
+			busil = append(busil, &kv)
 		}
-
-		var kv BusiinfoKeyValue
-		kv.KeyName = v.CLASSNAME.String
-		kv.Value = v.TCOREBIZINCOME.Float64
-		kv.Ratio = v.COREBIZINCRTO.Float64
-		busil = append(busil, &kv)
 	}
 
-	if isother {
+	if isother { //如果有"其他"这个tag, 加进去不再做其他处理
 		busil = append(busil, &other)
-	}
-	if len(busil) > 5 {
-		busil[5].KeyName = "其他"
-		busil[5].Value = vlue
-		busil[5].Ratio = ratio
+	} else { //如果没有， busil
+		if len(busil) < len(busilist) {
+			one := BusiinfoKeyValue{
+				KeyName: "其他",
+				Value:   vlue,
+				Ratio:   ratio,
+			}
+			busil = append(busil, &one)
+		}
 	}
 
 	t1 := F10_Compinfo{

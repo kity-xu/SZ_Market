@@ -19,7 +19,7 @@ func Update(cfg *config.AppConfig) {
 	var sids *[]int32
 	var err error
 
-	if os.Args[2] == "-of" {
+	if len(os.Args) == 3 && os.Args[2] == "-of" {
 		os.Args[2] = "-o"
 		sids = GetAllSids(cfg.File.Finpath)
 		logging.Info("start sids all by walk dir... len:%v", len(*sids))
@@ -122,8 +122,8 @@ func Update(cfg *config.AppConfig) {
 // 第一次执行时遍历所有曾上市的股票id，
 // 因为当前快照 sid < 所有曾上市的sid
 //获取指定目录下的所有目录，不进入下一级目录搜索。
-func ListDir(dirPth string) (dirs []int32, err error) {
-	dirs = make([]int32, 0, 1000)
+func ListDir(dirPth string) ([]int32, error) {
+	dirs := make([]int32, 0, 1000)
 	dir, err := ioutil.ReadDir(dirPth)
 	if err != nil {
 		return nil, err

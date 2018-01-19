@@ -137,16 +137,16 @@ func (this *FinanceChart) jsonProcess(c *gin.Context, sid int, count int) {
 	}
 
 	if actual < count {
-		this.rigger(ls, actual)
+		this.rigger(sc, ls, actual)
 	} else {
-		this.rigger(ls, count)
+		this.rigger(sc, ls, count)
 	}
 	finish = true
 
 	lib.WriteString(c, 200, this)
 }
 
-func (this *FinanceChart) rigger(sc finchina.TQ_OA_STCODE, ls []io_finchina.Profits, count int) *FinanceChart {
+func (this *FinanceChart) rigger(sc *finchina.TQ_OA_STCODE, ls []io_finchina.Profits, count int) *FinanceChart {
 	//logging.Debug("rigger len %v, count %v", len(ls), count)
 
 	this.EPS = make([]*NodeEPS, 0, count)

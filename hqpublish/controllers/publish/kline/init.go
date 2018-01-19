@@ -26,15 +26,18 @@ func Timer() {
 	go func() {
 		t1 := time.NewTimer(time.Minute * 5)
 		for {
-			//f()
 			now := time.Now()
-			ntime, _ := strconv.Atoi(now.Format("20060102"))
-
-			if 800 < ntime%10000 && ntime%10000 < 1000 { // 8:00 < ntime < 9:00
+			ntime, _ := strconv.Atoi(now.Format("200601021504")[8:])
+			if 800 < ntime && ntime < 1000 { // 8:00 < ntime < 10:00
+				select {
+				case <-t1.C:
+					t1.Reset(time.Minute * 5)
+					Trade_100 = 0
+					Trade_200 = 0
+				}
+			} else {
 				<-t1.C
-				t1.Reset(time.Minute * 5)
-				Trade_100 = 0
-				Trade_200 = 0
+				t1.Reset(time.Minute * 30)
 			}
 			// 计算下一个零点
 			//now := time.Now()
@@ -65,8 +68,8 @@ func initMarketTradeDate() {
 			Trade_200, Trade_100 = v.NTradeDate, v.NTradeDate
 		}
 	}
-	logging.Info("---------------Trade_100:%v", Trade_100)
-	logging.Info("---------------Trade_100:%v", Trade_200)
+	//logging.Info("---------------Trade_100:%v", Trade_100)
+	//logging.Info("---------------Trade_100:%v", Trade_200)
 }
 
 //市场状态获取当前交易日
