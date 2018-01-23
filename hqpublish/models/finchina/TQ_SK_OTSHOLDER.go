@@ -83,7 +83,7 @@ func (this *TQ_SK_OTSHOLDER) GetOtshTop10L(scode string, limit int32, enddate in
 		}
 		return data, err
 	} else {
-		bulid := this.Db.Select("SHHOLDERCODE, SHHOLDERNAME, HOLDERAMT, RANK, PCTOFFLOTSHARES, ENDDATE, HOLDERSUMCHG").
+		bulid := this.Db.Select("SHHOLDERCODE, SHHOLDERNAME, HOLDERAMT, RANK, PCTOFFLOTSHARES, ENDDATE, HOLDERSUMCHG, ISHIS").
 			From(this.TableName).
 			Where(fmt.Sprintf("COMPCODE ='%v'", scode)).
 			Where("ISVALID='1'").

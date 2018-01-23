@@ -64,19 +64,18 @@ func GetF10Company(scode int) (*Compinfo, error) {
 	if err := sc.GetCompcode(scode); err != nil {
 		return nil, err
 	}
-	compcode := sc.COMPCODE.String
 
 	comp := finchina.NewCompInfo()
-	cinfo, err := comp.GetCompInfo(compcode) // 查询公司资料
+	cinfo, err := comp.GetCompInfo(sc.COMPCODE.String) // 查询公司资料
 	if err != nil {
 		return nil, err
 	}
-	industry, err := comp.GetCompTrade(compcode) // 查询行业
+	industry, err := comp.GetCompTrade(sc.COMPCODE.String) // 查询行业
 	if err != nil {
 		return nil, err
 	}
 	// 查询上市日期 总股本
-	securdate, err := finchina.NewSecurityInfo().GetSecurityBasicInfo(compcode)
+	securdate, err := finchina.NewSecurityInfo().GetSecurityBasicInfo(sc.SECODE.String)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +85,7 @@ func GetF10Company(scode int) (*Compinfo, error) {
 		return nil, err
 	}
 	// 主营收入构成
-	busilist, err := finchina.NewTQ_SK_BUSIINFO().GetBusiInfo(compcode)
+	busilist, err := finchina.NewTQ_SK_BUSIINFO().GetBusiInfo(sc.COMPCODE.String)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +104,7 @@ func GetF10Company(scode int) (*Compinfo, error) {
 	// 查询高管信息
 
 	manage := finchina.NewTQ_COMP_MANAGER()
-	mangdate, err := manage.GetManagersFromFC(compcode)
+	mangdate, err := manage.GetManagersFromFC(sc.COMPCODE.String)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +147,7 @@ func GetF10Company(scode int) (*Compinfo, error) {
 		ld = append(ld, &l)
 	}
 	// 查询发行价格和数量
-	ail, err := finchina.NewTQ_SK_ALLISSUE().GetAllissueL(compcode)
+	ail, err := finchina.NewTQ_SK_ALLISSUE().GetAllissueL(sc.COMPCODE.String)
 	if err != nil {
 		logging.Debug("%v", err.Error())
 		return nil, err

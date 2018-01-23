@@ -104,7 +104,7 @@ func (this *TQ_SK_SHAREHOLDER) GetSharBaseL(comcode string, limit int32, enddate
 
 		return shar, err
 	}
-	Bulid := this.Db.Select("SHHOLDERCODE, SHHOLDERNAME, RANK, HOLDERAMT, HOLDERRTO, CURCHG, ENDDATE").
+	Bulid := this.Db.Select("SHHOLDERCODE, SHHOLDERNAME, RANK, HOLDERAMT, HOLDERRTO, CURCHG, ENDDATE, ISHIS").
 		From(this.TableName).
 		Where(fmt.Sprintf("COMPCODE ='%v'", comcode)).
 		Where(fmt.Sprintf("ENDDATE='%v'", enddate)).

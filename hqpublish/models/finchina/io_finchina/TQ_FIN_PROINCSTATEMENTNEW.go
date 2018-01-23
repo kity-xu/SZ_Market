@@ -54,9 +54,10 @@ import (
 type TQ_FIN_PROINCSTATEMENTNEW struct {
 	Model `db:"-"`
 
-	ENDDATE    dbr.NullString  //Date 	放置本次财报的截止日期
-	BASICEPS   dbr.NullFloat64 //EPS		基本每股收益
-	NETPROFIT  dbr.NullFloat64 //NtIn		净利润
+	ENDDATE  dbr.NullString  //Date 	放置本次财报的截止日期
+	BASICEPS dbr.NullFloat64 //EPS		基本每股收益
+	//NETPROFIT  dbr.NullFloat64 //NtIn		净利润
+	PARENETP   dbr.NullFloat64 //归属母公司所有者净利润
 	BIZTOTINCO dbr.NullFloat64 //TOpR		营业总收入
 
 	BIZINCO   dbr.NullFloat64 //OpRe		营业收入
@@ -76,7 +77,7 @@ func NewTQ_FIN_PROINCSTATEMENTNEW() *TQ_FIN_PROINCSTATEMENTNEW {
 func (this *TQ_FIN_PROINCSTATEMENTNEW) getListByCompcode(compcode string, listdate string, report_data_type int, per_page int, page int) ([]TQ_FIN_PROINCSTATEMENTNEW, error) {
 
 	var sli []TQ_FIN_PROINCSTATEMENTNEW
-	builder := this.Db.Select("ENDDATE", "BASICEPS", "NETPROFIT", "BIZTOTINCO", "BIZINCO", "PERPROFIT").From(this.TableName)
+	builder := this.Db.Select("ENDDATE", "BASICEPS", "PARENETP", "BIZTOTINCO", "BIZINCO", "PERPROFIT").From(this.TableName)
 	if report_data_type != 0 {
 		builder.Where("REPORTDATETYPE=?", report_data_type)
 	}

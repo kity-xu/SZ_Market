@@ -165,7 +165,7 @@ func (this *FinanceChart) rigger(sc *finchina.TQ_OA_STCODE, ls []io_finchina.Pro
 		}
 		netprofit := &NodeNetprofit{
 			Date:      ls[i].ENDDATE.String,
-			Netprofit: ls[i].NETPROFIT.Float64,
+			Netprofit: ls[i].PARENETP.Float64,
 		}
 
 		if i+4 < len(ls) && len(ls[i].ENDDATE.String) > 7 && len(ls[i+4].ENDDATE.String) > 7 {
@@ -189,8 +189,8 @@ func (this *FinanceChart) rigger(sc *finchina.TQ_OA_STCODE, ls []io_finchina.Pro
 				if b.BIZTOTINCO.Float64 != 0 {
 					income.Rate = (a.BIZTOTINCO.Float64 - b.BIZTOTINCO.Float64) / b.BIZTOTINCO.Float64
 				}
-				if b.NETPROFIT.Float64 != 0 {
-					netprofit.Rate = (a.NETPROFIT.Float64 - b.NETPROFIT.Float64) / b.NETPROFIT.Float64
+				if b.PARENETP.Float64 != 0 {
+					netprofit.Rate = (a.PARENETP.Float64 - b.PARENETP.Float64) / b.PARENETP.Float64
 				}
 
 				listdate, _ := strconv.Atoi(binfo.LISTDATE.String)

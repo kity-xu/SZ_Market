@@ -261,7 +261,7 @@ func (this *FinanceReport) rigger(ls []io_finchina.Profits, ls_debt []io_finchin
 				Date:      ls[i].ENDDATE.String,
 				OpRe:      ls[i].BIZINCO.Float64,   // 营业收入
 				OpPr:      ls[i].PERPROFIT.Float64, // 营业利润
-				NetProfit: ls[i].NETPROFIT.Float64, // 净利润
+				NetProfit: ls[i].PARENETP.Float64,  // 净利润
 			},
 			Debt: DebtTable{
 				Date:  ls_debt[i].ENDDATE.String,
@@ -295,8 +295,8 @@ func (this *FinanceReport) rigger(ls []io_finchina.Profits, ls_debt []io_finchin
 				if b.PERPROFIT.Float64 != 0 {
 					node.Profit.OpPrRate = (a.PERPROFIT.Float64 - b.PERPROFIT.Float64) / b.PERPROFIT.Float64
 				}
-				if b.NETPROFIT.Float64 != 0 {
-					node.Profit.NetRate = (a.NETPROFIT.Float64 - b.NETPROFIT.Float64) / b.NETPROFIT.Float64
+				if b.PARENETP.Float64 != 0 {
+					node.Profit.NetRate = (a.PARENETP.Float64 - b.PARENETP.Float64) / b.PARENETP.Float64
 				}
 			} /* else {
 				logging.Debug("%v %s - %v %s no pass", ayear, amonth, byear, bmonth)
