@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration version="1.0">
+    <appSettings>
+        <allowOrigin></allowOrigin>
+        <encryFactor>#s!1*:-)</encryFactor>
+        <!--
+        *
+        * You can load different configurations depending on your
+        * current environment. Setting the environment also influences
+        * things like logging and error reporting.
+        *
+        * This can be set to anything, but default usage is:
+        *
+        *     development
+        *     testing
+        *     production
+        *
+        -->
+        <environment>development</environment>
+        <listen>:85</listen>
+    </appSettings>
+     <listenAndServe>
+        <port>:9990</port>
+        <logport>:7211</logport>
+    </listenAndServe>
+    <emailSetting>
+        <addr>notification@mail.haina.com</addr>
+        <password>18fde39228634fb9</password>
+        <server>smtpdm.aliyun.com</server>
+        <port>25</port>
+    </emailSetting>
+    <session>
+        <on>0</on>
+        <providerName>redis</providerName>
+        <config>
+        {
+            "cookieName": "haina_session",
+            "enableSetCookie":true,
+            "gclifetime": 3600,
+            "ProviderConfig": "192.168.18.200:6379,100,8dc40c2c4598ae5a",
+            "domain": ".haina.com",
+            "loginUrl": "/user/signin"
+        }
+        </config>
+    </session>
+    <database>
+        <driverName>mysql</driverName>
+		<dataSource>f10_user:907fd7f123adcedd26a1bf537268f492@tcp(103.235.250.86:3306)/finchina?charset=utf8</dataSource>
+        <!--<dataSource>publisher:Haina$A7Kha@tcp(123.56.30.141:3306)/finchinafcdd?charset=utf8</dataSource>-->
+    </database>
+	<database1>
+        <driverName>mysql</driverName>
+        <dataSource>inver:ParX2YzB2Z2BhNnb@tcp(47.94.16.69:3306)/sziachina?charset=utf8</dataSource>
+    </database1>
+    <redisStore>
+		<addr>47.94.109.175:61380</addr>
+        <auth>8dc40c2c4598ae5a</auth>
+        <db>0</db>
+        <timeout>3</timeout> 
+    </redisStore>
+	<redisCache>
+		<addr>47.94.16.69:61380</addr>
+        <auth>8dc40c2c4598ae5a</auth>
+        <db>0</db>
+        <timeout>5</timeout> 
+    </redisCache>
+</configuration>
