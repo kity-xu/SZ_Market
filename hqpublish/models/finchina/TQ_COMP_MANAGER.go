@@ -31,11 +31,12 @@ type TQ_COMP_MANAGER struct {
 }
 
 type TQ_COM_PERSONRECORD struct {
-	CNAME        dbr.NullString // 名称
-	BIRTHDAY     dbr.NullString // 出生日期
-	DEGREE       dbr.NullString // 最高学历
-	PERSONALCODE dbr.NullString // 员工唯一码
-	MEMO         dbr.NullString // 高管简介
+	CNAME         dbr.NullString // 名称
+	BIRTHDAY      dbr.NullString // 出生日期
+	DEGREE        dbr.NullString // 最高学历
+	HIGHESTDEGREE dbr.NullString // 最高学位
+	PERSONALCODE  dbr.NullString // 员工唯一码
+	MEMO          dbr.NullString // 高管简介
 
 }
 
@@ -57,8 +58,8 @@ func (this *TQ_COMP_MANAGER) GetManagersFromFC(scode string) ([]TQ_COMP_MANAGER,
 		"NOWSTATUS=?": 2,
 		"ISVALID=?":   1,
 	}
-	builder := this.Db.Select("*").From(this.TableName).Where("DUTYCODE in ('0200299','0200101','0100101') ")
-	_, err := this.SelectWhere(builder, exps).OrderBy("DUTYCODE desc").LoadStructs(&primal)
+	builder := this.Db.Select("*").From(this.TableName).Where("DUTYCODE in ('0200299','0200399','0200101','0200102') ")
+	_, err := this.SelectWhere(builder, exps).OrderBy("DUTYCODE asc").LoadStructs(&primal)
 	if err != nil {
 		logging.Error("%s", err.Error())
 		return primal, err
@@ -69,7 +70,7 @@ func (this *TQ_COMP_MANAGER) GetManagersFromFC(scode string) ([]TQ_COMP_MANAGER,
 
 func (this *TQ_COMP_MANAGER) GetPersonRecordInfo(percode string) ([]*TQ_COM_PERSONRECORD, error) {
 	var cper []*TQ_COM_PERSONRECORD
-	builder := this.Db.Select("CNAME,BIRTHDAY,DEGREE,PERSONALCODE,MEMO").
+	builder := this.Db.Select("CNAME,BIRTHDAY,DEGREE,HIGHESTDEGREE,PERSONALCODE,MEMO").
 		From(TABLE_TQ_COMP_PERSONRECORD).
 		Where(fmt.Sprintf("PERSONALCODE in (%v) ", percode))
 	_, err := this.SelectWhere(builder, nil).

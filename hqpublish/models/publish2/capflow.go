@@ -124,10 +124,9 @@ func (f *Fundflow) getCapflowDays(sid int32, last *protocol.TagTradeScaleStat, c
 		return formartCapdays(funds, last, count)
 	}
 	capdays, err := szdb.NewSZ_HQ_SECURITYFUNDFLOW().GetHisSecurityFlow(count, sid)
-	if len(capdays) == 0 || err != nil {
+	if err != nil {
 		return nil
 	}
-
 	for _, v := range capdays {
 		flow := &protocol.Fund{
 			NTime: v.TRADEDATE,
@@ -135,7 +134,9 @@ func (f *Fundflow) getCapflowDays(sid int32, last *protocol.TagTradeScaleStat, c
 		}
 		funds = append(funds, flow)
 	}
-	SetResToCache(key, &funds)
+	if len(funds) != 0 {
+		SetResToCache(key, &funds)
+	}
 	return formartCapdays(funds, last, count)
 }
 
@@ -145,8 +146,8 @@ func formartCapdays(funds []*protocol.Fund, last *protocol.TagTradeScaleStat, co
 	flow := last.LlBigBuyValue + last.LlHugeBuyValue - last.LlBigSellValue - last.LlHugeSellValue // 主力资金流向
 	if len(funds) != 5 {
 		ReversalArray(funds)
-
 		var tag bool
+
 		for _, v := range funds {
 			if kline.Trade_100 == v.NTime {
 				tag = true

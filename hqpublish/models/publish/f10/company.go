@@ -3,6 +3,7 @@ package f10
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 
 	"time"
@@ -138,7 +139,7 @@ func GetF10Company(scode int) (*Compinfo, error) {
 					continue
 				}
 				l.Age = int32(year - i)
-				l.Education = degreeTransform(k.DEGREE.String)
+				l.Education = degreeTransform(k.DEGREE.String, k.HIGHESTDEGREE.String)
 				l.Duty = v.ACTDUTYNAME.String
 				l.Intro = k.MEMO.String
 				l.BeginDate = v.BEGINDATE.String
@@ -188,7 +189,11 @@ func managersToOnly(primal []finchina.TQ_COMP_MANAGER) []finchina.TQ_COMP_MANAGE
 			swap[v.PERSONALCODE.String] = v //不存在
 		} else { //存在
 			update := swap[v.PERSONALCODE.String]
-			update.ACTDUTYNAME.String = v.ACTDUTYNAME.String + ", " + update.ACTDUTYNAME.String
+			if v.DUTYCODE.String < update.DUTYCODE.String {
+				update.DUTYCODE.String = v.DUTYCODE.String
+			}
+			//logging.Info("%v---%v********%v--%v", v.DUTYCODE.String, update.DUTYCODE.String, v.ACTDUTYNAME.String, update.ACTDUTYNAME.String)
+			update.ACTDUTYNAME.String = update.ACTDUTYNAME.String + ", " + v.ACTDUTYNAME.String + ", "
 			swap[v.PERSONALCODE.String] = update
 		}
 	}
@@ -197,22 +202,61 @@ func managersToOnly(primal []finchina.TQ_COMP_MANAGER) []finchina.TQ_COMP_MANAGE
 		managers = append(managers, v)
 		count++
 	}
-
+	Paixu(managers)
 	return managers
 }
 
 // 学历转换
-func degreeTransform(istr string) string {
+func degreeTransform(istr string, degree string) string {
 	degr := ""
 	switch istr {
 	case "1":
-		degr = "学士"
+		degr = "小学"
 	case "2":
-		degr = "硕士"
+		degr = "初中"
 	case "3":
+		degr = "高中"
+	case "4":
+		degr = "大专"
+	case "5":
+		degr = "本科"
+	case "6":
+		degr = "硕士"
+	case "7":
 		degr = "博士"
+	case "8":
+		degr = "中专"
 	case "99":
-		degr = "其他"
+		switch degree {
+		case "1":
+			degr = "学士"
+		case "2":
+			degr = "硕士"
+		case "3":
+			degr = "博士"
+		case "4":
+			degr = "其他"
+		default:
+			degr = "其他"
+		}
 	}
 	return degr
+}
+
+type fin []finchina.TQ_COMP_MANAGER
+
+func (f fin) Len() int {
+	return len(f)
+}
+
+func (f fin) Less(i, j int) bool {
+	return f[i].DUTYCODE.String < f[j].DUTYCODE.String
+}
+
+func (f fin) Swap(i, j int) {
+	f[i], f[j] = f[j], f[i]
+}
+
+func Paixu(managers []finchina.TQ_COMP_MANAGER) {
+	sort.Sort(fin(managers))
 }
