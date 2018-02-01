@@ -133,12 +133,18 @@ func GetF10Company(scode int) (*Compinfo, error) {
 		for _, k := range person {
 			if v.PERSONALCODE.String == k.PERSONALCODE.String {
 				l.Name = v.CNAME.String
-				i, err := strconv.Atoi(k.BIRTHDAY.String[:4])
-				if err != nil {
-					logging.Error("%v", err)
-					continue
+				if len(k.BIRTHDAY.String) < 5 {
+					i, _ := strconv.Atoi(k.BIRTHDAY.String)
+					l.Age = int32(year - i)
+				} else {
+					i, err := strconv.Atoi(k.BIRTHDAY.String[:4])
+					if err != nil {
+						logging.Error("%v", err)
+						continue
+					}
+					l.Age = int32(year - i)
 				}
-				l.Age = int32(year - i)
+
 				l.Education = degreeTransform(k.DEGREE.String, k.HIGHESTDEGREE.String)
 				l.Duty = v.ACTDUTYNAME.String
 				l.Intro = k.MEMO.String

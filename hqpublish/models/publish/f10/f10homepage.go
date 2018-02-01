@@ -224,7 +224,7 @@ func F10Mobile(sid int) (*F10MobileTerminal, error) {
 	if prottmdate.EPSDILUTEDNEWP.Float64 != 0 {
 		lep = (float64(snapdate.NLastPx / 10000)) / prottmdate.EPSDILUTEDNEWP.Float64
 	} else {
-		lep = -9999
+		lep = 0
 	}
 
 	// 查询资产负债表
