@@ -32,12 +32,24 @@ func (this *TQ_SK_BUSIINFO) GetBusiInfo(scode string) ([]*TQ_SK_BUSIINFO, error)
 	builder := this.Db.Select("CLASSNAME,TCOREBIZINCOME,COREBIZINCRTO ,ENTRYDATE").
 		From(this.TableName).
 		Where(fmt.Sprintf("COMPCODE ='%v'", scode)).
-		Where("typestyle = '2' AND ISVALID ='1'").
+		Where("typestyle = '2' AND ISVALID ='1'"). //按产品取
 		Where(fmt.Sprintf("publishdate  =(select publishdate  FROM tq_sk_busiinfo WHERE COMPCODE ='%v' AND typestyle = '2' AND ISVALID ='1' ORDER BY publishdate DESC LIMIT 1)", scode)).
 		OrderBy("TCOREBIZINCOME DESC")
 
 	_, err := this.SelectWhere(builder, nil).
 		LoadStructs(&info)
+
+	if len(info) == 0 {
+		builder := this.Db.Select("CLASSNAME,TCOREBIZINCOME,COREBIZINCRTO ,ENTRYDATE").
+			From(this.TableName).
+			Where(fmt.Sprintf("COMPCODE ='%v'", scode)).
+			Where("typestyle = '1' AND ISVALID ='1'"). //按行业取
+			Where(fmt.Sprintf("publishdate  =(select publishdate  FROM tq_sk_busiinfo WHERE COMPCODE ='%v' AND typestyle = '1' AND ISVALID ='1' ORDER BY publishdate DESC LIMIT 1)", scode)).
+			OrderBy("TCOREBIZINCOME DESC")
+
+		_, err = this.SelectWhere(builder, nil).
+			LoadStructs(&info)
+	}
 	if err != nil {
 		logging.Error("%s", err.Error())
 		return info, err
