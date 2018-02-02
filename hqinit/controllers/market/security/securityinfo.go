@@ -7,18 +7,18 @@ import (
 	"ProtocolBuffer/projects/hqinit/go/protocol"
 	"bytes"
 	"encoding/binary"
-	"fmt"
+	//"fmt"
 	"strconv"
 	"time"
 
 	"haina.com/market/hqinit/config"
 
-	"github.com/golang/protobuf/proto"
+	//"github.com/golang/protobuf/proto"
 	. "haina.com/market/hqinit/controllers"
 	"haina.com/market/hqinit/models/tb_security"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
-	"haina.com/share/store/redis"
+	//"haina.com/share/store/redis"
 )
 
 type Market struct {
@@ -109,17 +109,17 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 
 		/*********************证券基本信息************************/
 		//转PB
-		data, err := proto.Marshal(&single)
-		if err != nil {
-			logging.Error("Encode protocbuf of week Line error...%v", err.Error())
-			return
-		}
+		//data, err := proto.Marshal(&single)
+		//if err != nil {
+		//	logging.Error("Encode protocbuf of week Line error...%v", err.Error())
+		//	return
+		//}
 
 		//入redis
-		key := fmt.Sprintf(REDISKEY_SECURITY_NAME_ID, single.NSID)
-		if err := redis.Set(key, data); err != nil {
-			logging.Fatal("%v", err)
-		}
+		//key := fmt.Sprintf(REDISKEY_SECURITY_NAME_ID, single.NSID)
+		//if err := redis.Set(key, data); err != nil {
+		//	logging.Fatal("%v", err)
+		//}
 
 		/*************************OVER******************************/
 
@@ -156,29 +156,29 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 	sec_sz.TimeStamp = int32(time.Now().Unix())
 
 	//上海入redis
-	data_sh, err := proto.Marshal(&sec_sh)
-	if err != nil {
-		logging.Error("Encode protocbuf of week Line error...%v", err.Error())
-		return
-	}
+	//data_sh, err := proto.Marshal(&sec_sh)
+	//if err != nil {
+	//	logging.Error("Encode protocbuf of week Line error...%v", err.Error())
+	//	return
+	//}
 	logging.Info("Lengh of SH security table:%v", len(sec_sh.SNList))
 
-	key_sh := fmt.Sprintf(REDISKEY_MARKET_SECURITY_TABLE, sec_sh.MarketID)
-	if err := redis.Set(key_sh, data_sh); err != nil {
-		logging.Fatal("%v", err)
-	}
+	//key_sh := fmt.Sprintf(REDISKEY_MARKET_SECURITY_TABLE, sec_sh.MarketID)
+	//if err := redis.Set(key_sh, data_sh); err != nil {
+	//	logging.Fatal("%v", err)
+	//}
 
 	//深圳入redis
-	data_sz, err := proto.Marshal(&sec_sz)
-	if err != nil {
-		logging.Error("Encode protocbuf of week Line error...%v", err.Error())
-		return
-	}
-	logging.Info("Lengh of SZ security table:%v", len(sec_sz.SNList))
-
-	key_sz := fmt.Sprintf(REDISKEY_MARKET_SECURITY_TABLE, sec_sz.MarketID)
-	if err := redis.Set(key_sz, data_sz); err != nil {
-		logging.Fatal("%v", err)
-	}
+	//data_sz, err := proto.Marshal(&sec_sz)
+	//if err != nil {
+	//	logging.Error("Encode protocbuf of week Line error...%v", err.Error())
+	//	return
+	//}
+	//logging.Info("Lengh of SZ security table:%v", len(sec_sz.SNList))
+	//
+	//key_sz := fmt.Sprintf(REDISKEY_MARKET_SECURITY_TABLE, sec_sz.MarketID)
+	//if err := redis.Set(key_sz, data_sz); err != nil {
+	//	logging.Fatal("%v", err)
+	//}
 
 }

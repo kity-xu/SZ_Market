@@ -2,12 +2,12 @@
 package security
 
 import (
-	"strconv"
+	//"strconv"
 
-	. "haina.com/market/hqinit/controllers"
+	//. "haina.com/market/hqinit/controllers"
 
 	"haina.com/market/hqinit/models/tb_security"
-	"haina.com/share/store/redis"
+	//"haina.com/share/store/redis"
 )
 
 func getSecurityTable() *[]*tb_security.SecurityCode {
@@ -15,9 +15,9 @@ func getSecurityTable() *[]*tb_security.SecurityCode {
 }
 
 func UpdateSecurityCodeTable() {
-	sids := getSecurityTable()
-	redis.Del(REDISKEY_SECURITY_NSID_TABLE)
-	for _, sid := range *sids {
-		redis.Lpush(REDISKEY_SECURITY_NSID_TABLE, []byte(strconv.Itoa(int(sid.SID))))
-	}
+	//sids := getSecurityTable()
+	//redis.Del(REDISKEY_SECURITY_NSID_TABLE)
+	//for _, sid := range *sids {
+	//	redis.Lpush(REDISKEY_SECURITY_NSID_TABLE, []byte(strconv.Itoa(int(sid.SID))))
+	//}
 }
