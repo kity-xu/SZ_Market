@@ -49,7 +49,7 @@
     </database>
 	<mysqldatabase>
         <mysqldriverName>mysql</mysqldriverName>
-        <mysqldataSource>finchina:finchina@tcp(114.55.105.11:3306)/finchina?charset=utf8</mysqldataSource>
+        <mysqldataSource>finchina:finchina@tcp(103.235.250.86:3306)/finchina?charset=utf8</mysqldataSource>
    	     <!--<mysqldataSource>finchina:finchina@tcp(172.16.1.60:3306)/finchina?charset=utf8</mysqldataSource>-->
 	</mysqldatabase>
 	<mongoStore>
@@ -75,6 +75,8 @@
 		<!--<indexComponentPath>/opt/develop/hgs/filestore/security/indexcomponent.xml</indexComponentPath>-->
 		<!--生成板块信息 xml文件 -->
 		<securitiesplate>E:/hqfile/securitiesplate.xml</securitiesplate>
+        <!--生成静态数据xml文件 -->
+        <securitystatic>E:/hqfile/securitystatic.xml</securitystatic>
 		<!--<securitiesplate>/opt/develop/hgs/filestore/security/securitiesplate.xml</securitiesplate>-->
 		<!--沪深行情文件 -->
 		<sjsxxdbfpath>E:/hqfile/20170613/sz/sjsxx.dbf</sjsxxdbfpath>

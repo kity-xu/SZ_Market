@@ -13,8 +13,8 @@ func Update(cfg *config.AppConfig) {
 	/*********************开始时间************************/
 	start := time.Now()
 
-	//股票代码表
-	security.UpdateSecurityCodeTable()
+	//股票代码表 已废弃
+	//security.UpdateSecurityCodeTable()
 
 	//市场代码表及证券基本数据
 	security.UpdateSecurityTable(cfg)
@@ -30,6 +30,9 @@ func Update(cfg *config.AppConfig) {
 
 	//证券静态数据
 	security.UpdateSecurityStaticInfo(cfg)
+
+	//全市场静态数据 股票指数
+	security.UpdateAllSecurityStatic(cfg)
 
 	end := time.Now()
 	logging.Info("Update Kline historical data successed, and running time:%v", end.Sub(start))

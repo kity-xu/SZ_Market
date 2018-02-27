@@ -17,6 +17,7 @@ type TQ_SK_SHARESTRUCHG struct {
 	CIRCSKRTO  dbr.NullFloat64 `db:"CIRCSKRTO"`  // 流通股合计占总股本比例
 	CIRCSKAMT  dbr.NullFloat64 `db:"CIRCSKAMT"`  // 流通股
 	ENDDATE    dbr.NullString  `db:"ENDDATE"`
+	COMPCODE    dbr.NullString  `db:"COMPCODE"`
 }
 
 func NewTQ_SK_SHARESTRUCHG() *TQ_SK_SHARESTRUCHG {
@@ -38,4 +39,20 @@ func (this *TQ_SK_SHARESTRUCHG) GetSingleInfo(comc string) ([]*TQ_SK_SHARESTRUCH
 		LoadStruct(&tss)
 
 	return tss, err
+}
+
+func (this *TQ_SK_SHARESTRUCHG) GetAllInfo() (map[dbr.NullString]TQ_SK_SHARESTRUCHG, error) {
+	var tss []TQ_SK_SHARESTRUCHG
+	var tssmap map[dbr.NullString]TQ_SK_SHARESTRUCHG
+	err := this.Db.Select("TOTALSHARE,CIRCAAMT,CIRCBAMT,CIRCHAMT,CIRCSKRTO,CIRCSKAMT,ENDDATE,COMPCODE").From("TQ_SK_SHARESTRUCHG").
+		Where("ID in (select max(ID) from tq_sk_sharestruchg where ISVALID=1 group by COMPCODE)").
+	//	OrderBy("PUBLISHDATE  DESC").
+	//Limit(1).
+		LoadStruct(&tss)
+	//转map
+	tssmap = make(map[dbr.NullString]TQ_SK_SHARESTRUCHG)
+	for _, v := range tss{
+		tssmap[v.COMPCODE] = v
+	}
+	return tssmap, err
 }
