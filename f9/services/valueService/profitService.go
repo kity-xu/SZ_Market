@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strconv"
 
+	"haina.com/market/f9/models/finchina"
 	"haina.com/market/f9/models/valueModel"
 )
 
@@ -31,8 +32,8 @@ type ProfitText1Sort []ProfitText
 type ProfitText2Sort []ProfitText
 
 //盈利能力本文显示
-func GetProfitTextData(ProfitChartText chan string, leng string) (chan string, error) {
-	data, err := valueModel.NewProfit().GetProfitTextData(swlevelcode)
+func GetProfitTextData(ProfitChartText chan string, detail finchina.CompanyDetail, leng string) (chan string, error) {
+	data, err := valueModel.NewProfit().GetProfitTextData(detail.SWLEVEL1CODE)
 
 	text := []ProfitText{}
 	for i := 0; i < len(data)-1; i++ {
@@ -88,7 +89,7 @@ func GetProfitTextData(ProfitChartText chan string, leng string) (chan string, e
 	var FinancialRatios40, FinancialRatios59 float64
 	var textString string
 	for key, val := range text1 {
-		com, _ := strconv.ParseInt(compcode, 10, 64) //转为变量类型为整型 然后进行比较
+		com, _ := strconv.ParseInt(detail.COMPCODE, 10, 64) //转为变量类型为整型 然后进行比较
 		if com == val.COMPCODE {
 			//logging.Info("=====比较获得-key:%v==", key)
 			sort1 = key + 1
@@ -98,7 +99,7 @@ func GetProfitTextData(ProfitChartText chan string, leng string) (chan string, e
 		}
 	}
 	for key, val := range text2 {
-		com, _ := strconv.ParseInt(compcode, 10, 64) //转为变量类型为整型 然后进行比较
+		com, _ := strconv.ParseInt(detail.COMPCODE, 10, 64) //转为变量类型为整型 然后进行比较
 		if com == val.COMPCODE {
 			//logging.Info("=====比较获得-key:%v==", key)
 			sort2 = key + 1
@@ -121,7 +122,7 @@ func GetProfitTextData(ProfitChartText chan string, leng string) (chan string, e
 	//	logging.Info("=====sort1======", sort1)
 	//	logging.Info("=====sort2======", sort2)
 	ProfitChartText <- "最近报告期，公司每股收益为 " + strconv.FormatFloat(FinancialRatios40, 'f', -1, 64) + "，净资产收益率为 " + strconv.FormatFloat(FinancialRatios59, 'f', -1, 64) +
-		"，位居行业" + textString + ",指标分别在" + swlevelname + "行业中排名" + strconv.Itoa(sort1) + "/" + leng + "," + strconv.Itoa(sort2) + "/" + leng
+		"，位居行业" + textString + ",指标分别在" + detail.SWLEVEL1NAME + "行业中排名" + strconv.Itoa(sort1) + "/" + leng + "," + strconv.Itoa(sort2) + "/" + leng
 	return ProfitChartText, err
 }
 

@@ -199,7 +199,7 @@ func managersToOnly(primal []finchina.TQ_COMP_MANAGER) []finchina.TQ_COMP_MANAGE
 				update.DUTYCODE.String = v.DUTYCODE.String
 			}
 			//logging.Info("%v---%v********%v--%v", v.DUTYCODE.String, update.DUTYCODE.String, v.ACTDUTYNAME.String, update.ACTDUTYNAME.String)
-			update.ACTDUTYNAME.String = update.ACTDUTYNAME.String + ", " + v.ACTDUTYNAME.String + ", "
+			update.ACTDUTYNAME.String += ", " + v.ACTDUTYNAME.String
 			swap[v.PERSONALCODE.String] = update
 		}
 	}

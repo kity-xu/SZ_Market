@@ -5,6 +5,8 @@ import (
 	"sort"
 	"strconv"
 
+	"haina.com/market/f9/models/finchina"
+
 	"haina.com/market/f9/models/valueModel"
 )
 
@@ -32,7 +34,7 @@ type growChart struct {
 	Data_bar  float64 `json:"data_bar"`
 }
 
-func GetGrowChartData(leng string) (Grow, error) {
+func GetGrowChartData(leng string, compcode string, detail finchina.CompanyDetail) (Grow, error) {
 	g := []*growChart{}
 	data, err := valueModel.NewGrow().GetGrowChartData(compcode)
 	BIZTOTINCO_tmp := make([]float64, 4)
@@ -187,7 +189,7 @@ func GetGrowChartData(leng string) (Grow, error) {
 	}
 	fmt.Println(S1, "=================", S2)
 	fmt.Println(W, "=================", X)
-	textData, err := valueModel.NewGrow().GetGrowTextData(swlevelcode)
+	textData, err := valueModel.NewGrow().GetGrowTextData(detail.SWLEVEL1CODE)
 	var gd []GrowData
 	for i := 0; i < len(textData)-1; i++ {
 		if textData[i].COMPCODE.Int64 == textData[i+1].COMPCODE.Int64 {
@@ -250,7 +252,7 @@ func GetGrowChartData(leng string) (Grow, error) {
 	fmt.Println("%+v", gd)
 	//logging.Info(BIZTOTINCO[0])u9
 	//logging.Info(PARENETP)
-	var textString string = "最近一年，" + compname + W + "，" + X + "，指标分别在" + swlevelname + "行业排名 " + strconv.Itoa(BIZTOTINCO_key) + "/" + leng + "，" + strconv.Itoa(PARENETP_key) + "/" + leng
+	var textString string = "最近一年，" + detail.SESNAME + W + "，" + X + "，指标分别在" + detail.SWLEVEL1NAME + "行业排名 " + strconv.Itoa(BIZTOTINCO_key) + "/" + leng + "，" + strconv.Itoa(PARENETP_key) + "/" + leng
 
 	var y Grow
 	y.ChartData = g

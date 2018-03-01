@@ -1,7 +1,7 @@
-package companyDetailModel
+package finchina
 
 import (
-	//"niuniu/share/gocraft/dbr"
+	. "haina.com/market/f9/models"
 	"haina.com/share/logging"
 	"haina.com/share/models"
 )
@@ -22,30 +22,32 @@ type CompanyDetail struct {
 func NewCompanyDetail() *CompanyDetail {
 	return &CompanyDetail{
 		Model: models.Model{
-			TableName: "TQ_SK_BASICINFO",
+			TableName: TABLE_TQ_SK_BASICINFO,
 			Db:        models.MyCat,
 		},
 	}
 }
-func (this *CompanyDetail) GetCompanyDetail(symbol string, symboType string) (CompanyDetail, error) {
+
+//获取证券基本信息
+func (this *CompanyDetail) GetCompanyDetail(secode string) (CompanyDetail, error) {
 	var data CompanyDetail
 	exps := map[string]interface{}{
-		"a.SYMBOL=?":   symbol,
-		"a.EXCHANGE=?": symboType,
+		"SECODE=?": secode,
 	}
 
-	builder := this.Db.Select("a.SYMBOL,a.SESNAME,a.TOTALSHARE,a.SWLEVEL1CODE, a.SWLEVEL1NAME, a.COMPCODE,a.EXCHANGE,a.LISTDATE,a.LISTSTATUS").From(this.TableName + " as a").
-		Where("a.ISVALID = 1  and a.SETYPE = 101 and a.LISTSTATUS=1").Limit(1)
+	builder := this.Db.Select("SYMBOL,SESNAME,TOTALSHARE,SWLEVEL1CODE,SWLEVEL1NAME,COMPCODE,EXCHANGE,LISTDATE,LISTSTATUS").
+		From(this.TableName).
+		Where("ISVALID = 1  and SETYPE = 101 and LISTSTATUS=1").Limit(1)
+
 	err := this.SelectWhere(builder, exps).LoadStruct(&data)
 	if err != nil {
 		logging.Debug("%v", err)
-		return data, err
 	}
 	return data, err
 }
 
-//搞行业下的所有公司
-func (this CompanyDetail) GetAllCompany(swlevelcode string) ([]*CompanyDetail, error) {
+//获取该行业下的所有公司
+func (this *CompanyDetail) GetAllCompany(swlevelcode string) ([]*CompanyDetail, error) {
 	var data []*CompanyDetail
 	builder := this.Db.SelectBySql(`select  COMPCODE,EXCHANGE,SYMBOL  from TQ_SK_BASICINFO
               WHERE SWLEVEL1CODE=? and ISVALID = 1 and LISTSTATUS = 1 and SETYPE = 101 and  EXCHANGE in ( '001002' , '001003')`, swlevelcode)
@@ -56,5 +58,4 @@ func (this CompanyDetail) GetAllCompany(swlevelcode string) ([]*CompanyDetail, e
 		return data, err
 	}
 	return data, err
-
 }

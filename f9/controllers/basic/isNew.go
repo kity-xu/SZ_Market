@@ -1,6 +1,7 @@
-package isNew
+package basic
 
 import (
+	. "haina.com/market/f9/controllers"
 	"haina.com/market/f9/services/newService"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
@@ -9,8 +10,12 @@ import (
 )
 
 func GetNewData(c *gin.Context) {
-	scode := c.Query("scode")
-	data, err := newService.GetBigData(scode)
+	sid, err := Param_Norm_Sid(c)
+	if err != nil {
+		lib.WriteString(c, 40002, nil)
+		return
+	}
+	data, err := newService.GetBigData(sid)
 	if err != nil {
 		logging.Info(err.Error())
 	}

@@ -2,85 +2,69 @@ package chipService
 
 import (
 	"math"
+	"strconv"
+
+	"ProtocolBuffer/projects/f9/go/protocol"
 
 	"haina.com/share/logging"
 )
 
 type Trend struct {
-	Trend_price    float64 `json:"chip_price"`
-	Tendency_text  string  `json:"tendency_text"`
-	Tendency_chart []Klist `json:"tendency_chart"`
-	Zcw            float64 `json:"zcw"` //支撑位
-	Zlm            float64 `json:"zlm"` //压力位 阻力位
-	Point          float64 `json:"point"`
-	Point_text     string  `json:"point_text"`
+	Trend_price    float64          `json:"chip_price"`
+	Tendency_text  string           `json:"tendency_text"`
+	Tendency_chart []protocol.KInfo `json:"tendency_chart"`
+	Zcw            float64          `json:"zcw"` //支撑位
+	Zlm            float64          `json:"zlm"` //压力位 阻力位
+	Point          float64          `json:"point"`
+	Point_text     string           `json:"point_text"`
 }
 
-func GetTrendData(scode string) (Trend, error) {
-	//	var klistNow Klist //当日K线
-	//	klistNow.Date = 20171222
-	//	klistNow.NPreCPx = 0
-	//	klistNow.NHighPx = 0
-	//	klistNow.NLastPx = 0
-	//	klistNow.LlVolume = 0
-	//	klistNow.LlValue = 0
-
-	klistNow, _ := getKlineNow() //当日K线
-
-	klistPastAsc, _ := getKlinePast() //历史K线
-
-	var klistPastDesc []Klist
-	for i := len(klistPastAsc) - 1; i >= 0; i-- {
-		logging.Info("k====", i)
-		var kp Klist
-		kp.Date = klistPastAsc[i].NTime
-		kp.NPreCPx = klistPastAsc[i].NPreCPx
-		kp.NOpenPx = klistPastAsc[i].NOpenPx
-		kp.NHighPx = klistPastAsc[i].NHighPx
-		kp.NLastPx = klistPastAsc[i].NLastPx
-		kp.LlVolume = klistPastAsc[i].LlVolume
-		klistPastDesc = append(klistPastDesc, kp)
+func GetTrendData(sid string) (*Trend, error) {
+	SID, _ := strconv.Atoi(sid)
+	klistNow, err := getKlineNow(SID) //当日K线
+	if err != nil {
+		logging.Error("The dayLine is null")
+		return nil, err
 	}
 
-	var klists []Klist //合并后的总K线
+	klistPast, err := getKlinePast(SID) //历史K线
+	if err != nil {
+		logging.Error("The history dayLine is null")
+		return nil, err
+	}
 
-	klists = append(klists, klistNow)
-	klists = append(klists, klistPastDesc...)
+	l := len(*klistPast)
+	var ktable []protocol.KInfo //合并后的总K线
+	if l > 1 && (*klistPast)[l-1].LlVolume == 0 {
+		ktable = append(ktable, (*klistPast)[0:l-2]...)
+	}
 
-	logging.Info("klistPastDesc%+v", klists)
-	var newKlist []Klist
-	for i := 0; i < len(klists); i++ {
-		if klists[i].LlVolume > 0 {
-			var kp Klist
-			kp.Date = klists[i].Date
-			if klists[i].NLastPx > 0 && klists[i].NLastPx/10000 > sumOfFieldByNum(klists, i, i+10, "nLastPx") {
-				kp.Value = 1
-			} else {
-				kp.Value = 0
-			}
-			kp.NPreCPx = klists[i].NPreCPx / 10000
-			kp.NOpenPx = klists[i].NOpenPx / 10000
-			kp.NHighPx = klists[i].NHighPx / 10000
-			kp.NLastPx = klists[i].NLastPx / 10000
-			kp.LlVolume = klists[i].LlVolume
-			kp.LlValue = klists[i].LlValue
-			newKlist = append(newKlist, kp)
+	market, err := GetMarketStatus(100000000)
+	if err != nil {
+		return nil, err
+	}
+	lt := len(ktable)
+	if lt == 0 {
+		ktable = append(ktable, *klistNow)
+	} else {
+		if market.NTradeDate > ktable[lt-1].NTime {
+			ktable = append(ktable, *klistNow) //合并后的总K线
 		}
 	}
-	logging.Info("newKlist%+v", newKlist)
+
 	var public_L, public_M string
 	var n int64
-	if klists[0].NLastPx > 0 && klists[0].NLastPx/10000 > sumOfFieldByNum(klists, 0, 10, "nLastPx") {
+	if ktable[0].NLastPx > 0 && float64(ktable[0].NLastPx/10000) > sumOfFieldByNum(&ktable, 0, 10, "nLastPx") {
 		public_L = "多头"
 	} else {
 		public_L = "空头"
 	}
 
 	var MA5, MA10, MA3, MA3_3 float64
-	MA5 = sumOfFieldByNum(klists, 0, 5, "nLastPx") / 5
-	MA10 = sumOfFieldByNum(klists, 0, 10, "nLastPx") / 10
-	MA3 = sumOfFieldByNum(klists, 0, 3, "nLastPx") / 3
-	MA3_3 = sumOfFieldByNum(klists, 3, 6, "nLastPx") / 3
+	MA5 = sumOfFieldByNum(&ktable, 0, 5, "nLastPx") / 5
+	MA10 = sumOfFieldByNum(&ktable, 0, 10, "nLastPx") / 10
+	MA3 = sumOfFieldByNum(&ktable, 0, 3, "nLastPx") / 3
+	MA3_3 = sumOfFieldByNum(&ktable, 3, 6, "nLastPx") / 3
 	if n == 1 && MA5 >= MA10 && MA3 >= MA3_3 {
 		public_M = "且上涨趋势有所加快，建议强烈关注。"
 	}
@@ -109,33 +93,31 @@ func GetTrendData(scode string) (Trend, error) {
 	var tr Trend
 
 	tr.Tendency_text = "该股" + public_L + "，" + public_M
-	tr.Tendency_chart = newKlist
+	tr.Tendency_chart = ktable
 
 	var boll_11_agv float64 = 0 //计算boll从1到11的之和
 
 	for i := 1; i <= 11; i++ {
-		boll_11_agv = boll_11_agv + boll(klists, i)
+		boll_11_agv = boll_11_agv + boll(ktable, i)
 	}
 	boll_11_agv = boll_11_agv / 11
 
 	var boll_11_nn float64 = 0 //计算平方之和
 
 	for i := 1; i <= 11; i++ {
-		boll_11_nn = boll_11_nn + (boll(klists, i)-boll_11_agv)*(boll(klists, i)-boll_11_agv)
+		boll_11_nn = boll_11_nn + (boll(ktable, i)-boll_11_agv)*(boll(ktable, i)-boll_11_agv)
 	}
 	var standard, pressure_level, support_level, degrees float64
 	var public_R string
 	standard = float64(InvSqrt(float32(boll_11_agv) / 11)) //标准差
-	logging.Info("boll_11_agv====%v", boll_11_agv/11)
-	logging.Info("standard====%v", standard)
-	pressure_level = boll(klists, 0) + 2.1*standard //压力位
-	support_level = boll(klists, 0) - 2.1*standard  //支撑位
-	logging.Info("pressure_level====%v", pressure_level)
-	logging.Info("support_level====%v", support_level)
-	if klists[0].NLastPx == 0 {
+
+	pressure_level = boll(ktable, 0) + 2.1*standard //压力位
+	support_level = boll(ktable, 0) - 2.1*standard  //支撑位
+
+	if ktable[0].NLastPx == 0 {
 		degrees = 30 + 180*((0-support_level)/(pressure_level-support_level)) //指针度数
 	} else {
-		degrees = 30 + 180*(((klists[0].NLastPx/10000)-support_level)/(pressure_level-support_level)) //指针度数
+		degrees = 30 + 180*((float64(ktable[0].NLastPx/10000)-support_level)/(pressure_level-support_level)) //指针度数
 	}
 
 	if degrees <= 30 {
@@ -167,7 +149,7 @@ func GetTrendData(scode string) (Trend, error) {
 	tr.Point = degrees
 	tr.Point_text = public_R
 
-	return tr, nil
+	return &tr, nil
 
 }
 
@@ -182,7 +164,7 @@ func InvSqrt(x float32) float32 {
 	return 1 / x
 }
 
-func boll(Klist []Klist, n int) float64 {
+func boll(Klist []protocol.KInfo, n int) float64 {
 	var MA_CLOSE_n_3, MA_CLOSE_n_6, MA_CLOSE_n_12, MA_CLOSE_n_24 float64
 	MA_CLOSE_n_3 = sumOfFieldByNumBoll(Klist, n, n+3) / 3
 	MA_CLOSE_n_6 = sumOfFieldByNumBoll(Klist, n, n+6) / 6
@@ -190,14 +172,14 @@ func boll(Klist []Klist, n int) float64 {
 	MA_CLOSE_n_24 = sumOfFieldByNumBoll(Klist, n, n+24) / 24
 	return (MA_CLOSE_n_3 + MA_CLOSE_n_6 + MA_CLOSE_n_12 + MA_CLOSE_n_24) / 4
 }
-func sumOfFieldByNumBoll(Klist []Klist, start int, n int) float64 {
+func sumOfFieldByNumBoll(Klist []protocol.KInfo, start int, n int) float64 {
 	if start >= len(Klist) {
 		return 0
 	}
 	var sum float64 = 0
 	for i := start; i < len(Klist); i++ {
 		if i < n {
-			sum = sum + (Klist[i].NLastPx / 10000)
+			sum = sum + float64(Klist[i].NLastPx/10000)
 		} else {
 			break
 		}
