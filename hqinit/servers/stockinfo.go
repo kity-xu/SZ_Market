@@ -92,10 +92,10 @@ func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
 //  处理数据插入mongoDB
 func TreatingData(secNm []*fcm.FcSecuNameTab) {
 
-	bas, err := fcm.NewTQ_SK_BASICINFO().GetNewBasicinfo()
-	if err != nil {
-		logging.Info("查询当日新股error %v", err)
-	}
+	//bas, err := fcm.NewTQ_SK_BASICINFO().GetNewBasicinfo()
+	//if err != nil {
+	//	logging.Info("查询当日新股error %v", err)
+	//}
 	// 查询所有停牌股票
 	ntrdule, err := fcm.NewTQ_OA_NTRDSCHEDULE().GetNtrdsList()
 	if err != nil {
@@ -172,13 +172,13 @@ func TreatingData(secNm []*fcm.FcSecuNameTab) {
 
 		// 如果当日有新股 新股名字加N
 		var syisis = false
-		if len(bas) > 0 {
-			for _, ibas := range bas {
-				if item.SYMBOL.String == ibas.SYMBOL.String {
-					syisis = true
-				}
-			}
-		}
+		//if len(bas) > 0 {
+		//	for _, ibas := range bas {
+		//		if item.SYMBOL.String == ibas.SYMBOL.String {
+		//			syisis = true
+		//		}
+		//	}
+		//}
 		if syisis == true {
 			rsn := []rune(item.SENAME.String)
 			rszs := []rune(item.SESNAME.String)

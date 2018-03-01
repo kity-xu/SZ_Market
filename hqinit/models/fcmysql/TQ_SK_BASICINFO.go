@@ -36,6 +36,21 @@ func (this *TQ_SK_BASICINFO) GetBasicinfoList(symb string) (TQ_SK_BASICINFO, err
 	return tsb, err
 }
 
+// 查询所有证券信息
+func (this *TQ_SK_BASICINFO) GetAllBasicinfoList() (map[dbr.NullString]TQ_SK_BASICINFO, error) {
+	var tsb []TQ_SK_BASICINFO
+	var tsbmap map[dbr.NullString]TQ_SK_BASICINFO
+	err := this.Db.Select("LISTDATE,DELISTDATE,SYMBOL").From("TQ_SK_BASICINFO").
+		Where(" DELISTDATE = '19000101' and SETYPE = '101' and  ISVALID=1").
+		LoadStruct(&tsb)
+	//转map
+	tsbmap = make(map[dbr.NullString]TQ_SK_BASICINFO)
+	for _, v := range tsb{
+		tsbmap[v.SYMBOL] = v
+	}
+	return tsbmap, err
+}
+
 // 查询每天新股
 func (this *TQ_SK_BASICINFO) GetNewBasicinfo() ([]TQ_SK_BASICINFO, error) {
 	var nbsi []TQ_SK_BASICINFO

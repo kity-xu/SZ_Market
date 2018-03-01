@@ -13,6 +13,7 @@ type TQ_FIN_PROINDICDATA struct {
 	UPPS      dbr.NullFloat64 `db:"UPPS"`      // 每股未分配利润
 	CURRENTRT dbr.NullFloat64 `db:"CURRENTRT"` // 流动比率
 	QUICKRT   dbr.NullFloat64 `db:"QUICKRT"`   // 速动比率
+	COMPCODE  dbr.NullString  `db:"COMPCODE"`
 }
 
 func NewTQ_FIN_PROINDICDATA() *TQ_FIN_PROINDICDATA {
@@ -35,4 +36,21 @@ func (this *TQ_FIN_PROINDICDATA) GetSingleInfo(comc string) (TQ_FIN_PROINDICDATA
 		Limit(1).
 		LoadStruct(&tss)
 	return tss, err
+}
+
+// 查询全部公司业绩报表
+func (this *TQ_FIN_PROINDICDATA) GetAllInfo() (map[dbr.NullString]TQ_FIN_PROINDICDATA, error) {
+	var tss []TQ_FIN_PROINDICDATA
+	var tssmap map[dbr.NullString]TQ_FIN_PROINDICDATA
+	err := this.Db.Select("CURRENTRT,QUICKRT,UPPS,COMPCODE").
+		From(this.TableName).
+		Where(" ID in (select max(ID) from finchina.tq_fin_proindicdata where ISVALID=1 and REPORTTYPE=3 group by COMPCODE)").
+		LoadStruct(&tss)
+
+	//转map
+	tssmap = make(map[dbr.NullString]TQ_FIN_PROINDICDATA)
+	for _, v := range tss{
+		tssmap[v.COMPCODE] = v
+	}
+	return tssmap, err
 }

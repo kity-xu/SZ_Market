@@ -39,7 +39,7 @@ func (this *FcSecuNameTab) GetSecuNmList() ([]*FcSecuNameTab, error) {
 	var data []*FcSecuNameTab
 	_, err := this.Db.Select("*").
 		From(this.TableName).
-		Where("EXCHANGE in ('001002','001003') and SETYPE in('101') AND LISTSTATUS =1 and ISVALID =1").
+		Where("EXCHANGE in ('001002','001003') and SETYPE in('101') AND LISTSTATUS in (0,1) and ISVALID =1").
 		OrderBy("SYMBOL").LoadStructs(&data)
 	return data, err
 }

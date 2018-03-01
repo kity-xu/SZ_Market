@@ -11,6 +11,7 @@ import (
 type TQ_SK_SHAREHOLDERNUM struct {
 	Model      `db:"-"`
 	TOTALSHAMT dbr.NullString `db:"TOTALSHAMT"` // 股东总户数
+	COMPCODE  dbr.NullString `db:"COMPCODE"` //
 }
 
 func NewTQ_SK_SHAREHOLDERNUM() *TQ_SK_SHAREHOLDERNUM {
@@ -32,4 +33,22 @@ func (this *TQ_SK_SHAREHOLDERNUM) GetSingleInfo(comc string) (TQ_SK_SHAREHOLDERN
 		Limit(1).
 		LoadStruct(&tss)
 	return tss, err
+}
+
+// 查询所有证券股东信息
+func (this *TQ_SK_SHAREHOLDERNUM) GetAllInfo() (map[dbr.NullString]TQ_SK_SHAREHOLDERNUM, error) {
+	var tss []TQ_SK_SHAREHOLDERNUM
+	var tssmap map[dbr.NullString]TQ_SK_SHAREHOLDERNUM
+	err := this.Db.Select("TOTALSHAMT,COMPCODE").From(this.TableName).
+		Where(" ID in (select max(ID) from tq_sk_shareholdernum where ISVALID=1  group by COMPCODE)").
+		//Where("ISVALID=1").
+		//OrderBy("ENDDATE DESC").
+		//Limit(1).
+		LoadStruct(&tss)
+	//转map
+	tssmap = make(map[dbr.NullString]TQ_SK_SHAREHOLDERNUM)
+	for _, v := range tss{
+		tssmap[v.COMPCODE] = v
+	}
+	return tssmap, err
 }

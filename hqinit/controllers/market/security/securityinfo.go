@@ -7,18 +7,20 @@ import (
 	"ProtocolBuffer/projects/hqinit/go/protocol"
 	"bytes"
 	"encoding/binary"
-	"fmt"
+	//"fmt"
 	"strconv"
 	"time"
 
 	"haina.com/market/hqinit/config"
 
-	"github.com/golang/protobuf/proto"
+	//"github.com/golang/protobuf/proto"
 	. "haina.com/market/hqinit/controllers"
 	"haina.com/market/hqinit/models/tb_security"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
 	"haina.com/share/store/redis"
+	"fmt"
+	"github.com/golang/protobuf/proto"
 )
 
 type Market struct {
@@ -109,17 +111,17 @@ func UpdateSecurityTable(cfg *config.AppConfig) {
 
 		/*********************证券基本信息************************/
 		//转PB
-		data, err := proto.Marshal(&single)
-		if err != nil {
-			logging.Error("Encode protocbuf of week Line error...%v", err.Error())
-			return
-		}
+		//data, err := proto.Marshal(&single)
+		//if err != nil {
+		//	logging.Error("Encode protocbuf of week Line error...%v", err.Error())
+		//	return
+		//}
 
 		//入redis
-		key := fmt.Sprintf(REDISKEY_SECURITY_NAME_ID, single.NSID)
-		if err := redis.Set(key, data); err != nil {
-			logging.Fatal("%v", err)
-		}
+		//key := fmt.Sprintf(REDISKEY_SECURITY_NAME_ID, single.NSID)
+		//if err := redis.Set(key, data); err != nil {
+		//	logging.Fatal("%v", err)
+		//}
 
 		/*************************OVER******************************/
 

@@ -2,13 +2,13 @@
 package security
 
 import (
-	"ProtocolBuffer/projects/hqinit/go/protocol"
+	//"ProtocolBuffer/projects/hqinit/go/protocol"
 	"bytes"
 	"encoding/binary"
-	"fmt"
+	//"fmt"
 	"strconv"
 
-	"github.com/golang/protobuf/proto"
+	//"github.com/golang/protobuf/proto"
 	"haina.com/market/hqinit/config"
 	"haina.com/share/lib"
 
@@ -16,7 +16,7 @@ import (
 
 	"haina.com/market/hqinit/models/tb_security"
 	"haina.com/share/logging"
-	"haina.com/share/store/redis"
+	//"haina.com/share/store/redis"
 )
 
 type TagStockStatic struct {
@@ -64,6 +64,7 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 	var err error
 	//入文件
 	buffer := new(bytes.Buffer)
+
 	for _, v := range *stable {
 		stype, err = HainaSecurityType(strconv.Itoa(int(v.NSID)), v.SzSType)
 		if err != nil {
@@ -73,36 +74,36 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 		if err != nil {
 			logging.Error("%v", err.Error())
 		}
-		tag := protocol.StockStatic{ //入redis的结构
-			NSID:              v.NSID,
-			SzSType:           stype,
-			SzStatus:          status,
-			NListDate:         v.NListDate,
-			NLastTradeDate:    v.NLastTradeDate,
-			NDelistDate:       v.NDelistDate,
-			LlCircuShare:      v.LlCircuShare,
-			LlTotalShare:      v.LlTotalShare,
-			LlLast5Volume:     v.LlLast5Volume,
-			NEPS:              v.NEPS,
-			LlTotalProperty:   v.LlTotalProperty,
-			LlFlowProperty:    v.LlFlowProperty,
-			NAVPS:             v.NAVPS,
-			LlMainIncoming:    v.LlMainIncoming,
-			LlMainProfit:      v.LlMainProfit,
-			LlTotalProfit:     v.LlTotalProfit,
-			LlNetProfit:       v.LlNetProfit,
-			NHolders:          v.NHolders,
-			NReportDate:       v.NReportDate,
-			NCurrentRatio:     v.NCurrentRatio,
-			NQuickMovingRatio: v.NQuickMovingRatio,
-
-			NEUndisProfit:      v.NEUndisProfit,
-			NFlowLiab:          v.NFlowLiab,
-			NTotalLiabilities:  v.NTotalLiabilities,
-			NTotalHolderEquity: v.NTotalHolderEquity,
-			NCapitalReserve:    v.NCapitalReserve,
-			NIncomeInvestments: v.NIncomeInvestments,
-		}
+		//tag := protocol.StockStatic{ //入redis的结构
+		//	NSID:              v.NSID,
+		//	SzSType:           stype,
+		//	SzStatus:          status,
+		//	NListDate:         v.NListDate,
+		//	NLastTradeDate:    v.NLastTradeDate,
+		//	NDelistDate:       v.NDelistDate,
+		//	LlCircuShare:      v.LlCircuShare,
+		//	LlTotalShare:      v.LlTotalShare,
+		//	LlLast5Volume:     v.LlLast5Volume,
+		//	NEPS:              v.NEPS,
+		//	LlTotalProperty:   v.LlTotalProperty,
+		//	LlFlowProperty:    v.LlFlowProperty,
+		//	NAVPS:             v.NAVPS,
+		//	LlMainIncoming:    v.LlMainIncoming,
+		//	LlMainProfit:      v.LlMainProfit,
+		//	LlTotalProfit:     v.LlTotalProfit,
+		//	LlNetProfit:       v.LlNetProfit,
+		//	NHolders:          v.NHolders,
+		//	NReportDate:       v.NReportDate,
+		//	NCurrentRatio:     v.NCurrentRatio,
+		//	NQuickMovingRatio: v.NQuickMovingRatio,
+		//
+		//	NEUndisProfit:      v.NEUndisProfit,
+		//	NFlowLiab:          v.NFlowLiab,
+		//	NTotalLiabilities:  v.NTotalLiabilities,
+		//	NTotalHolderEquity: v.NTotalHolderEquity,
+		//	NCapitalReserve:    v.NCapitalReserve,
+		//	NIncomeInvestments: v.NIncomeInvestments,
+		//}
 		biny := TagStockStatic{ //入文件的结构
 			NSID:              v.NSID,
 			SzSType:           StringToByte_4(stype),
@@ -135,17 +136,17 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 		}
 
 		//转PB
-		data, err := proto.Marshal(&tag)
-		if err != nil {
-			logging.Error("Encode protocbuf of week Line error...%v", err.Error())
-			return
-		}
+		//data, err := proto.Marshal(&tag)
+		//if err != nil {
+		//	logging.Error("Encode protocbuf of week Line error...%v", err.Error())
+		//	return
+		//}
 
 		//入redis
-		key := fmt.Sprintf(REDISKEY_SECURITY_STATIC, tag.NSID)
-		if err := redis.Set(key, data); err != nil {
-			logging.Fatal("%v", err)
-		}
+		//key := fmt.Sprintf(REDISKEY_SECURITY_STATIC, tag.NSID)
+		//if err := redis.Set(key, data); err != nil {
+		//	logging.Fatal("%v", err)
+		//}
 
 		//缓冲二进制数据
 		if err := binary.Write(buffer, binary.LittleEndian, &biny); err != nil {
@@ -158,6 +159,7 @@ func UpdateSecurityStaticInfo(cfg *config.AppConfig) {
 	if err != nil {
 		return
 	}
+
 
 	_, err1 := file.Write(buffer.Bytes())
 	if err1 != nil {

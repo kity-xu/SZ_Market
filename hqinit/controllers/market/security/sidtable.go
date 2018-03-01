@@ -2,12 +2,13 @@
 package security
 
 import (
-	"strconv"
+	//"strconv"
 
 	. "haina.com/market/hqinit/controllers"
 
 	"haina.com/market/hqinit/models/tb_security"
 	"haina.com/share/store/redis"
+	"strconv"
 )
 
 func getSecurityTable() *[]*tb_security.SecurityCode {

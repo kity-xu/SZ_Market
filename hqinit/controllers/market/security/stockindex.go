@@ -4,7 +4,7 @@ package security
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
+	//"fmt"
 	"strconv"
 
 	"haina.com/market/hqinit/config"
@@ -14,10 +14,10 @@ import (
 
 	. "haina.com/market/hqinit/controllers"
 
-	"github.com/golang/protobuf/proto"
+	//"github.com/golang/protobuf/proto"
 	"haina.com/market/hqinit/models/tb_security"
 	"haina.com/share/logging"
-	"haina.com/share/store/redis"
+	//"haina.com/share/store/redis"
 )
 
 func UpdateIndexTable(cfg *config.AppConfig) {
@@ -73,16 +73,16 @@ func UpdateIndexTable(cfg *config.AppConfig) {
 		}
 
 		//转PB
-		data, err := proto.Marshal(&stock)
-		if err != nil {
-			logging.Error("Encode protocbuf of week Line error...%v", err.Error())
-			return
-		}
-
-		key := fmt.Sprintf(REDISKEY_SECURITY_NAME_ID, stock.NSID)
-		if err := redis.Set(key, data); err != nil {
-			logging.Fatal("%v", err)
-		}
+		//data, err := proto.Marshal(&stock)
+		//if err != nil {
+		//	logging.Error("Encode protocbuf of week Line error...%v", err.Error())
+		//	return
+		//}
+		//
+		//key := fmt.Sprintf(REDISKEY_SECURITY_NAME_ID, stock.NSID)
+		//if err := redis.Set(key, data); err != nil {
+		//	logging.Fatal("%v", err)
+		//}
 
 	}
 	lib.CheckDir(cfg.File.Path)

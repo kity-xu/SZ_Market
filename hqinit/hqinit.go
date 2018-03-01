@@ -9,6 +9,7 @@ import (
 	. "haina.com/market/hqinit/models"
 
 	"github.com/DeanThompson/ginpprof"
+	//stf "haina.com/market/hqinit/models/fcmysql"
 )
 
 func main() {
@@ -28,6 +29,15 @@ func main() {
 
 	// 监控性能
 	ginpprof.Wrapper(r)
+	//basinfo, _ := stf.NewTQ_SK_BASICINFO().GetAllBasicinfoList()
+	//if basinfo==nil{
+	//	logging.Info("Error")
+	//}
+	//basinfo, _ := stf.NewTQ_SK_SHARESTRUCHG().GetAllInfo()
+	//if basinfo==nil{
+	//	logging.Info("Error")
+	//}
+
 
 	//行情数据更新
 	market.Update(cfg)

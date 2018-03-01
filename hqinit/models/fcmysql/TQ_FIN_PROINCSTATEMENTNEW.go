@@ -19,6 +19,7 @@ type TQ_FIN_PROINCSTATEMENTNEW struct {
 	INVEINCO    dbr.NullFloat64 `db:"INVEINCO"`    // 投资收益
 	ENDDATE     dbr.NullString  `db:"ENDDATE"`     // 截止日期
 	PARENETP    dbr.NullFloat64 `db:"PARENETP"`    // 归属母公司净利润
+	COMPCODE	dbr.NullString  `db:"COMPCODE"`     //
 }
 
 func NewTQ_FIN_PROINCSTATEMENTNEW() *TQ_FIN_PROINCSTATEMENTNEW {
@@ -41,6 +42,22 @@ func (this *TQ_FIN_PROINCSTATEMENTNEW) GetSingleInfo(comc string) (TQ_FIN_PROINC
 		Limit(1).
 		LoadStruct(&tsp)
 	return tsp, err
+}
+
+func (this *TQ_FIN_PROINCSTATEMENTNEW) GetAllInfo() (map[dbr.NullString]TQ_FIN_PROINCSTATEMENTNEW, error) {
+	var tsp []TQ_FIN_PROINCSTATEMENTNEW
+	var tspmap map[dbr.NullString]TQ_FIN_PROINCSTATEMENTNEW
+	err := this.Db.Select("BASICEPS,TOTPROFIT,NETPROFIT,PUBLISHDATE,BIZINCO,PERPROFIT,INVEINCO,ENDDATE,PARENETP,COMPCODE").
+		From(this.TableName).
+		Where("ID in (select max(ID) from tq_fin_proincstatementnew where ISVALID=1 and REPORTTYPE=1 group by COMPCODE)").
+		LoadStruct(&tsp)
+
+	//转map
+	tspmap = make(map[dbr.NullString]TQ_FIN_PROINCSTATEMENTNEW)
+	for _, v := range tsp{
+		tspmap[v.COMPCODE] = v
+	}
+	return tspmap, err
 }
 
 // 倒序查询五期 净利润
