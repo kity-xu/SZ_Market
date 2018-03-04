@@ -15,4 +15,6 @@ const (
 	TABLE_TQ_COMP_BOARDMAP          = "TQ_COMP_BOARDMAP"          // 股板对照表
 	TABLE_TQ_OA_NTRDSCHEDULE        = "TQ_OA_NTRDSCHEDULE"        // 非交易股票表
 	TABLE_TQ_FIN_PROFINMAININDEX    = "TQ_FIN_PROFINMAININDEX"    // 主要财务指标
+	TABLE_TQ_QT_INDEX    				= "TQ_QT_INDEX"    			// 指数行情表
+	TABLE_TQ_QT_SKDAILYPRICE    		= "TQ_QT_SKDAILYPRICE"    	// 股票历史日交易
 )

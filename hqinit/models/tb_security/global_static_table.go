@@ -9,6 +9,7 @@ import (
 
 type TagStockStatic struct {
 	NSID              int32  `bson:"nSID"`              // 证券ID
+	NPreClose         int32  `bson:"nPreClose"`              // 前收价(*10000)
 	SzSType           string `bson:"szSType"`           // 证券类型
 	SzStatus          string `bson:"szStatus"`          // 证券状态
 	NListDate         int32  `bson:"nListDate"`         // 上市日期
@@ -47,6 +48,7 @@ func GetSecurityStaticTableFromMG(cfg *config.AppConfig) *[]*TagStockStatic {
 	for _, ite := range stat {
 		var tssc TagStockStatic
 		tssc.NSID = ite.NSID
+		tssc.NPreClose = ite.NPreClose
 		tssc.SzSType = ite.SzSType
 		tssc.SzStatus = ite.SzStatus
 		tssc.NListDate = ite.NListDate

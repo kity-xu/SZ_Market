@@ -34,6 +34,7 @@ type SjsHqFile struct {
 
 type TagStockStatic struct {
 	NSID              int32  `bson:"nSID" xml:"nSID"`              // 证券ID
+	NPreClose         int32  `bson:"nPreClose xml:"nPreClose""`              // 前收价(*10000)
 	SzSType           string `bson:"szSType" xml:"SzSType"`           // 证券类型
 	SzStatus          string `bson:"szStatus" xml:"szStatus"`          // 证券状态
 	NListDate         int32  `bson:"nListDate" xml:"nListDate"`         // 上市日期
@@ -365,6 +366,15 @@ func StockTreatingDataExt() []*TagStockStatic {
 	if err != nil {
 		logging.Error("select NewTQ_FIN_PROINDICDATA error:%v", err)
 	}
+	//8TQ_QT_INDEX TQ_QT_SKDAILYPRICE 查询昨收价
+	mapindex, err := stf.NewTQ_QT_INDEX().GetAllInfo()
+	if err != nil {
+		logging.Error("select NewTQ_QT_INDEX error:%v", err)
+	}
+	mapstock, err := stf.NewTQ_QT_SKDAILYPRICE().GetAllInfo()
+	if err != nil {
+		logging.Error("select NewTQ_QT_SKDAILYPRICE error:%v", err)
+	}
 	// 遍历所有沪深股票
 	for index, item := range secNm {
 		var tss TagStockStatic
@@ -546,6 +556,17 @@ func StockTreatingDataExt() []*TagStockStatic {
 		tss.NCurrentRatio = int32(tfpr.CURRENTRT.Float64 * 10000)
 		tss.NQuickMovingRatio = int32(tfpr.QUICKRT.Float64 * 10000)
 		tss.NEUndisProfit = int32(tfpr.UPPS.Float64 * 10000)
+
+
+		// 查询昨收价
+		stocklastpx, ok := mapstock[item.SECODE]
+		if (ok){
+			tss.NPreClose = int32(stocklastpx.LCLOSE.Float64 * 10000)
+		}
+		indexlastpx, ok := mapindex[item.SECODE]
+		if (ok){
+			tss.NPreClose = int32(indexlastpx.LCLOSE.Float64 * 10000)
+		}
 
 		// 查询 一般企业利润 主营业务收入、利润、投资收益
 
