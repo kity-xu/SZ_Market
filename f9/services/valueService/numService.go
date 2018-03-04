@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strconv"
 
+	"haina.com/market/f9/models/finchina"
 	"haina.com/market/f9/models/valueModel"
 )
 
@@ -55,9 +56,9 @@ func GetNumChartData(numChartData chan []*numChart, compcode string) (chan []*nu
 }
 
 //获取文本信息
-func GetNumTextData(numChartText chan string, swlevelcode string, leng string) (chan string, error) {
+func GetNumTextData(numChartText chan string, detail finchina.CompanyDetail, leng string) (chan string, error) {
 	num := []*Num{}
-	data, err := valueModel.NewNum().GetNumTextData(swlevelcode)
+	data, err := valueModel.NewNum().GetNumTextData(detail.SWLEVEL1CODE)
 	for key, val := range data {
 		if key < 8 {
 			var n Num
@@ -72,13 +73,13 @@ func GetNumTextData(numChartText chan string, swlevelcode string, leng string) (
 	sort.Sort(sortText(num))
 	var TOTALSHAMT_key int
 	for key, val := range num {
-		com, _ := strconv.ParseInt(compcode, 10, 64)
+		com, _ := strconv.ParseInt(detail.COMPCODE, 10, 64)
 		if com == val.COMPCODE {
 			TOTALSHAMT_key = key + 1
 			break
 		}
 	}
-	numChartText <- "近期，该公司股东人数" + <-numText + "，在" + swlevelname + "行业排名 " + strconv.Itoa(TOTALSHAMT_key) + "/" + leng + "。"
+	numChartText <- "近期，该公司股东人数" + <-numText + "，在" + detail.SWLEVEL1NAME + "行业排名 " + strconv.Itoa(TOTALSHAMT_key) + "/" + leng + "。"
 	return numChartText, err
 }
 

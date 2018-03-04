@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strconv"
 
+	"haina.com/market/f9/models/finchina"
 	"haina.com/market/f9/models/valueModel"
 )
 
@@ -47,9 +48,9 @@ func GetPayChartData(payChartData chan []*payChart, compcode string) (chan []*pa
 }
 
 //获取文本
-func GetPayChartText(payChartDext chan string, swlevelcode string, leng string) (chan string, error) {
+func GetPayChartText(payChartDext chan string, detail finchina.CompanyDetail, leng string) (chan string, error) {
 	var text1, text2 []pay
-	textData, err := valueModel.NewPay().GetPayChartText(swlevelcode)
+	textData, err := valueModel.NewPay().GetPayChartText(detail.SWLEVEL1CODE)
 	//fmt.Println(err)
 	for _, val := range textData {
 		var t pay
@@ -63,19 +64,19 @@ func GetPayChartText(payChartDext chan string, swlevelcode string, leng string) 
 	sort.Sort(paySort2(text2))
 	var ASSLIABRT_key, QUICKRT_key int
 	for key, val := range text1 {
-		com, _ := strconv.ParseInt(compcode, 10, 64) //string转int64
+		com, _ := strconv.ParseInt(detail.COMPCODE, 10, 64) //string转int64
 		if com == val.COMPCODE {
 			ASSLIABRT_key = key + 1
 		}
 	}
 	for key, val := range text2 {
-		com, _ := strconv.ParseInt(compcode, 10, 64) //string转int64     strconv.Itoa int转string
+		com, _ := strconv.ParseInt(detail.COMPCODE, 10, 64) //string转int64     strconv.Itoa int转string
 		if com == val.COMPCODE {
 			QUICKRT_key = key + 1
 		}
 	}
 
-	payChartDext <- "最近报告期，公司资产负债率为" + strconv.FormatFloat(<-ASSLIABRT, 'f', -1, 64) + "，速动比率为" + strconv.FormatFloat(<-QUICKRT, 'f', -1, 64) + "，两个指标分别在" + swlevelname + "行业排名 " + strconv.Itoa(ASSLIABRT_key) + "/" + leng + "，" + strconv.Itoa(QUICKRT_key) + "/" + leng
+	payChartDext <- "最近报告期，公司资产负债率为" + strconv.FormatFloat(<-ASSLIABRT, 'f', -1, 64) + "，速动比率为" + strconv.FormatFloat(<-QUICKRT, 'f', -1, 64) + "，两个指标分别在" + detail.SWLEVEL1NAME + "行业排名 " + strconv.Itoa(ASSLIABRT_key) + "/" + leng + "，" + strconv.Itoa(QUICKRT_key) + "/" + leng
 	return payChartDext, err
 }
 

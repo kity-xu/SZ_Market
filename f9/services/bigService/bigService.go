@@ -5,20 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"haina.com/market/f9/models/common"
+	"haina.com/market/f9/models/finchina"
 	"haina.com/share/logging"
-)
-
-var (
-	symbolParam   string //证券代码（带字母）
-	symbol        string //证券代码（不带字母)
-	symboType     string //证券类型
-	swlevelcode   string //行业代码
-	swlevelname   string //行业名称
-	compcode      string //公司代码
-	compname      string //公司名称
-	companyDetail string //公司详情
-	//sumcompay     string //该行业的所有公司
 )
 
 type bigData struct {
@@ -36,37 +24,30 @@ type RetVal struct {
 	Desc string `json:"desc,omitempty"`
 }
 
-func GetBigData(scode string) (bigData, error) {
-	symbol = scode[2:]
-	symbolParam = scode
-	if scode[0:2] == "sz" {
-		symboType = "001003"
-	} else if scode[0:2] == "sh" {
-		symboType = "001002"
-	}
-
+func GetBigData(sid string) (*bigData, error) {
 	var bi bigData
-
-	detail, err := companyDetailModel.NewCompanyDetail().GetCompanyDetail(symbol, symboType)
-
-	//logging.Info("detail==".)
-
-	if err != nil {
-		logging.Info("该股票不存在")
-		bi.Code = 20000
-		bi.Desc = "该股票不存在"
-		return bi, err
+	sc := finchina.NewTQ_OA_STCODE()
+	if err := sc.GetCompcode(sid); err != nil {
+		return nil, err
 	}
 
-	if detail.LISTSTATUS != 1 {
-		logging.Info("非股票代码")
-		bi.Code = 20000
-		bi.Desc = "非股票代码"
-		return bi, err
+	detail, err := finchina.NewCompanyDetail().GetCompanyDetail(sc.SECODE.String)
+	if err != nil || detail.LISTSTATUS != 1 {
+		return nil, err
 	}
 
-	data, _ := GetApi(symbolParam)
-	logging.Info("dataApi===%+v", data)
+	var exchange string
+	if detail.EXCHANGE == "001002" { //上海证券交易所
+		exchange = "sh"
+	} else if detail.EXCHANGE == "001003" { //深圳证券交易所
+		exchange = "sz"
+	} else if detail.EXCHANGE == "001004" { //股份转让市场
+		exchange = "zr"
+	} else {
+		exchange = "no"
+	}
+	data, _ := GetApi(exchange + sid[2:])
+	logging.Info("symbol exchange %v", exchange)
 	bi.Result = data.Result.Data.Res.Result
 	bi.Market_care = data.Result.Data.Res.Market_care
 	bi.Market_emotion = data.Result.Data.Res.Market_emotion
@@ -74,9 +55,10 @@ func GetBigData(scode string) (bigData, error) {
 	bi.Theme_chart = data.Result.Data.Res.Theme_chart
 	bi.Theme = data.Result.Data.Res.Theme
 	bi.Recommend_big = data.Result.Data.Res.Recommend_big
-	return bi, nil
+	return &bi, nil
 }
 
+//--------------------------------------------------------sina api---------------------------------------------------------------//
 type result struct {
 	Result ResultData `json:"result"`
 }
@@ -126,10 +108,8 @@ func GetApi(symbol string) (result, error) {
 	if err != nil {
 		logging.Error(err.Error())
 	}
-	logging.Info(string(body))
 
 	var _param result
 	err = json.Unmarshal([]byte(body), &_param)
-	logging.Info("===%+v", _param)
 	return _param, err
 }

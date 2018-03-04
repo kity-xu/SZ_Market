@@ -11,92 +11,80 @@ import (
 	"time"
 
 	"haina.com/market/f9/models"
-	"haina.com/market/f9/models/common"
+	"haina.com/market/f9/models/finchina"
 	"haina.com/share/logging"
 )
 
-var (
+type SecBasicInfo struct {
+	SID           string
+	Status        int    //证券状态
+	Secode        string //证券内码
 	SymbolParam   string //证券代码（带字母）
 	Symbol        string //证券代码（不带字母)
-	SymboType     string //证券类型
+	ExChange      string //市场类型
 	Swlevelcode   string //行业代码
 	Swlevelname   string //行业名称
 	Compcode      string //公司代码
 	Compname      string //公司名称
 	CompanyDetail string //公司详情
-	KeyNsid       string
+
 	//sumcompay     string //该行业的所有公司
+}
+
+const (
+	CONST_REQUEST_OK                = 0
+	CONST_REQUEST_ERROR_OUTTIME int = iota + 9999
+	CONST_REQUEST_ERROR_SIGN
+	CONST_REQUEST_ERROR_REDIS
+	CONST_REQUEST_ERROR_PARAM
+	CONST_REQUEST_ERROR_DATA
+	CONST_REQUEST_ERROR_CONNET
+	CONST_REQUEST_ERROR_NEWSEC
+	CONST_REQUEST_ERROR_SUSPEND
+	CONST_REQUEST_ERROR_SID
+	CONST_REQUEST_ERROR_LISTCOMP
 )
 
-//var ERROR_new = map[int]string{0: "10006", 1: "新股上市，基础数据不全"}
-//var ERROR_new1 = [2]string{"10006", "新股上市，基础数据不全"}
-//var ERROR_new2 = [2]interface{}{10006, "新股上市，基础数据不全"}
-//var ERROR_ok = [2]string{"0", "ok"}
-//var ERROR_new = [2]string{"10006", "新股上市，基础数据不全"}
-//var ERROR_stop = [2]string{"10007", "股票停盘"}
-//var ERROR_code = [2]string{"10008", "非股票代码"}
-//var ERROR_no_market = [2]string{"10009", "非上市公司"}
-
-type BasicMess struct {
-	Status  int64          `json:"status"`
-	Message string         `json:"message"`
-	Data    BasicErrorData `json:"data"`
-}
-
-type BasicErrorData struct {
-	Symbol      string `json:"symbol"`
-	Stname      string `json:"stname"`
-	NLastPx     string `json:"nLastPx"`
-	NPxChg      string `json:"nPxChg"`
-	NPxChgRatio string `json:"nPxChgRatio"`
-	Score       string `json:"score"`
-	Prompt      string `json:"prompt"`
-}
-
-func GetCommonData(scode string) (BasicMess, error) {
-	var v BasicMess
-	v.Status = 0
-	v.Message = "ok"
-
-	Symbol = scode[2:]
-	SymbolParam = scode
-	if scode[0:2] == "sz" {
-		SymboType = "001003"
-	} else if scode[0:2] == "sh" {
-		SymboType = "001002"
+func GetCommonData(sid string) (*SecBasicInfo, error) {
+	sc := finchina.NewTQ_OA_STCODE()
+	if err := sc.GetCompcode(sid); err != nil {
+		return nil, err
 	}
 
-	detail, err := companyDetailModel.NewCompanyDetail().GetCompanyDetail(Symbol, SymboType)
-
-	logging.Info("listdate==%+v", detail)
-
-	if detail.EXCHANGE == "001002" {
-		KeyNsid = "100" + detail.SYMBOL
-	} else if detail.EXCHANGE == "001003" {
-		KeyNsid = "200" + detail.SYMBOL
-	}
-
-	v.Data.Symbol = Symbol
-
+	detail, err := finchina.NewCompanyDetail().GetCompanyDetail(sc.SECODE.String)
 	if err != nil {
-		v.Status = 10008
-		v.Message = "非股票代码"
-	} else if detail.LISTSTATUS != 1 {
-		v.Status = 10007
-		v.Message = "股票停盘"
+		return nil, err
 	}
 
-	Swlevelcode = detail.SWLEVEL1CODE
-	Swlevelname = detail.SWLEVEL1NAME
-	Compcode = detail.COMPCODE
-	Compname = detail.SESNAME
-	return v, err
+	var exchange string
+	if detail.EXCHANGE == "001002" { //上海证券交易所
+		exchange = "sh"
+	} else if detail.EXCHANGE == "001003" { //深圳证券交易所
+		exchange = "sz"
+	} else if detail.EXCHANGE == "001004" { //股份转让市场
+		exchange = "zr"
+	} else {
+		exchange = "no"
+	}
 
+	basic := &SecBasicInfo{
+		SID:         sid,
+		Secode:      sc.SECODE.String,
+		Status:      detail.LISTSTATUS,
+		SymbolParam: exchange + detail.SYMBOL,
+		Symbol:      detail.SYMBOL,
+		ExChange:    detail.EXCHANGE,
+		Swlevelcode: detail.SWLEVEL1CODE,
+		Swlevelname: detail.SWLEVEL1NAME,
+		Compcode:    sc.COMPCODE.String,
+		Compname:    detail.SESNAME,
+	}
+	return basic, nil
 }
 
 //该行业下的所有公司
-func IndustryOfAllCompany(swlevelcode string) ([]*companyDetailModel.CompanyDetail, error) {
-	allCompany, err := companyDetailModel.NewCompanyDetail().GetAllCompany(swlevelcode)
+func IndustryOfAllCompany(swlevelcode string) ([]*finchina.CompanyDetail, error) {
+	allCompany, err := finchina.NewCompanyDetail().GetAllCompany(swlevelcode)
 	logging.Info("allCompany=====%+v", allCompany)
 	return allCompany, err
 }
@@ -107,10 +95,8 @@ func getHourDiffer(start_time, end_time string) int64 {
 	t1, err := time.ParseInLocation("2006-01-02 15:04:05", start_time, time.Local)
 	t2, err := time.ParseInLocation("2006-01-02 15:04:05", end_time, time.Local)
 	if err == nil && t1.Before(t2) {
-		//fmt.Println(t2.Unix())
 		diff := t2.Unix() - t1.Unix() //
 		hour = diff / 3600            //返回小时，向下取整
-		//min = diff / 60 //返回分钟
 		return hour
 	} else {
 		return hour
@@ -125,11 +111,10 @@ func HttpPostJson(url string, postJson interface{}, _param interface{}) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
+		logging.Error("HTTP POST ERROR| %v", err.Error())
 		return err
 	}
 	defer resp.Body.Close()
-	logging.Info("response status==%v", resp.Status)
-	logging.Info("response header==%v", resp.Header)
 	body, err := ioutil.ReadAll(resp.Body)
 	err = json.Unmarshal([]byte(body), _param)
 	return err

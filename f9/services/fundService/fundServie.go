@@ -10,16 +10,12 @@ import (
 	"time"
 
 	"haina.com/market/f9/models"
-	"haina.com/market/f9/models/common"
+	"haina.com/market/f9/models/finchina"
 	"haina.com/market/f9/models/fundModel"
 	"haina.com/market/f9/services"
 	"haina.com/share/logging"
 )
 
-type errorData struct {
-	commonService.BasicMess
-	Data commonService.BasicErrorData `json:"data"`
-}
 type fundData struct {
 	Status  int64  `json:"status"`
 	Message string `json:"message"`
@@ -52,195 +48,182 @@ type industry_inflow_chart struct {
 	Major_symbol   float64 `json:"major_symbol"`
 }
 
-func GetFundData(scode string) (interface{}, error) {
-	var ne errorData
+func GetFundData(sid string) (interface{}, error) {
 	var fu fundData
-	data, _ := commonService.GetCommonData(scode)
-	if data.Status != 0 {
-		ne.Status = data.Status
-		ne.Message = data.Message
-		ne.Data.Symbol = data.Data.Symbol
-		ne.Data.Stname = data.Data.Stname
-		ne.Data.NLastPx = data.Data.NLastPx
-		ne.Data.NPxChg = data.Data.NPxChg
-		ne.Data.NPxChgRatio = data.Data.NPxChgRatio
-		ne.Data.Score = data.Data.Score
-		ne.Data.Prompt = data.Data.Prompt
-		return ne, nil
-	} else {
-		fu.Status = data.Status
-		fu.Message = data.Message
-
-		fundData, _ := getFundNow(commonService.KeyNsid) //当日的资金数据
-
-		logging.Info("fundData====%+v", fundData)
-
-		fu.Data.LlHugeBuyValue = fundData.LlHugeBuyValue
-		fu.Data.LlBigBuyValue = fundData.LlBigBuyValue
-		fu.Data.LlMiddleBuyValue = fundData.LlMiddleBuyValue
-		fu.Data.LlSmallBuyValue = fundData.LlSmallBuyValue
-		fu.Data.LlHugeSellValue = fundData.LlHugeSellValue
-		fu.Data.LlBigSellValue = fundData.LlBigSellValue
-		fu.Data.LlMiddleSellValue = fundData.LlMiddleSellValue
-		fu.Data.LlSmallSellValue = fundData.LlSmallSellValue
-
-		InflowValue := fu.Data.LlHugeBuyValue + fu.Data.LlBigBuyValue + fu.Data.LlMiddleBuyValue + fu.Data.LlSmallBuyValue      //流入
-		OutflowValue := fu.Data.LlHugeSellValue + fu.Data.LlBigSellValue + fu.Data.LlMiddleSellValue + fu.Data.LlSmallSellValue //流出
-		//今日主力净流入
-		mainInflow := fu.Data.LlHugeBuyValue + fu.Data.LlBigBuyValue - fu.Data.LlHugeSellValue - fu.Data.LlBigSellValue
-		//今日净值
-		DayInflow := InflowValue - OutflowValue
-		//主力资金占比%
-		var mainProPortion float64
-		if fu.Data.LlHugeBuyValue+fu.Data.LlBigBuyValue+fu.Data.LlMiddleBuyValue+fu.Data.LlSmallBuyValue != 0 {
-			mainProPortion = mainInflow / (fu.Data.LlHugeBuyValue + fu.Data.LlBigBuyValue + fu.Data.LlMiddleBuyValue + fu.Data.LlSmallBuyValue)
-		} else {
-			mainProPortion = 0
-		}
-		hugeInflowValue := fu.Data.LlHugeBuyValue - fu.Data.LlHugeSellValue        //特大单净流入
-		bigInflowValue := fu.Data.LlBigBuyValue - fu.Data.LlBigSellValue           //大单净流入
-		middlesInflowValue := fu.Data.LlMiddleBuyValue - fu.Data.LlMiddleSellValue // 中单净流入
-		smallInflowValue := fu.Data.LlSmallBuyValue - fu.Data.LlSmallSellValue     //小单净流入
-		fu.Data.Fund_inflow = commonService.Compname + "今日主力净流入" + strconv.FormatFloat(mainInflow/10000, 'f', -1, 64) + "万元，主力资金占比" + strconv.FormatFloat(mainProPortion, 'f', -1, 64) + "%。其中，特大单净流入" + strconv.FormatFloat(hugeInflowValue/10000, 'f', -1, 64) + "万元，大单净流入" + strconv.FormatFloat(bigInflowValue/10000, 'f', -1, 64) + "万元，中单净流入" + strconv.FormatFloat(middlesInflowValue/10000, 'f', -1, 64) + "万元，小单净流入" + strconv.FormatFloat(smallInflowValue/10000, 'f', -1, 64) + "万元。"
-		fu.Data.DayInflow = DayInflow
-		fu.Data.OutflowValue = OutflowValue
-		fu.Data.LnflowValue = InflowValue
-
-		logging.Info("fundData====%+v", fundData)
-		fuData, _ := fundModel.NewFundFlow().GetFundData(commonService.KeyNsid, 30)
-		typecode, _ := fundModel.NewFundFlow().IndustryDateG(commonService.Swlevelcode, 10)
-		var fud []fund
-		var chart []industry_inflow_chart
-		for k, v := range fuData {
-			var fun fund
-			fun.LlHugeBuyValue = v.LlHugeBuyValue
-			fun.LlBigBuyValue = v.LlBigBuyValue
-			fun.LlMiddleBuyValue = v.LlMiddleBuyValue
-			fun.LlSmallBuyValue = v.LlSmallBuyValue
-			fun.LlHugeSellValue = v.LlHugeSellValue
-			fun.LlBigSellValue = v.LlBigSellValue
-			fun.LlMiddleSellValue = v.LlMiddleSellValue
-			fun.LlSmallSellValue = v.LlSmallSellValue
-			fud = append(fud, fun)
-			if k < 10 {
-				var cha industry_inflow_chart
-				cha.Date = v.NTime
-				cha.Major_industry = typecode[k].LlHugeBuyValue + typecode[k].LlBigBuyValue - typecode[k].LlHugeSellValue - typecode[k].LlBigSellValue
-				cha.Major_symbol = v.LlHugeBuyValue + v.LlBigBuyValue - v.LlHugeSellValue - v.LlBigSellValue
-				chart = append(chart, cha)
-			}
-		}
-		fu.Data.Industry_inflow_chart = chart
-		var funds []fund
-		funds = append(funds, fundData)
-		funds = append(funds, fud...)
-		logging.Info("funds====%+v", funds)
-
-		var cddd, lr, pDegree, U, V float64
-		for i := 0; i < 5; i++ {
-			cddd += Abs(funds[i].LlHugeBuyValue-funds[i].LlHugeSellValue) + Abs(funds[i].LlBigBuyValue-funds[i].LlBigSellValue)
-			lr += (funds[i].LlHugeBuyValue + funds[i].LlBigBuyValue + funds[i].LlMiddleBuyValue + funds[i].LlSmallBuyValue)
-		}
-		if lr == 0 {
-			pDegree = 0
-		} else {
-			pDegree = 200 * cddd / lr
-		}
-		var T string
-		if pDegree >= 0 && pDegree < 20 {
-			T = "力没有控盘，筹码分布非常分散"
-		} else if pDegree >= 20 && pDegree < 60 {
-			T = "主力轻度控盘，筹码分布较为分散"
-		} else if pDegree >= 60 && pDegree < 120 {
-			T = "主力中度控盘，且筹码比较集中"
-		} else if pDegree >= 120 && pDegree < 200 {
-			T = "主力高度控盘，且筹码非常集中"
-		} else {
-			T = "主力高度控盘，且筹码非常集中"
-		}
-		//【U】数值
-		U = cddd / 10000
-		//【V】数
-		V = cddd / lr
-		fu.Data.Major_control = "过去5天，该股票" + T + "，主力成交额" + strconv.FormatFloat(U/10000, 'f', -1, 64) + "亿元，占总成交额的" + strconv.FormatFloat(V, 'f', -1, 64) + "%。"
-
-		//股票最近三条主力净流入数据，T1,T2,T3
-		T1 := fuData[0].LlHugeBuyValue + fuData[0].LlBigBuyValue - fuData[0].LlHugeSellValue - fuData[0].LlBigSellValue
-		T2 := fuData[1].LlHugeBuyValue + fuData[1].LlBigBuyValue - fuData[1].LlHugeSellValue - fuData[1].LlBigSellValue
-		T3 := fuData[2].LlHugeBuyValue + fuData[2].LlBigBuyValue - fuData[2].LlHugeSellValue - fuData[2].LlBigSellValue
-		var S, W string
-		if T1 > 0 && T2 > 0 && T3 > 0 {
-			S = "连续3日被主力资金增仓"
-		} else if T1 > 0 && T2 > 0 && T3 <= 0 {
-			S = "连续2日被主力资金增仓"
-		} else if T1 < 0 && T2 < 0 && T3 < 0 {
-			S = "连续3日被主力资金减仓"
-		} else if T1 < 0 && T2 < 0 && T3 > 0 {
-			S = "连续2日被主力资金减仓"
-		} else {
-			S = "无连续增减仓现象，主力趋势不明显"
-		}
-		fu.Data.Maior_trend = "该股当前" + S + "。"
-
-		ddd, err := models.RedisCache.GetBytes("AAA")
-
-		var allCompany []companyDetailModel.CompanyDetail
-		if err == nil {
-			json.Unmarshal(ddd, &allCompany)
-		} else {
-			allCompany, _ := commonService.IndustryOfAllCompany(commonService.Swlevelcode)
-			jsonData, _ := json.Marshal(allCompany)
-			models.RedisCache.Setex("AAA", 10000, jsonData)
-		}
-
-		var fuud []*mainInflowData
-		for _, v := range allCompany {
-			var keysid string
-			if v.EXCHANGE == "001002" {
-				keysid = "100" + v.SYMBOL
-			} else {
-				keysid = "200" + v.SYMBOL
-			}
-			funData, _ := getFundNow(keysid)
-
-			var fuu mainInflowData
-			fuu.SYMBOL = funData.NSID
-			fuu.MainInflow = funData.LlHugeBuyValue + funData.LlBigBuyValue - funData.LlHugeSellValue - funData.LlBigSellValue
-			fuud = append(fuud, &fuu)
-		}
-		sort.Sort(sortText(fuud))
-		var E int = 0
-		for k, v := range fuud {
-			a_int64, _ := strconv.ParseInt(commonService.KeyNsid, 10, 64)
-			if int64(v.SYMBOL) == a_int64 {
-				E = k + 1
-			}
-		}
-
-		//【W】判断条件，行业最近三条主力净流入数据，T1,T2,T3
-		T1 = typecode[0].LlHugeBuyValue + typecode[0].LlBigBuyValue - typecode[0].LlHugeSellValue - typecode[0].LlBigSellValue
-		T2 = typecode[1].LlHugeBuyValue + typecode[1].LlBigBuyValue - typecode[1].LlHugeSellValue - typecode[1].LlBigSellValue
-		T3 = typecode[2].LlHugeBuyValue + typecode[2].LlBigBuyValue - typecode[2].LlHugeSellValue - typecode[2].LlBigSellValue
-		if T1 > 0 && T2 > 0 && T3 > 0 {
-			W = "该行业连续3日被主力资金增仓"
-		} else if T1 > 0 && T2 > 0 && T3 <= 0 {
-			W = "该行业连续2日被主力资金增仓"
-		} else if T1 < 0 && T2 < 0 && T3 < 0 {
-			W = "该行业连续3日被主力资金减仓"
-		} else if T1 < 0 && T2 < 0 && T3 > 0 {
-			W = "该行业连续2日被主力资金减仓"
-		} else {
-			W = "该行业当前无连续增减仓现象，主力趋势不明显"
-		}
-		tNow := time.Now()
-		timeNow := tNow.Format("2006年01月02日")
-		public_D := len(allCompany)
-		fu.Data.Point_degree = pDegree
-		fu.Data.Result = "该股当前" + S + "，过去5个交易日该股" + T + "，主力成交额" + strconv.FormatFloat(U/10000, 'f', -1, 64) + "亿元,占总成交额的" + strconv.FormatFloat(V, 'f', -1, 64) + "%。" + timeNow + "，" + commonService.Compname + "主力净流入" + strconv.FormatFloat(mainInflow/10000, 'f', -1, 64) + "万元,主力资金占比" + strconv.FormatFloat(mainProPortion, 'f', -1, 64) + "%。"
-		fu.Data.Industry_inflow = commonService.Swlevelname + "" + W + "。" + commonService.Compname + "主力资金占比在该行业中排名" + strconv.Itoa(E) + "/" + strconv.Itoa(public_D) + "。"
-
-		return fu, nil
+	basic, err := commonService.GetCommonData(sid)
+	if err != nil {
+		return nil, err
 	}
+	fundData, _ := getFundNow(sid) //当日的资金数据
+
+	logging.Info("fundData====%+v", fundData)
+
+	fu.Data.LlHugeBuyValue = fundData.LlHugeBuyValue
+	fu.Data.LlBigBuyValue = fundData.LlBigBuyValue
+	fu.Data.LlMiddleBuyValue = fundData.LlMiddleBuyValue
+	fu.Data.LlSmallBuyValue = fundData.LlSmallBuyValue
+	fu.Data.LlHugeSellValue = fundData.LlHugeSellValue
+	fu.Data.LlBigSellValue = fundData.LlBigSellValue
+	fu.Data.LlMiddleSellValue = fundData.LlMiddleSellValue
+	fu.Data.LlSmallSellValue = fundData.LlSmallSellValue
+
+	InflowValue := fu.Data.LlHugeBuyValue + fu.Data.LlBigBuyValue + fu.Data.LlMiddleBuyValue + fu.Data.LlSmallBuyValue      //流入
+	OutflowValue := fu.Data.LlHugeSellValue + fu.Data.LlBigSellValue + fu.Data.LlMiddleSellValue + fu.Data.LlSmallSellValue //流出
+	//今日主力净流入
+	mainInflow := fu.Data.LlHugeBuyValue + fu.Data.LlBigBuyValue - fu.Data.LlHugeSellValue - fu.Data.LlBigSellValue
+	//今日净值
+	DayInflow := InflowValue - OutflowValue
+	//主力资金占比%
+	var mainProPortion float64
+	if fu.Data.LlHugeBuyValue+fu.Data.LlBigBuyValue+fu.Data.LlMiddleBuyValue+fu.Data.LlSmallBuyValue != 0 {
+		mainProPortion = mainInflow / (fu.Data.LlHugeBuyValue + fu.Data.LlBigBuyValue + fu.Data.LlMiddleBuyValue + fu.Data.LlSmallBuyValue)
+	} else {
+		mainProPortion = 0
+	}
+	hugeInflowValue := fu.Data.LlHugeBuyValue - fu.Data.LlHugeSellValue        //特大单净流入
+	bigInflowValue := fu.Data.LlBigBuyValue - fu.Data.LlBigSellValue           //大单净流入
+	middlesInflowValue := fu.Data.LlMiddleBuyValue - fu.Data.LlMiddleSellValue // 中单净流入
+	smallInflowValue := fu.Data.LlSmallBuyValue - fu.Data.LlSmallSellValue     //小单净流入
+	fu.Data.Fund_inflow = basic.Compname + "今日主力净流入" + strconv.FormatFloat(mainInflow/10000, 'f', -1, 64) + "万元，主力资金占比" + strconv.FormatFloat(mainProPortion, 'f', -1, 64) + "%。其中，特大单净流入" + strconv.FormatFloat(hugeInflowValue/10000, 'f', -1, 64) + "万元，大单净流入" + strconv.FormatFloat(bigInflowValue/10000, 'f', -1, 64) + "万元，中单净流入" + strconv.FormatFloat(middlesInflowValue/10000, 'f', -1, 64) + "万元，小单净流入" + strconv.FormatFloat(smallInflowValue/10000, 'f', -1, 64) + "万元。"
+	fu.Data.DayInflow = DayInflow
+	fu.Data.OutflowValue = OutflowValue
+	fu.Data.LnflowValue = InflowValue
+
+	logging.Info("fundData====%+v", fundData)
+	fuData, _ := fundModel.NewFundFlow().GetFundData(basic.SID, 30)
+	typecode, _ := fundModel.NewFundFlow().IndustryDateG(basic.Swlevelcode, 10)
+	var fud []fund
+	var chart []industry_inflow_chart
+	for k, v := range fuData {
+		var fun fund
+		fun.LlHugeBuyValue = v.LlHugeBuyValue
+		fun.LlBigBuyValue = v.LlBigBuyValue
+		fun.LlMiddleBuyValue = v.LlMiddleBuyValue
+		fun.LlSmallBuyValue = v.LlSmallBuyValue
+		fun.LlHugeSellValue = v.LlHugeSellValue
+		fun.LlBigSellValue = v.LlBigSellValue
+		fun.LlMiddleSellValue = v.LlMiddleSellValue
+		fun.LlSmallSellValue = v.LlSmallSellValue
+		fud = append(fud, fun)
+		if k < 10 {
+			var cha industry_inflow_chart
+			cha.Date = v.NTime
+			cha.Major_industry = typecode[k].LlHugeBuyValue + typecode[k].LlBigBuyValue - typecode[k].LlHugeSellValue - typecode[k].LlBigSellValue
+			cha.Major_symbol = v.LlHugeBuyValue + v.LlBigBuyValue - v.LlHugeSellValue - v.LlBigSellValue
+			chart = append(chart, cha)
+		}
+	}
+	fu.Data.Industry_inflow_chart = chart
+	var funds []fund
+	funds = append(funds, fundData)
+	funds = append(funds, fud...)
+	logging.Info("funds====%+v", funds)
+
+	var cddd, lr, pDegree, U, V float64
+	for i := 0; i < 5; i++ {
+		cddd += Abs(funds[i].LlHugeBuyValue-funds[i].LlHugeSellValue) + Abs(funds[i].LlBigBuyValue-funds[i].LlBigSellValue)
+		lr += (funds[i].LlHugeBuyValue + funds[i].LlBigBuyValue + funds[i].LlMiddleBuyValue + funds[i].LlSmallBuyValue)
+	}
+	if lr == 0 {
+		pDegree = 0
+	} else {
+		pDegree = 200 * cddd / lr
+	}
+	var T string
+	if pDegree >= 0 && pDegree < 20 {
+		T = "力没有控盘，筹码分布非常分散"
+	} else if pDegree >= 20 && pDegree < 60 {
+		T = "主力轻度控盘，筹码分布较为分散"
+	} else if pDegree >= 60 && pDegree < 120 {
+		T = "主力中度控盘，且筹码比较集中"
+	} else if pDegree >= 120 && pDegree < 200 {
+		T = "主力高度控盘，且筹码非常集中"
+	} else {
+		T = "主力高度控盘，且筹码非常集中"
+	}
+	//【U】数值
+	U = cddd / 10000
+	//【V】数
+	V = cddd / lr
+	fu.Data.Major_control = "过去5天，该股票" + T + "，主力成交额" + strconv.FormatFloat(U/10000, 'f', -1, 64) + "亿元，占总成交额的" + strconv.FormatFloat(V, 'f', -1, 64) + "%。"
+
+	//股票最近三条主力净流入数据，T1,T2,T3
+	T1 := fuData[0].LlHugeBuyValue + fuData[0].LlBigBuyValue - fuData[0].LlHugeSellValue - fuData[0].LlBigSellValue
+	T2 := fuData[1].LlHugeBuyValue + fuData[1].LlBigBuyValue - fuData[1].LlHugeSellValue - fuData[1].LlBigSellValue
+	T3 := fuData[2].LlHugeBuyValue + fuData[2].LlBigBuyValue - fuData[2].LlHugeSellValue - fuData[2].LlBigSellValue
+	var S, W string
+	if T1 > 0 && T2 > 0 && T3 > 0 {
+		S = "连续3日被主力资金增仓"
+	} else if T1 > 0 && T2 > 0 && T3 <= 0 {
+		S = "连续2日被主力资金增仓"
+	} else if T1 < 0 && T2 < 0 && T3 < 0 {
+		S = "连续3日被主力资金减仓"
+	} else if T1 < 0 && T2 < 0 && T3 > 0 {
+		S = "连续2日被主力资金减仓"
+	} else {
+		S = "无连续增减仓现象，主力趋势不明显"
+	}
+	fu.Data.Maior_trend = "该股当前" + S + "。"
+
+	ddd, err := models.RedisCache.GetBytes("AAA")
+
+	var allCompany []finchina.CompanyDetail
+	if err == nil {
+		json.Unmarshal(ddd, &allCompany)
+	} else {
+		allCompany, _ := commonService.IndustryOfAllCompany(basic.Swlevelcode)
+		jsonData, _ := json.Marshal(allCompany)
+		models.RedisCache.Setex("AAA", 10000, jsonData)
+	}
+
+	var fuud []*mainInflowData
+	for _, v := range allCompany {
+		var keysid string
+		if v.EXCHANGE == "001002" {
+			keysid = "100" + v.SYMBOL
+		} else {
+			keysid = "200" + v.SYMBOL
+		}
+		funData, _ := getFundNow(keysid)
+
+		var fuu mainInflowData
+		fuu.SYMBOL = funData.NSID
+		fuu.MainInflow = funData.LlHugeBuyValue + funData.LlBigBuyValue - funData.LlHugeSellValue - funData.LlBigSellValue
+		fuud = append(fuud, &fuu)
+	}
+	sort.Sort(sortText(fuud))
+	var E int = 0
+	for k, v := range fuud {
+		a_int64, _ := strconv.ParseInt(basic.SID, 10, 64)
+		if int64(v.SYMBOL) == a_int64 {
+			E = k + 1
+		}
+	}
+
+	//【W】判断条件，行业最近三条主力净流入数据，T1,T2,T3
+	T1 = typecode[0].LlHugeBuyValue + typecode[0].LlBigBuyValue - typecode[0].LlHugeSellValue - typecode[0].LlBigSellValue
+	T2 = typecode[1].LlHugeBuyValue + typecode[1].LlBigBuyValue - typecode[1].LlHugeSellValue - typecode[1].LlBigSellValue
+	T3 = typecode[2].LlHugeBuyValue + typecode[2].LlBigBuyValue - typecode[2].LlHugeSellValue - typecode[2].LlBigSellValue
+	if T1 > 0 && T2 > 0 && T3 > 0 {
+		W = "该行业连续3日被主力资金增仓"
+	} else if T1 > 0 && T2 > 0 && T3 <= 0 {
+		W = "该行业连续2日被主力资金增仓"
+	} else if T1 < 0 && T2 < 0 && T3 < 0 {
+		W = "该行业连续3日被主力资金减仓"
+	} else if T1 < 0 && T2 < 0 && T3 > 0 {
+		W = "该行业连续2日被主力资金减仓"
+	} else {
+		W = "该行业当前无连续增减仓现象，主力趋势不明显"
+	}
+	tNow := time.Now()
+	timeNow := tNow.Format("2006年01月02日")
+	public_D := len(allCompany)
+	fu.Data.Point_degree = pDegree
+	fu.Data.Result = "该股当前" + S + "，过去5个交易日该股" + T + "，主力成交额" + strconv.FormatFloat(U/10000, 'f', -1, 64) + "亿元,占总成交额的" + strconv.FormatFloat(V, 'f', -1, 64) + "%。" + timeNow + "，" + basic.Compname + "主力净流入" + strconv.FormatFloat(mainInflow/10000, 'f', -1, 64) + "万元,主力资金占比" + strconv.FormatFloat(mainProPortion, 'f', -1, 64) + "%。"
+	fu.Data.Industry_inflow = basic.Swlevelname + "" + W + "。" + basic.Compname + "主力资金占比在该行业中排名" + strconv.Itoa(E) + "/" + strconv.Itoa(public_D) + "。"
+
+	return fu, nil
+
 }
 
 type sortText []*mainInflowData
@@ -291,12 +274,12 @@ type FundNow struct {
 }
 
 //获取当日资金数据（c++的redis数据）
-func getFundNow(KeyNsid string) (fund, error) {
+func getFundNow(sid string) (fund, error) {
 	tNow := time.Now()
 	timeNow := tNow.Format("20060102")
 	t, _ := strconv.ParseInt(timeNow, 10, 64)
 
-	redisData, err := models.RedisStore.Get("hq:trade:day:" + KeyNsid)
+	redisData, err := models.RedisStore.Get("hq:trade:day:" + sid)
 
 	var kNow fund
 	if err != nil || len(redisData) == 0 {
@@ -350,7 +333,7 @@ func Statement4(KeyNsid string) string {
 		mainProPortion = 0
 	}
 
-	fuData, _ := fundModel.NewFundFlow().GetFundData(commonService.KeyNsid, 30)
+	fuData, _ := fundModel.NewFundFlow().GetFundData(KeyNsid, 30)
 
 	var fud []fund
 	for _, v := range fuData {

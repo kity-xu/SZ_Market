@@ -1,32 +1,26 @@
 package routes
 
 import (
-	"haina.com/market/f9/controllers/bigData"
-	"haina.com/market/f9/controllers/chip"
-	"haina.com/market/f9/controllers/diaData"
-	"haina.com/market/f9/controllers/fund"
-	"haina.com/market/f9/controllers/isNew"
-	"haina.com/market/f9/controllers/value"
+	"haina.com/market/f9/controllers/basic"
+	"haina.com/market/f9/controllers/summary"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Register(engine *gin.Engine) {
-	engine.GET("summary/isNewShares", isNew.GetNewData) //是否是新股
+	rg := engine.Group("/api/f9")
 
-	engine.GET("summary/diagnose", diaData.GetDiaData) //概述
+	rg.GET("summary/isNewShares", basic.GetNewData) //是否是新股
 
-	engine.GET("summary/bigDate", bigData.GetBigData) //大数据透视
+	rg.GET("summary/diagnose", summary.GetDiaData) //概述
 
-	engine.GET("valuePerspective", value.GetValueData) //价值透视
+	rg.GET("summary/bigDate", summary.GetBigData) //大数据透视
 
-	engine.GET("getChipList", chip.GetChipData) //筹码成本
+	rg.GET("valuePerspective", summary.GetValueData) //价值透视
 
-	engine.GET("getTrendList", chip.GetTrendList) //多空趋势
+	rg.GET("getChipList", summary.GetChipData) //筹码成本
 
-	engine.GET("fundPerspective", fund.GetFundData) //资金透视
+	rg.GET("getTrendList", summary.GetTrendList) //多空趋势
 
-	niu := engine.Group("/api")
-	//注册公司信息获取路径
-	RegNiuniu(niu)
+	rg.GET("fundPerspective", summary.GetFundData) //资金透视
 }

@@ -15,72 +15,50 @@ import (
 	"haina.com/share/logging"
 )
 
-type diaData struct {
-	commonService.BasicMess
-	Data commonService.BasicErrorData `json:"data"`
-}
-type diagnose struct {
-	Status  int64  `json:"status"`
-	Message string `json:"message"`
-	Data    struct {
-		Statement1  string  `json:"statement1"`
-		Statement2  string  `json:"statement2"`
-		Statement3  string  `json:"statement3"`
-		Statement4  string  `json:"statement4"`
-		Statement5  string  `json:"statement5"`
-		Prompt      string  `json:"prompt"`
-		Score       int64   `json:"score"`
-		Symbol      string  `json:"symbol"`
-		Stname      string  `json:"stname"`
-		NLastPx     float64 `json:"nLastPx"`
-		NPxChg      float64 `json:"nPxChg"`
-		NPxChgRatio float64 `json:"nPxChgRatio"`
-	} `json:"data"`
+type ResponseDiagnose struct {
+	Statement1  string  `json:"statement1"`
+	Statement2  string  `json:"statement2"`
+	Statement3  string  `json:"statement3"`
+	Statement4  string  `json:"statement4"`
+	Statement5  string  `json:"statement5"`
+	Prompt      string  `json:"prompt"`
+	Score       int64   `json:"score"`
+	Symbol      string  `json:"symbol"`
+	Stname      string  `json:"stname"`
+	NLastPx     float64 `json:"nLastPx"`
+	NPxChg      float64 `json:"nPxChg"`
+	NPxChgRatio float64 `json:"nPxChgRatio"`
 }
 
-func GetDiaData(scode string) (interface{}, error) {
-	var ne diaData
-	var di diagnose
-	data, _ := commonService.GetCommonData(scode)
-	if data.Status != 0 {
-		ne.Status = data.Status
-		ne.Message = data.Message
-		ne.Data.Symbol = data.Data.Symbol
-		ne.Data.Stname = data.Data.Stname
-		ne.Data.NLastPx = data.Data.NLastPx
-		ne.Data.NPxChg = data.Data.NPxChg
-		ne.Data.NPxChgRatio = data.Data.NPxChgRatio
-		ne.Data.Score = data.Data.Score
-		ne.Data.Prompt = data.Data.Prompt
-		return ne, nil
-	} else {
-		di.Status = data.Status
-		di.Message = data.Message
+func GetDiaData(sid string) (interface{}, error) {
+	var di ResponseDiagnose
+	basic, _ := commonService.GetCommonData(sid)
 
-		dataApi, _ := GetApi(commonService.SymbolParam)
-		logging.Info("dataApi===%+v", dataApi)
-		di.Data.Statement1 = dataApi.Result.Data.Data.Statement1
-		di.Data.Statement2 = dataApi.Result.Data.Data.Statement2
-
-		statement3, value, nLastPx, nPxChg, nPxChgRatio := Statement3(commonService.KeyNsid)
-		di.Data.Statement3 = statement3
-		di.Data.NLastPx = nLastPx / 10000
-		di.Data.NPxChg = nPxChg / 10000
-		di.Data.NPxChgRatio = nPxChgRatio / 10000
-
-		statement4 := fundService.Statement4(commonService.KeyNsid)
-		di.Data.Statement4 = statement4
-
-		statement5_s1, statement5_s2 := Statement5(commonService.Compcode)
-		logging.Info("statement5_s1=====", statement5_s1, statement5_s2)
-		W, X, Y, Z, Score := diagnose_part(statement5_s1, statement5_s2, value)
-		di.Data.Statement5 = "该股属于" + commonService.Swlevelname + "行业，最近1年该股" + W + "，" + X + "。"
-		di.Data.Prompt = Y + "，" + Z
-		di.Data.Score = Score
-		di.Data.Symbol = commonService.Symbol
-		di.Data.Stname = commonService.Compname
-		return di, nil
+	dataApi, err := GetApi(basic.SymbolParam)
+	if err != nil {
+		logging.Info("GetApi -- error |%v", err)
 	}
+
+	statement3, value, nLastPx, nPxChg, nPxChgRatio := Statement3(sid)
+	statement5_s1, statement5_s2 := Statement5(basic.Compcode)
+	W, X, Y, Z, Score := diagnose_part(statement5_s1, statement5_s2, value)
+	logging.Info("statement5_s1=====", statement5_s1, statement5_s2)
+
+	di.Symbol = basic.Symbol
+	di.Stname = basic.Compname
+	di.NLastPx = nLastPx / 10000
+	di.NPxChg = nPxChg / 10000
+	di.NPxChgRatio = nPxChgRatio / 10000
+	di.Score = Score
+	di.Prompt = Y + "，" + Z
+
+	di.Statement1 = dataApi.Result.Data.Data.Statement1
+	di.Statement2 = dataApi.Result.Data.Data.Statement2
+	di.Statement3 = statement3
+	di.Statement4 = fundService.Statement4(sid)
+	di.Statement5 = "该股属于" + basic.Swlevelname + "行业，最近1年该股" + W + "，" + X + "。"
+
+	return &di, nil
 }
 
 type result struct {
@@ -106,7 +84,6 @@ type resultData struct {
 
 func GetApi(symbol string) (result, error) {
 	var url string = "http://touzi.sina.com.cn/api/openapi.php/PerspectiveSzService.diagnose?symbol=" + symbol
-	logging.Info("url===", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		logging.Error(err.Error())
@@ -120,7 +97,6 @@ func GetApi(symbol string) (result, error) {
 
 	var _param result
 	err = json.Unmarshal([]byte(body), &_param)
-	logging.Info("===%+v", _param)
 	return _param, err
 }
 

@@ -1,6 +1,7 @@
-package bigData
+package summary
 
 import (
+	. "haina.com/market/f9/controllers"
 	"haina.com/market/f9/services/bigService"
 	"haina.com/share/lib"
 	"haina.com/share/logging"
@@ -9,8 +10,12 @@ import (
 )
 
 func GetBigData(c *gin.Context) {
-	scode := c.Query("scode")
-	data, err := bigService.GetBigData(scode)
+	sid, err := Param_Norm_Sid(c)
+	if err != nil {
+		lib.WriteString(c, 40002, nil)
+		return
+	}
+	data, err := bigService.GetBigData(sid)
 	if err != nil {
 		logging.Info(err.Error())
 	}
