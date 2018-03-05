@@ -17,6 +17,7 @@ import (
 	"haina.com/market/hqinit/models/tb_security"
 	"haina.com/share/logging"
 	//"haina.com/share/store/redis"
+	"haina.com/market/hqinit/servers"
 )
 
 type TagStockStatic struct {
@@ -53,6 +54,11 @@ type TagStockStatic struct {
 // 静态数据
 func getSecurityStatic(cfg *config.AppConfig) *[]*tb_security.TagStockStatic {
 	return tb_security.GetSecurityStaticTableFromMG(cfg)
+}
+
+// 全品种指数、股票、基金、债券 静态数据
+func getSecurityStaticExt(cfg *config.AppConfig) []*servers.TagStockStatic {
+	return new(servers.TagStockStatic).GetAllStaticDataList(cfg)
 }
 
 func UpdateSecurityStaticInfo(cfg *config.AppConfig) {

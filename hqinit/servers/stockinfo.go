@@ -50,7 +50,7 @@ var codes []*TagSecurityInfo
 // 获取股票信息返回
 func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
 
-	// s1 个股+指数   s2 个股  s3 指数
+	// s1 个股+指数   s2 个股  s3 指数 s4 股票+指数+基金+债券
 	if sty == "s1" {
 		codes = nil
 		secNm1, err := fcm.NewFcSecuNameTab().GetSecuNmList()
@@ -85,6 +85,35 @@ func (this *TagSecurityInfo) GetStockInfo(sty string) []*TagSecurityInfo {
 		// 指数处理
 		TreatingData(secNm4)
 	}
+	if sty == "s4" {
+		codes = nil
+		secNm1, err := fcm.NewFcSecuNameTab().GetSecuNmList()
+		if err != nil {
+			logging.Info("个股查询finance出错 %v", err)
+		}
+		// 处理个股
+		TreatingData(secNm1)
+		secNm2, err := fcm.NewFcSecuNameTab().GetExponentList()
+		if err != nil {
+			logging.Info("指数查询finance出错 %v", err)
+		}
+		// 指数处理
+		TreatingData(secNm2)
+		//基金
+		secNm3, err := fcm.NewFcSecuNameTab().GetFundList()
+		if err != nil {
+			logging.Info("指数查询finance出错 %v", err)
+		}
+		TreatingData(secNm3)
+		//债券
+		secNm4, err := fcm.NewFcSecuNameTab().GetDebtList()
+		if err != nil {
+			logging.Info("指数查询finance出错 %v", err)
+		}
+		TreatingData(secNm4)
+
+	}
+
 	logging.Info("stockinfo End==")
 	return codes
 }

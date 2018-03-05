@@ -44,6 +44,17 @@ func (this *FcSecuNameTab) GetSecuNmList() ([]*FcSecuNameTab, error) {
 	return data, err
 }
 
+// 查询沪深市场证券代码 个股
+func (this *FcSecuNameTab) GetSecuAllNmList() ([]*FcSecuNameTab, error) {
+
+	var data []*FcSecuNameTab
+	_, err := this.Db.Select("*").
+		From(this.TableName).
+		Where("EXCHANGE in ('001002','001003') and SETYPE in('101','102','301','302','401','403','404','405','406','499','413','701') AND LISTSTATUS in (0,1) and ISVALID =1").
+		OrderBy("SYMBOL").LoadStructs(&data)
+	return data, err
+}
+
 // 查询沪深市场证券代码 指数
 func (this *FcSecuNameTab) GetExponentList() ([]*FcSecuNameTab, error) {
 
@@ -65,4 +76,26 @@ func (this *FcSecuNameTab) GetComCodeList(str string) ([]FcSecuNameTab, error) {
 		Where("SECODE in (" + str + ")").
 		OrderBy("SECODE").LoadStructs(&code)
 	return code, err
+}
+
+// 查询沪深市场基金
+func (this *FcSecuNameTab) GetFundList() ([]*FcSecuNameTab, error) {
+
+	var data []*FcSecuNameTab
+	_, err := this.Db.Select("*").
+		From(this.TableName).
+		Where("EXCHANGE in ('001002','001003') and SETYPE in('301','302') and LISTSTATUS in (0,1)and ISVALID =1").
+		LoadStructs(&data)
+	return data, err
+}
+
+// 查询沪深市场债券
+func (this *FcSecuNameTab) GetDebtList() ([]*FcSecuNameTab, error) {
+
+	var data []*FcSecuNameTab
+	_, err := this.Db.Select("*").
+		From(this.TableName).
+		Where("EXCHANGE in ('001002','001003') and SETYPE in('401','403','404','405','406','499','413') and LISTSTATUS in (0,1)and ISVALID =1").
+		LoadStructs(&data)
+	return data, err
 }

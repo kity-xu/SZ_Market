@@ -9,22 +9,23 @@ import (
 	"haina.com/market/hqinit/config"
 
 
-	"haina.com/market/hqinit/models/tb_security"
+	//"haina.com/market/hqinit/models/tb_security"
 	"haina.com/share/logging"
 	//"haina.com/share/store/redis"
 	"encoding/xml"
 	"io/ioutil"
 	"os"
+	"haina.com/market/hqinit/servers"
 )
 
 type TagAllStockStatic struct {
-	NSID              int32   `xml:"ID"`// 证券ID
+	SzSCode     	  string  `xml:"Code"`// 证券代码: 600036.SH							len:SECURITY_CODE_LEN
+	//NSID              int32   `xml:"ID"`// 证券ID
 	SzSType           string  `xml:"Type"`// 证券类型
 	SzStatus          string  `xml:"Status"`// 证券状态
-	NMarket     	  int32   `xml:"Market"`               // 市场类型
+	//NMarket     	  int32   `xml:"Market"`               // 市场类型
 	NPreClosePx       int32   `xml:"PreClosePx"`               // 前收价(*10000)
-	SzSCode     	  string  `xml:"Code"`// 证券代码: 600036.SH							len:SECURITY_CODE_LEN
-	SzSymbol    	  string  `xml:"Symbol"`// 证券原始: 600036								len:SECURITY_CODE_LEN
+	//SzSymbol    	  string  `xml:"Symbol"`// 证券原始: 600036								len:SECURITY_CODE_LEN
 	SzISIN      	  string  `xml:"ISIN"`// 证券国际代码信息								len:SECURITY_ISIN_LEN
 	SzSName     	  string  `xml:"Name"`// 证券名称 (超过24字节部分被省略)					len:SECURITY_NAME_LEN
 	SzSCName    	  string  `xml:"CName"`// 证券简体中文名称 (美股、港股超过40字节部分被省略		len:SECURITY_NAME_LEN
@@ -73,13 +74,13 @@ type SStatus struct{
 	S3 		string 		`xml:"S3"`
 }
 type SecurityNote struct{
-	ID 								string   `xml:"ID"`
+	Code 							string   `xml:"Code"`
+	//ID 								string   `xml:"ID"`
 	Type 							Stype   `xml:"Type"`
 	Status 							SStatus   `xml:"Status"`
-	Market 							string   `xml:"Market"`
+	//Market 							string   `xml:"Market"`
 	PreClosePx 						string   `xml:"PreClosePx"`
-	Code 							string   `xml:"Code"`
-	Symbol 							string   `xml:"Symbol"`
+	//Symbol 							string   `xml:"Symbol"`
 	ISIN 							string   `xml:"ISIN"`
 	Name 							string   `xml:"Name"`
 	CName 							string   `xml:"CName"`
@@ -143,13 +144,13 @@ func UpdateAllSecurityStatic(cfg *config.AppConfig) {
 	sstatus.S2 = "-:未定义,*:*ST,S:ST,P:退市整理期,T:暂停上市后协议转让"
 	sstatus.S3 = "-:未定义,L:债券投资者适当性要求类,G:未完成股改,R:公司再融资,S:增发股份上市,C:合约调整,V:网络投票,D:上网定价发行,J:上网竞价发行,F:国债挂牌分销"
 
-	senote.ID 				= "证券ID"
+	//senote.ID 				= "证券ID"
 	senote.Type 			= sstype
 	senote.Status 			= sstatus
-	senote.Market 			= "市场类型"
+	//senote.Market 			= "市场类型"
 	senote.PreClosePx 		= "昨收价"
 	senote.Code 			= "证券代码: 600036.SH"
-	senote.Symbol 			= "证券原始: 600036"
+	//senote.Symbol 			= "证券原始: 600036"
 	senote.ISIN 			= "证券国际代码信息"
 	senote.Name 			= "证券名称"
 	senote.CName 			= "证券简体中文名称"
@@ -184,13 +185,13 @@ func UpdateAllSecurityStatic(cfg *config.AppConfig) {
 	//...TODO
 
 	//securityname
-	table := MarketTable()
+	table := MarketTableExt()
 	//static
-	stable := getSecurityStatic(cfg)
-	var staticmap map[int32]tb_security.TagStockStatic
+	stable := getSecurityStaticExt(cfg)
+	var staticmap map[int32]servers.TagStockStatic
 	//转map
-	staticmap = make(map[int32]tb_security.TagStockStatic)
-	for _,v :=range *stable{
+	staticmap = make(map[int32]servers.TagStockStatic)
+	for _,v :=range stable{
 		staticmap[v.NSID] = *v
 	}
 
@@ -215,13 +216,13 @@ func UpdateAllSecurityStatic(cfg *config.AppConfig) {
 		}
 
 		biny := TagAllStockStatic{ //入文件的结构
-			NSID:              v.NSID,
+			//NSID:              v.NSID,
 			SzSType:           stype,
 			SzStatus:          status,
-			NMarket:  		   v.NMarket,
+			//NMarket:  		   v.NMarket,
 			NPreClosePx:	   val.NPreClose,
 			SzSCode: 	       v.SzSCode,
-			SzSymbol: 	       v.SzSymbol,
+			//SzSymbol: 	       v.SzSymbol,
 			SzISIN: 	       v.SzISIN,
 			SzSName: 	       v.SzSName,
 			SzSCName: 	   	   v.SzSCName,

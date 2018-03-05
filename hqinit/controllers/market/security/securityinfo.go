@@ -46,7 +46,12 @@ type TagSecurityName struct {
 
 //市场代码表
 func MarketTable() *[]*tb_security.TagSecurityInfo {
-	return tb_security.GetSecurityInfoTableFromMG()
+	return tb_security.GetSecurityInfoTableFromMG("s1")
+}
+
+//市场代码表 包含基金债券
+func MarketTableExt() *[]*tb_security.TagSecurityInfo {
+	return tb_security.GetSecurityInfoTableFromMG("s4")
 }
 
 //证券基本信息和单市场的证券代码表的实现

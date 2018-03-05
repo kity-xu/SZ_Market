@@ -17,4 +17,6 @@ const (
 	TABLE_TQ_FIN_PROFINMAININDEX    = "TQ_FIN_PROFINMAININDEX"    // 主要财务指标
 	TABLE_TQ_QT_INDEX    				= "TQ_QT_INDEX"    			// 指数行情表
 	TABLE_TQ_QT_SKDAILYPRICE    		= "TQ_QT_SKDAILYPRICE"    	// 股票历史日交易
+	TABLE_TQ_QT_FDQUOTE				= "TQ_QT_FDQUOTE"				//基金历史日交易
+	TABLE_TQ_QT_BDQUOTE				= "TQ_QT_BDQUOTE"				//债券历史日成交行情
 )

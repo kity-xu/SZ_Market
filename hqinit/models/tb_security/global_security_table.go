@@ -22,10 +22,10 @@ type TagSecurityInfo struct {
 }
 
 //市场代码表
-func GetSecurityInfoTableFromMG() *[]*TagSecurityInfo {
+func GetSecurityInfoTableFromMG(sty string) *[]*TagSecurityInfo {
 	var secus []*TagSecurityInfo
 
-	TagI := new(servers.TagSecurityInfo).GetStockInfo("s1")
+	TagI := new(servers.TagSecurityInfo).GetStockInfo(sty)
 
 	for _, ite := range TagI {
 		var tsi TagSecurityInfo

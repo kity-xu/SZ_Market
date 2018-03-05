@@ -27,7 +27,7 @@ func NewTQ_QT_INDEX() *TQ_QT_INDEX {
 func (this *TQ_QT_INDEX) GetAllInfo() (map[dbr.NullString]TQ_QT_INDEX, error) {
 	var tss []TQ_QT_INDEX
 	var tssmap map[dbr.NullString]TQ_QT_INDEX
-	err := this.Db.Select("LCLOSE,SECODE").From("TQ_QT_SKDAILYPRICE").
+	err := this.Db.Select("LCLOSE,SECODE").From("TQ_QT_INDEX").
 		Where("TRADEDATE=date_format(curdate(),'%Y%m%d')").
 	//	OrderBy("PUBLISHDATE  DESC").
 	//Limit(1).

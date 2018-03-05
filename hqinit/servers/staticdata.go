@@ -69,7 +69,17 @@ type TagStockStatic struct {
 // 整理静态数据放到monogoDB中
 func (this *TagStockStatic) GetStaticDataList(cfg *config.AppConfig) []*TagStockStatic {
 
-	tatic := StockTreatingDataExt()
+	tatic := StockTreatingDataExt("c1")
+
+	return tatic
+	//// 把静态数据传到文件解析进行比对校验  -- 行情端文件已经废弃
+	//return AnalysisFileUpMongodb(tatic, cfg)
+}
+
+// 全品种静态数据
+func (this *TagStockStatic) GetAllStaticDataList(cfg *config.AppConfig) []*TagStockStatic {
+
+	tatic := StockTreatingDataExt("c2")
 
 	return tatic
 	//// 把静态数据传到文件解析进行比对校验  -- 行情端文件已经废弃
@@ -313,11 +323,18 @@ func StockTreatingData() []*TagStockStatic {
 	return tsd
 }
 
-
-func StockTreatingDataExt() []*TagStockStatic {
+// s1 股票  s2 股票、指数、基金、债券
+func StockTreatingDataExt(ctype string) []*TagStockStatic {
 	var tsd []*TagStockStatic
 	// 获取沪深股票信息
-	secNm, err := stf.NewFcSecuNameTab().GetSecuNmList()
+	var secNm []*stf.FcSecuNameTab
+	var err error
+	if ctype == "c1" {
+		secNm, err = stf.NewFcSecuNameTab().GetSecuNmList()
+	}else if ctype == "c2"{
+		secNm, err = stf.NewFcSecuNameTab().GetSecuAllNmList()
+	}
+
 
 	if err != nil {
 		logging.Info("查询finance出错 %v", err)
@@ -366,12 +383,20 @@ func StockTreatingDataExt() []*TagStockStatic {
 	if err != nil {
 		logging.Error("select NewTQ_FIN_PROINDICDATA error:%v", err)
 	}
-	//8TQ_QT_INDEX TQ_QT_SKDAILYPRICE 查询昨收价
+	//8TQ_QT_INDEX TQ_QT_SKDAILYPRICE TQ_QT_BDQUOTE  TQ_QT_FDQUOTE  查询昨收价
 	mapindex, err := stf.NewTQ_QT_INDEX().GetAllInfo()
 	if err != nil {
 		logging.Error("select NewTQ_QT_INDEX error:%v", err)
 	}
 	mapstock, err := stf.NewTQ_QT_SKDAILYPRICE().GetAllInfo()
+	if err != nil {
+		logging.Error("select NewTQ_QT_SKDAILYPRICE error:%v", err)
+	}
+	mapbd, err := stf.NewTQ_QT_BDQUOTE().GetAllInfo()
+	if err != nil {
+		logging.Error("select NewTQ_QT_INDEX error:%v", err)
+	}
+	mapfd, err := stf.NewTQ_QT_FDQUOTE().GetAllInfo()
 	if err != nil {
 		logging.Error("select NewTQ_QT_SKDAILYPRICE error:%v", err)
 	}
@@ -566,6 +591,14 @@ func StockTreatingDataExt() []*TagStockStatic {
 		indexlastpx, ok := mapindex[item.SECODE]
 		if (ok){
 			tss.NPreClose = int32(indexlastpx.LCLOSE.Float64 * 10000)
+		}
+		fdlastpx, ok := mapfd[item.SECODE]
+		if (ok){
+			tss.NPreClose = int32(fdlastpx.LCLOSE.Float64 * 10000)
+		}
+		bdlastpx, ok := mapbd[item.SECODE]
+		if (ok){
+			tss.NPreClose = int32(bdlastpx.LCLOSENETPRICE.Float64 * 10000)
 		}
 
 		// 查询 一般企业利润 主营业务收入、利润、投资收益

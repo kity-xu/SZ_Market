@@ -28,8 +28,19 @@ const (
 	STOCK_INDEX_OTHER  = "799" //其他
 
 	//基金
+	SECURITY_FUND = '3'  //基金
 	SECURITY_CLOSEFUND = "301" //封闭式基金
 	SECURITY_OPENFUND  = "302" //开放式基金
+
+	//债券 '401','403','404','405','406','499','413'
+	SECURITY_DEBT 			= '4'    //债券
+	SECURITY_ZFDEBT 		= "401"  //	政府债券
+	SECURITY_ZFZCJGDEBT 	= "403"	 //	政府支持机构债券
+	SECURITY_GJKFJGDEBT 	= "404"  //国际开发机构债券
+	SECURITY_JRDEBT 		= "405"  //金融债券
+	SECURITY_QYDEBT 		= "406"  //企业(公司)债券
+	SECURITY_UNKNOWDEBT 	= "499"   //	其他债券类型
+	SECURITY_OTCDEBT 		= "413"		//OTC债券
 )
 
 //证券状态
@@ -157,7 +168,28 @@ func HainaSecurityType(nsid, stype string) (string, error) {
 		} else {
 			return "", errors.New("其他尚未实现的指数类型...")
 		}
-	} else {
+	}else if stype[0] == SECURITY_FUND {
+		result[1] = SECURITY_TYPE_FUND
+		if stype[2] == '1'{
+			result[2] = SECURITY_TYPE_FUND_OPEN
+		}else if stype[2] == '2'{
+			result[2] = SECURITY_TYPE_FUND_CLOSE
+		}
+	}else if stype[0] == SECURITY_DEBT{
+		result[1] = SECURITY_TYPE_BOND
+		if stype[2] == '1' && stype[1] == '0'{
+			result[2] = SECURITY_TYPE_GZ
+		}else if stype[2] == '3' && stype[1] == '0'{
+			result[2] = SECURITY_TYPE_GZ
+		}else if stype[2] == '4' && stype[1] == '0'{
+			//暂无
+			//result[2] = SECURITY_TYPE_GZ
+		}else if stype[2] == '5' && stype[1] == '0'{
+			result[2] = SECURITY_TYPE_JRZ
+		}else if stype[2] == '6' && stype[1] == '0'{
+			result[2] = SECURITY_TYPE_QYZ
+		}
+	}else {
 		return "", errors.New("其他尚未实现的金融产品类型...")
 	}
 
